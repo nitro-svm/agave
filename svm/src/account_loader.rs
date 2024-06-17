@@ -151,7 +151,7 @@ pub fn validate_fee_payer(
 /// its first element and an optional transaction nonce info as its
 /// second element.
 pub(crate) fn load_accounts<CB: TransactionProcessingCallback>(
-    callbacks: &CB,
+    callbacks: &mut CB,
     txs: &[SanitizedTransaction],
     check_results: &[TransactionCheckResult],
     error_metrics: &mut TransactionErrorMetrics,
@@ -199,7 +199,7 @@ pub(crate) fn load_accounts<CB: TransactionProcessingCallback>(
 }
 
 fn load_transaction_accounts<CB: TransactionProcessingCallback>(
-    callbacks: &CB,
+    callbacks: &mut CB,
     message: &SanitizedMessage,
     nonce: Option<&NoncePartial>,
     fee_details: FeeDetails,
@@ -230,6 +230,7 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
         .collect::<Vec<&u8>>();
 
     let mut accounts = account_keys
+        .clone()
         .iter()
         .enumerate()
         .map(|(i, key)| {
@@ -263,7 +264,7 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
                             if message.is_writable(i) {
                                 let rent_due = collect_rent_from_account(
                                     &feature_set,
-                                    rent_collector,
+                                    &rent_collector,
                                     key,
                                     &mut account,
                                 )
@@ -297,7 +298,7 @@ fn load_transaction_accounts<CB: TransactionProcessingCallback>(
                         &mut account,
                         i as IndexOfAccount,
                         error_metrics,
-                        rent_collector,
+                        &rent_collector,
                         fee_details.total_fee(),
                     )?;
 
@@ -560,13 +561,13 @@ mod tests {
         for (pubkey, account) in ka {
             accounts_map.insert(*pubkey, account.clone());
         }
-        let callbacks = TestCallbacks {
+        let mut callbacks = TestCallbacks {
             accounts_map,
             rent_collector: rent_collector.clone(),
             feature_set: Arc::new(feature_set.clone()),
         };
         load_accounts(
-            &callbacks,
+            &mut mutcallbacks,
             &[sanitized_tx],
             &[Ok(CheckedTransactionDetails {
                 nonce: None,
@@ -1048,13 +1049,13 @@ mod tests {
         for (pubkey, account) in ka {
             accounts_map.insert(*pubkey, account.clone());
         }
-        let callbacks = TestCallbacks {
+        let mut callbacks = TestCallbacks {
             accounts_map,
             rent_collector: RentCollector::default(),
             feature_set: Arc::new(FeatureSet::all_enabled()),
         };
         load_accounts(
-            &callbacks,
+            &mut callbacks,
             &[tx],
             &[Ok(CheckedTransactionDetails {
                 nonce: None,
@@ -1452,7 +1453,7 @@ mod tests {
         };
 
         let sanitized_message = new_unchecked_sanitized_message(message);
-        let mock_bank = TestCallbacks::default();
+        let mut mock_bank = TestCallbacks::default();
         let mut error_metrics = TransactionErrorMetrics::default();
         let loaded_programs = ProgramCacheForTxBatch::default();
 
@@ -1462,7 +1463,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1507,7 +1508,7 @@ mod tests {
         );
         let fee_details = FeeDetails::new_for_tests(32, 0, false);
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             fee_details,
@@ -1576,7 +1577,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1619,7 +1620,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1662,7 +1663,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1713,7 +1714,7 @@ mod tests {
         );
         let fee_details = FeeDetails::new_for_tests(32, 0, false);
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             fee_details,
@@ -1784,7 +1785,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1836,7 +1837,7 @@ mod tests {
             false,
         );
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             FeeDetails::default(),
@@ -1894,7 +1895,7 @@ mod tests {
         );
         let fee_details = FeeDetails::new_for_tests(32, 0, false);
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             fee_details,
@@ -1986,7 +1987,7 @@ mod tests {
         );
         let fee_details = FeeDetails::new_for_tests(32, 0, false);
         let result = load_transaction_accounts(
-            &mock_bank,
+            &mut mock_bank,
             sanitized_transaction.message(),
             None,
             fee_details,
@@ -2060,7 +2061,7 @@ mod tests {
         let sanitized_tx = SanitizedTransaction::from_transaction_for_tests(tx);
         let mut error_metrics = TransactionErrorMetrics::default();
         let loaded_txs = load_accounts(
-            &bank,
+            &mut bank,
             &[sanitized_tx.clone()],
             &[Ok(CheckedTransactionDetails {
                 nonce: None,
@@ -2148,7 +2149,7 @@ mod tests {
         });
 
         let results = load_accounts(
-            &mock_bank,
+            &mut mock_bank,
             &[sanitized_transaction],
             &[check_result],
             &mut error_metrics,
@@ -2196,7 +2197,7 @@ mod tests {
 
     #[test]
     fn test_load_accounts_error() {
-        let mock_bank = TestCallbacks::default();
+        let mut mock_bank = TestCallbacks::default();
         let message = Message {
             account_keys: vec![Pubkey::new_from_array([0; 32])],
             header: MessageHeader::default(),
@@ -2222,7 +2223,7 @@ mod tests {
         });
 
         let result = load_accounts(
-            &mock_bank,
+            &mut mock_bank,
             &[sanitized_transaction.clone()],
             &[check_result.clone()],
             &mut TransactionErrorMetrics::default(),
@@ -2236,7 +2237,7 @@ mod tests {
         let check_result = Err(TransactionError::InvalidWritableAccount);
 
         let result = load_accounts(
-            &mock_bank,
+            &mut mock_bank,
             &[sanitized_transaction.clone()],
             &[check_result],
             &mut TransactionErrorMetrics::default(),

@@ -209,7 +209,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
     /// Main entrypoint to the SVM.
     pub fn load_and_execute_sanitized_transactions<CB: TransactionProcessingCallback>(
         &self,
-        callbacks: &CB,
+        callbacks: &mut CB,
         sanitized_txs: &[SanitizedTransaction],
         check_results: &mut [TransactionCheckResult],
         config: &TransactionProcessingConfig,
@@ -366,7 +366,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
     /// Returns a map from executable program accounts (all accounts owned by any loader)
     /// to their usage counters, for the transactions with a valid blockhash or nonce.
     fn filter_executable_program_accounts<CB: TransactionProcessingCallback>(
-        callbacks: &CB,
+        callbacks: &mut CB,
         txs: &[SanitizedTransaction],
         check_results: &mut [TransactionCheckResult],
         program_owners: &[Pubkey],
@@ -398,7 +398,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
 
     fn replenish_program_cache<CB: TransactionProcessingCallback>(
         &self,
-        callback: &CB,
+        callback: &mut CB,
         program_accounts_map: &HashMap<Pubkey, u64>,
         limit_to_load_programs: bool,
     ) -> ProgramCacheForTxBatch {
@@ -486,7 +486,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
 
     pub fn prepare_program_cache_for_upcoming_feature_set<CB: TransactionProcessingCallback>(
         &self,
-        callbacks: &CB,
+        callbacks: &mut CB,
         upcoming_feature_set: &FeatureSet,
     ) {
         // Recompile loaded programs one at a time before the next epoch hits
@@ -562,7 +562,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
     /// the executors cache if the transaction was successful.
     fn execute_loaded_transaction<CB: TransactionProcessingCallback>(
         &self,
-        callback: &CB,
+        callback: &mut CB,
         tx: &SanitizedTransaction,
         loaded_transaction: &mut LoadedTransaction,
         compute_budget: ComputeBudget,
@@ -805,7 +805,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
 
     pub fn fill_missing_sysvar_cache_entries<CB: TransactionProcessingCallback>(
         &self,
-        callbacks: &CB,
+        callbacks: &mut CB,
     ) {
         let mut sysvar_cache = self.sysvar_cache.write().unwrap();
         sysvar_cache.fill_missing_entries(|pubkey, set_sysvar| {
@@ -827,7 +827,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
     /// Add a built-in program
     pub fn add_builtin<CB: TransactionProcessingCallback>(
         &self,
-        callbacks: &CB,
+        callbacks: &mut CB,
         program_id: Pubkey,
         name: &str,
         builtin: ProgramCacheEntry,
@@ -1005,7 +1005,7 @@ mod tests {
 
         let sanitized_message = new_unchecked_sanitized_message(message);
         let program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
 
         let sanitized_transaction = SanitizedTransaction::new_for_tests(
@@ -1028,7 +1028,7 @@ mod tests {
         processing_config.recording_config.enable_log_recording = true;
 
         let result = batch_processor.execute_loaded_transaction(
-            &mock_bank,
+            &mut mock_bank,
             &sanitized_transaction,
             &mut loaded_transaction,
             ComputeBudget::default(),
@@ -1050,7 +1050,7 @@ mod tests {
         processing_config.log_messages_bytes_limit = Some(2);
 
         let result = batch_processor.execute_loaded_transaction(
-            &mock_bank,
+            &mut mock_bank,
             &sanitized_transaction,
             &mut loaded_transaction,
             ComputeBudget::default(),
@@ -1080,7 +1080,7 @@ mod tests {
         processing_config.log_messages_bytes_limit = None;
 
         let result = batch_processor.execute_loaded_transaction(
-            &mock_bank,
+            &mut mock_bank,
             &sanitized_transaction,
             &mut loaded_transaction,
             ComputeBudget::default(),
@@ -1126,7 +1126,7 @@ mod tests {
 
         let sanitized_message = new_unchecked_sanitized_message(message);
         let program_cache_for_tx_batch = ProgramCacheForTxBatch::default();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
 
         let sanitized_transaction = SanitizedTransaction::new_for_tests(
@@ -1157,7 +1157,7 @@ mod tests {
         let mut error_metrics = TransactionErrorMetrics::new();
 
         let _ = batch_processor.execute_loaded_transaction(
-            &mock_bank,
+            &mut mock_bank,
             &sanitized_transaction,
             &mut loaded_transaction,
             ComputeBudget::default(),
@@ -1173,7 +1173,7 @@ mod tests {
     #[test]
     #[should_panic = "called load_program_with_pubkey() with nonexistent account"]
     fn test_replenish_program_cache_with_nonexistent_accounts() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
         batch_processor.program_cache.write().unwrap().fork_graph =
             Some(Arc::new(RwLock::new(TestForkGraph {})));
@@ -1182,12 +1182,12 @@ mod tests {
         let mut account_maps: HashMap<Pubkey, u64> = HashMap::new();
         account_maps.insert(key, 4);
 
-        batch_processor.replenish_program_cache(&mock_bank, &account_maps, true);
+        batch_processor.replenish_program_cache(&mut mock_bank, &account_maps, true);
     }
 
     #[test]
     fn test_replenish_program_cache() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
         batch_processor.program_cache.write().unwrap().fork_graph =
             Some(Arc::new(RwLock::new(TestForkGraph {})));
@@ -1206,7 +1206,7 @@ mod tests {
 
         for limit_to_load_programs in [false, true] {
             let result = batch_processor.replenish_program_cache(
-                &mock_bank,
+                &mut mock_bank,
                 &account_maps,
                 limit_to_load_programs,
             );
@@ -1221,7 +1221,7 @@ mod tests {
 
     #[test]
     fn test_filter_executable_program_accounts() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let key1 = Pubkey::new_unique();
         let owner1 = Pubkey::new_unique();
 
@@ -1303,7 +1303,7 @@ mod tests {
         let owners = vec![owner1, owner2];
 
         let result = TransactionBatchProcessor::<TestForkGraph>::filter_executable_program_accounts(
-            &mock_bank,
+            &mut mock_bank,
             &transactions,
             lock_results.as_mut_slice(),
             &owners,
@@ -1330,7 +1330,7 @@ mod tests {
 
         let account5_pubkey = Pubkey::new_unique();
 
-        let bank = MockBankCallback::default();
+        let mut bank = MockBankCallback::default();
         bank.account_shared_data.write().unwrap().insert(
             non_program_pubkey1,
             AccountSharedData::new(1, 10, &account5_pubkey),
@@ -1385,7 +1385,7 @@ mod tests {
         let owners = &[program1_pubkey, program2_pubkey];
         let programs =
             TransactionBatchProcessor::<TestForkGraph>::filter_executable_program_accounts(
-                &bank,
+                &mut bank,
                 &[sanitized_tx1, sanitized_tx2],
                 &mut [
                     Ok(CheckedTransactionDetails {
@@ -1432,7 +1432,7 @@ mod tests {
 
         let account5_pubkey = Pubkey::new_unique();
 
-        let bank = MockBankCallback::default();
+        let mut bank = MockBankCallback::default();
         bank.account_shared_data.write().unwrap().insert(
             non_program_pubkey1,
             AccountSharedData::new(1, 10, &account5_pubkey),
@@ -1495,7 +1495,7 @@ mod tests {
         ];
         let programs =
             TransactionBatchProcessor::<TestForkGraph>::filter_executable_program_accounts(
-                &bank,
+                &mut bank,
                 &[sanitized_tx1, sanitized_tx2],
                 &mut lock_results,
                 owners,
@@ -1514,7 +1514,7 @@ mod tests {
     #[test]
     #[allow(deprecated)]
     fn test_sysvar_cache_initialization1() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
 
         let clock = sysvar::clock::Clock {
             slot: 1,
@@ -1559,7 +1559,7 @@ mod tests {
             .insert(sysvar::rent::id(), rent_account);
 
         let transaction_processor = TransactionBatchProcessor::<TestForkGraph>::default();
-        transaction_processor.fill_missing_sysvar_cache_entries(&mock_bank);
+        transaction_processor.fill_missing_sysvar_cache_entries(&mut mock_bank);
 
         let sysvar_cache = transaction_processor.sysvar_cache.read().unwrap();
         let cached_clock = sysvar_cache.get_clock();
@@ -1590,7 +1590,7 @@ mod tests {
     #[test]
     #[allow(deprecated)]
     fn test_reset_and_fill_sysvar_cache() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
 
         let clock = sysvar::clock::Clock {
             slot: 1,
@@ -1636,7 +1636,7 @@ mod tests {
 
         let transaction_processor = TransactionBatchProcessor::<TestForkGraph>::default();
         // Fill the sysvar cache
-        transaction_processor.fill_missing_sysvar_cache_entries(&mock_bank);
+        transaction_processor.fill_missing_sysvar_cache_entries(&mut mock_bank);
         // Reset the sysvar cache
         transaction_processor.reset_sysvar_cache();
 
@@ -1652,7 +1652,7 @@ mod tests {
         }
 
         // Refill the cache and test the values are available.
-        transaction_processor.fill_missing_sysvar_cache_entries(&mock_bank);
+        transaction_processor.fill_missing_sysvar_cache_entries(&mut mock_bank);
 
         let sysvar_cache = transaction_processor.sysvar_cache.read().unwrap();
         let cached_clock = sysvar_cache.get_clock();
@@ -1682,7 +1682,7 @@ mod tests {
 
     #[test]
     fn test_add_builtin() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
         batch_processor.program_cache.write().unwrap().fork_graph =
             Some(Arc::new(RwLock::new(TestForkGraph {})));
@@ -1695,7 +1695,7 @@ mod tests {
             |_invoke_context, _param0, _param1, _param2, _param3, _param4| {},
         );
 
-        batch_processor.add_builtin(&mock_bank, key, name, program);
+        batch_processor.add_builtin(&mut mock_bank, key, name, program);
 
         assert_eq!(
             mock_bank.account_shared_data.read().unwrap()[&key].data(),
@@ -1760,7 +1760,8 @@ mod tests {
                     let maps = account_maps.clone();
                     let programs = programs.clone();
                     thread::spawn(move || {
-                        let result = processor.replenish_program_cache(&local_bank, &maps, true);
+                        let result =
+                            processor.replenish_program_cache(&mut local_bank, &maps, true);
                         for key in &programs {
                             let cache_entry = result.find(key);
                             assert!(matches!(

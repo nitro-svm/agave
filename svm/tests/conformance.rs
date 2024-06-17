@@ -267,8 +267,8 @@ fn run_fixture(fixture: InstrFixture, filename: OsString, execute_as_instr: bool
         program_cache.fork_graph = Some(Arc::new(RwLock::new(MockForkGraph {})));
     }
 
-    batch_processor.fill_missing_sysvar_cache_entries(&mock_bank);
-    register_builtins(&batch_processor, &mock_bank);
+    batch_processor.fill_missing_sysvar_cache_entries(&mut mock_bank);
+    register_builtins(&batch_processor, &mut mock_bank);
 
     #[allow(deprecated)]
     let (blockhash, lamports_per_signature) = batch_processor
@@ -298,7 +298,7 @@ fn run_fixture(fixture: InstrFixture, filename: OsString, execute_as_instr: bool
 
     if execute_as_instr {
         execute_fixture_as_instr(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor,
             transactions[0].message(),
             compute_budget,
@@ -310,7 +310,7 @@ fn run_fixture(fixture: InstrFixture, filename: OsString, execute_as_instr: bool
     }
 
     let result = batch_processor.load_and_execute_sanitized_transactions(
-        &mock_bank,
+        &mut mock_bank,
         &transactions,
         transaction_check.as_mut_slice(),
         &processor_config,
@@ -331,7 +331,7 @@ fn run_fixture(fixture: InstrFixture, filename: OsString, execute_as_instr: bool
             // This is a transaction error not an instruction error, so execute the instruction
             // instead.
             execute_fixture_as_instr(
-                &mock_bank,
+                &mut mock_bank,
                 &batch_processor,
                 transactions[0].message(),
                 compute_budget,
@@ -367,11 +367,11 @@ fn run_fixture(fixture: InstrFixture, filename: OsString, execute_as_instr: bool
 
 fn register_builtins(
     batch_processor: &TransactionBatchProcessor<MockForkGraph>,
-    mock_bank: &MockBankCallback,
+    mut mock_bank: &MockBankCallback,
 ) {
     let bpf_loader = "solana_bpf_loader_upgradeable_program";
     batch_processor.add_builtin(
-        mock_bank,
+        &mut mock_bank,
         bpf_loader_upgradeable::id(),
         bpf_loader,
         ProgramCacheEntry::new_builtin(
@@ -383,7 +383,7 @@ fn register_builtins(
 
     let system_program = "system_program";
     batch_processor.add_builtin(
-        mock_bank,
+        &mut mock_bank,
         solana_system_program::id(),
         system_program,
         ProgramCacheEntry::new_builtin(
@@ -395,7 +395,7 @@ fn register_builtins(
 }
 
 fn execute_fixture_as_instr(
-    mock_bank: &MockBankCallback,
+    &mut mock_bank: &MockBankCallback,
     batch_processor: &TransactionBatchProcessor<MockForkGraph>,
     sanitized_message: &SanitizedMessage,
     compute_budget: ComputeBudget,
@@ -438,7 +438,7 @@ fn execute_fixture_as_instr(
     let program_id = *sanitized_message.account_keys().get(program_idx).unwrap();
 
     let loaded_program = program_loader::load_program_with_pubkey(
-        mock_bank,
+        &mut mock_bank,
         &batch_processor.get_environments_for_epoch(2),
         &program_id,
         42,
