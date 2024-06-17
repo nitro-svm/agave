@@ -6603,7 +6603,6 @@ dependencies = [
  "bs58",
  "bv",
  "bytemuck",
- "cc",
  "console_error_panic_hook",
  "console_log",
  "curve25519-dalek",
