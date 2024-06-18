@@ -5677,13 +5677,13 @@ dependencies = [
  "rand 0.8.5",
  "scopeguard",
  "solana-compute-budget",
+ "solana-curve25519",
  "solana-measure",
  "solana-poseidon",
  "solana-program-runtime",
  "solana-sdk",
  "solana-type-overrides",
  "solana-vote",
- "solana-zk-token-sdk",
  "solana_rbpf",
  "test-case",
  "thiserror",
@@ -6125,6 +6125,16 @@ dependencies = [
  "solana-vote-program",
  "static_assertions",
  "test-case",
+]
+
+[[package]]
+name = "solana-curve25519"
+version = "2.0.0"
+dependencies = [
+ "bytemuck",
+ "curve25519-dalek",
+ "solana-program 2.0.0",
+ "thiserror",
 ]
 
 [[package]]
@@ -7996,7 +8006,6 @@ dependencies = [
  "bytemuck",
  "byteorder",
  "curve25519-dalek",
- "getrandom 0.1.16",
  "itertools 0.12.1",
  "lazy_static",
  "merlin",
@@ -8007,6 +8016,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha3 0.9.1",
+ "solana-curve25519",
  "solana-program 2.0.0",
  "solana-sdk",
  "subtle",
