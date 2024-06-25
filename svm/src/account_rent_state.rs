@@ -110,13 +110,13 @@ impl RentState {
     fn submit_rent_state_metrics(pre_rent_state: &Self, post_rent_state: &Self) {
         match (pre_rent_state, post_rent_state) {
             (&RentState::Uninitialized, &RentState::RentPaying { .. }) => {
-                inc_new_counter_info!("rent_paying_err-new_account", 1);
+                // inc_new_counter_info!("rent_paying_err-new_account", 1);
             }
             (&RentState::RentPaying { .. }, &RentState::RentPaying { .. }) => {
-                inc_new_counter_info!("rent_paying_ok-legacy", 1);
+                // inc_new_counter_info!("rent_paying_ok-legacy", 1);
             }
             (_, &RentState::RentPaying { .. }) => {
-                inc_new_counter_info!("rent_paying_err-other", 1);
+                // inc_new_counter_info!("rent_paying_err-other", 1);
             }
             _ => {}
         }

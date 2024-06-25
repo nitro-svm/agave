@@ -6884,7 +6884,6 @@ dependencies = [
  "solana-frozen-abi-macro",
  "solana-logger",
  "solana-measure",
- "solana-metrics",
  "solana-sdk",
  "solana-vote",
  "solana_rbpf",
