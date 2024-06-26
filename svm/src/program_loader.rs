@@ -66,7 +66,7 @@ pub(crate) fn load_program_from_bytes(
 }
 
 pub(crate) fn load_program_accounts<CB: TransactionProcessingCallback>(
-    callbacks: &CB,
+    callbacks: &mut CB,
     pubkey: &Pubkey,
 ) -> Option<ProgramAccountLoadResult> {
     let program_account = callbacks.get_account_shared_data(pubkey)?;
@@ -122,7 +122,7 @@ pub(crate) fn load_program_accounts<CB: TransactionProcessingCallback>(
 /// account (belong to one of the program loaders). Returns `Some(InvalidAccountData)` if the program
 /// account is `Closed`, contains invalid data or any of the programdata accounts are invalid.
 pub fn load_program_with_pubkey<CB: TransactionProcessingCallback>(
-    callbacks: &CB,
+    callbacks: &mut CB,
     environments: &ProgramRuntimeEnvironments,
     pubkey: &Pubkey,
     slot: Slot,
@@ -296,10 +296,10 @@ mod tests {
 
     #[test]
     fn test_load_program_accounts_account_not_found() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let key = Pubkey::new_unique();
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
         assert!(result.is_none());
 
         let mut account_data = AccountSharedData::default();
@@ -313,7 +313,7 @@ mod tests {
             .borrow_mut()
             .insert(key, account_data.clone());
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
         assert!(matches!(
             result,
             Some(ProgramAccountLoadResult::InvalidAccountData(_))
@@ -325,7 +325,7 @@ mod tests {
             .borrow_mut()
             .insert(key, account_data);
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
 
         assert!(matches!(
             result,
@@ -336,7 +336,7 @@ mod tests {
     #[test]
     fn test_load_program_accounts_loader_v4() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(loader_v4::id());
         mock_bank
@@ -344,7 +344,7 @@ mod tests {
             .borrow_mut()
             .insert(key, account_data.clone());
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
         assert!(matches!(
             result,
             Some(ProgramAccountLoadResult::InvalidAccountData(_))
@@ -355,7 +355,7 @@ mod tests {
             .account_shared_data
             .borrow_mut()
             .insert(key, account_data.clone());
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
         assert!(matches!(
             result,
             Some(ProgramAccountLoadResult::InvalidAccountData(_))
@@ -377,7 +377,7 @@ mod tests {
             .borrow_mut()
             .insert(key, account_data.clone());
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
 
         match result {
             Some(ProgramAccountLoadResult::ProgramOfLoaderV4(data, slot)) => {
@@ -392,7 +392,7 @@ mod tests {
     #[test]
     fn test_load_program_accounts_loader_v1_or_v2() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(bpf_loader::id());
         mock_bank
@@ -400,7 +400,7 @@ mod tests {
             .borrow_mut()
             .insert(key, account_data.clone());
 
-        let result = load_program_accounts(&mock_bank, &key);
+        let result = load_program_accounts(&mut mock_bank, &key);
         match result {
             Some(ProgramAccountLoadResult::ProgramOfLoaderV1(data))
             | Some(ProgramAccountLoadResult::ProgramOfLoaderV2(data)) => {
@@ -414,7 +414,7 @@ mod tests {
     fn test_load_program_accounts_success() {
         let key1 = Pubkey::new_unique();
         let key2 = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
 
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(bpf_loader_upgradeable::id());
@@ -439,7 +439,7 @@ mod tests {
             .borrow_mut()
             .insert(key2, account_data2.clone());
 
-        let result = load_program_accounts(&mock_bank, &key1);
+        let result = load_program_accounts(&mut mock_bank, &key1);
 
         match result {
             Some(ProgramAccountLoadResult::ProgramOfLoaderV3(data1, data2, slot)) => {
@@ -502,12 +502,12 @@ mod tests {
 
     #[test]
     fn test_load_program_not_found() {
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let key = Pubkey::new_unique();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(50),
             &key,
             500,
@@ -520,7 +520,7 @@ mod tests {
     #[test]
     fn test_load_program_invalid_account_data() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(loader_v4::id());
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
@@ -530,7 +530,7 @@ mod tests {
             .insert(key, account_data.clone());
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(20),
             &key,
             0, // Slot 0
@@ -553,7 +553,7 @@ mod tests {
     #[test]
     fn test_load_program_program_loader_v1_or_v2() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(bpf_loader::id());
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
@@ -564,7 +564,7 @@ mod tests {
 
         // This should return an error
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(20),
             &key,
             200,
@@ -591,7 +591,7 @@ mod tests {
             .insert(key, account_data.clone());
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(20),
             &key,
             200,
@@ -617,7 +617,7 @@ mod tests {
     fn test_load_program_program_loader_v3() {
         let key1 = Pubkey::new_unique();
         let key2 = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
 
         let mut account_data = AccountSharedData::default();
@@ -645,7 +645,7 @@ mod tests {
 
         // This should return an error
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(0),
             &key1,
             0,
@@ -682,7 +682,7 @@ mod tests {
             .insert(key2, account_data.clone());
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(20),
             &key1,
             200,
@@ -710,7 +710,7 @@ mod tests {
     #[test]
     fn test_load_program_of_loader_v4() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(loader_v4::id());
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
@@ -732,7 +732,7 @@ mod tests {
             .insert(key, account_data.clone());
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(0),
             &key,
             0,
@@ -765,7 +765,7 @@ mod tests {
             .insert(key, account_data.clone());
 
         let result = load_program_with_pubkey(
-            &mock_bank,
+            &mut mock_bank,
             &batch_processor.get_environments_for_epoch(20),
             &key,
             200,
@@ -796,7 +796,7 @@ mod tests {
     #[test]
     fn test_load_program_environment() {
         let key = Pubkey::new_unique();
-        let mock_bank = MockBankCallback::default();
+        let mut mock_bank = MockBankCallback::default();
         let mut account_data = AccountSharedData::default();
         account_data.set_owner(bpf_loader::id());
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
@@ -814,7 +814,7 @@ mod tests {
 
         for is_upcoming_env in [false, true] {
             let result = load_program_with_pubkey(
-                &mock_bank,
+                &mut mock_bank,
                 &batch_processor.get_environments_for_epoch(is_upcoming_env as u64),
                 &key,
                 200,

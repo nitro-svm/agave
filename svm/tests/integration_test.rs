@@ -224,13 +224,13 @@ fn deploy_program(name: String, mock_bank: &mut MockBankCallback) -> Pubkey {
 }
 
 fn register_builtins(
-    mock_bank: &MockBankCallback,
+    mut mock_bank: MockBankCallback,
     batch_processor: &TransactionBatchProcessor<MockForkGraph>,
 ) {
     // We must register the bpf loader account as a loadable account, otherwise programs
     // won't execute.
     batch_processor.add_builtin(
-        mock_bank,
+        &mut mock_bank,
         bpf_loader_upgradeable::id(),
         BPF_LOADER_NAME,
         ProgramCacheEntry::new_builtin(
@@ -243,7 +243,7 @@ fn register_builtins(
     // In order to perform a transference of native tokens using the system instruction,
     // the system program builtin must be registered.
     batch_processor.add_builtin(
-        mock_bank,
+        &mut mock_bank,
         solana_system_program::id(),
         SYSTEM_PROGRAM_NAME,
         ProgramCacheEntry::new_builtin(
@@ -456,8 +456,8 @@ fn svm_integration() {
     );
 
     // The sysvars must be put in the cache
-    batch_processor.fill_missing_sysvar_cache_entries(&mock_bank);
-    register_builtins(&mock_bank, &batch_processor);
+    batch_processor.fill_missing_sysvar_cache_entries(&mut mock_bank);
+    register_builtins(mock_bank, &batch_processor);
 
     let processing_config = TransactionProcessingConfig {
         recording_config: ExecutionRecordingConfig {
@@ -469,7 +469,7 @@ fn svm_integration() {
     };
 
     let result = batch_processor.load_and_execute_sanitized_transactions(
-        &mock_bank,
+        &mut mock_bank,
         &transactions,
         check_results.as_mut_slice(),
         &processing_config,
