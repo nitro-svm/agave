@@ -6746,6 +6746,7 @@ dependencies = [
  "bincode",
  "eager",
  "enum-iterator",
+ "histogram",
  "itertools 0.12.1",
  "libc",
  "log",
