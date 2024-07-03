@@ -153,8 +153,8 @@ impl SnapshotRequestHandler {
         let (
             snapshot_request,
             accounts_package_kind,
-            num_outstanding_requests,
-            num_re_enqueued_requests,
+            _num_outstanding_requests,
+            _num_re_enqueued_requests,
         ) = self.get_next_snapshot_request(*last_full_snapshot_slot)?;
 
         // datapoint_info!(
@@ -292,7 +292,7 @@ impl SnapshotRequestHandler {
     fn handle_snapshot_request(
         &self,
         test_hash_calculation: bool,
-        non_snapshot_time_us: u128,
+        _non_snapshot_time_us: u128,
         last_full_snapshot_slot: &mut Option<Slot>,
         snapshot_request: SnapshotRequest,
         accounts_package_kind: AccountsPackageKind,
@@ -368,7 +368,7 @@ impl SnapshotRequestHandler {
         snapshot_root_bank.clean_accounts(*last_full_snapshot_slot);
         clean_time.stop();
 
-        let (_, shrink_ancient_time_us) = measure_us!(snapshot_root_bank.shrink_ancient_slots());
+        let (_, _shrink_ancient_time_us) = measure_us!(snapshot_root_bank.shrink_ancient_slots());
 
         let mut shrink_time = Measure::start("shrink_time");
         snapshot_root_bank.shrink_candidate_slots();

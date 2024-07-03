@@ -1572,7 +1572,7 @@ impl Bank {
             a corrupted snapshot or bugs in cached accounts or accounts-db.",
         ));
         info!("Loading Stakes took: {stakes_time}");
-        let stakes_accounts_load_duration = now.elapsed();
+        let _stakes_accounts_load_duration = now.elapsed();
         let mut bank = Self {
             skipped_rewrites: Mutex::default(),
             incremental_snapshot_persistence: fields.incremental_snapshot_persistence,
@@ -2181,9 +2181,9 @@ impl Bank {
         let capitalization = self.capitalization();
         let PrevEpochInflationRewards {
             validator_rewards,
-            prev_epoch_duration_in_years,
-            validator_rate,
-            foundation_rate,
+            prev_epoch_duration_in_years: _,
+            validator_rate: _,
+            foundation_rate: _,
         } = self.calculate_previous_epoch_inflation_rewards(capitalization, prev_epoch);
 
         let old_vote_balance_and_staked = self.stakes_cache.stakes().vote_balance_and_staked();
@@ -2223,7 +2223,7 @@ impl Bank {
             "distributed inflation: {} (rounded from: {})",
             validator_rewards_paid, validator_rewards
         );
-        let (num_stake_accounts, num_vote_accounts) = {
+        let (_num_stake_accounts, _num_vote_accounts) = {
             let stakes = self.stakes_cache.stakes();
             (
                 stakes.stake_delegations().len(),

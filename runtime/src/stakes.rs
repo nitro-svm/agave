@@ -6,7 +6,6 @@ use {
     im::HashMap as ImHashMap,
     log::error,
     num_derive::ToPrimitive,
-    num_traits::ToPrimitive,
     rayon::{prelude::*, ThreadPool},
     solana_accounts_db::stake_rewards::StakeReward,
     solana_sdk::{

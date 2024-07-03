@@ -49,11 +49,11 @@ pub(crate) struct NewBankTimings {
 }
 
 pub(crate) fn report_new_epoch_metrics(
-    epoch: Epoch,
-    slot: Slot,
-    parent_slot: Slot,
-    timings: NewEpochTimings,
-    metrics: RewardsMetrics,
+    _epoch: Epoch,
+    _slot: Slot,
+    _parent_slot: Slot,
+    _timings: NewEpochTimings,
+    _metrics: RewardsMetrics,
 ) {
     // datapoint_info!(
     //     "bank-new_from_parent-new_epoch_timings",
@@ -112,10 +112,10 @@ pub(crate) fn report_new_epoch_metrics(
 }
 
 pub(crate) fn report_new_bank_metrics(
-    slot: Slot,
-    parent_slot: Slot,
-    block_height: u64,
-    timings: NewBankTimings,
+    _slot: Slot,
+    _parent_slot: Slot,
+    _block_height: u64,
+    _timings: NewBankTimings,
 ) {
     // datapoint_info!(
     //     "bank-new_from_parent-heights",
@@ -170,17 +170,17 @@ pub(crate) fn report_new_bank_metrics(
 /// Metrics for partitioned epoch reward store
 #[derive(Debug, Default)]
 pub(crate) struct RewardsStoreMetrics {
-    pub(crate) partition_index: u64,
-    pub(crate) store_stake_accounts_us: u64,
-    pub(crate) store_stake_accounts_count: usize,
-    pub(crate) total_stake_accounts_count: usize,
-    pub(crate) distributed_rewards: u64,
-    pub(crate) burned_rewards: u64,
-    pub(crate) pre_capitalization: u64,
-    pub(crate) post_capitalization: u64,
+    pub(crate) _partition_index: u64,
+    pub(crate) _store_stake_accounts_us: u64,
+    pub(crate) _store_stake_accounts_count: usize,
+    pub(crate) _total_stake_accounts_count: usize,
+    pub(crate) _distributed_rewards: u64,
+    pub(crate) _burned_rewards: u64,
+    pub(crate) _pre_capitalization: u64,
+    pub(crate) _post_capitalization: u64,
 }
 
-pub(crate) fn report_partitioned_reward_metrics(bank: &Bank, timings: RewardsStoreMetrics) {
+pub(crate) fn report_partitioned_reward_metrics(_bank: &Bank, _timings: RewardsStoreMetrics) {
     // datapoint_info!(
     //     "bank-partitioned_epoch_rewards_credit",
     //     ("slot", bank.slot(), i64),
@@ -211,20 +211,20 @@ pub(crate) fn report_partitioned_reward_metrics(bank: &Bank, timings: RewardsSto
 }
 
 /// Logs the measurement values
-pub(crate) fn report_loaded_programs_stats(stats: &ProgramCacheStats, slot: Slot) {
-    let hits = stats.hits.load(Ordering::Relaxed);
-    let misses = stats.misses.load(Ordering::Relaxed);
-    let evictions: u64 = stats.evictions.values().sum();
-    let reloads = stats.reloads.load(Ordering::Relaxed);
-    let insertions = stats.insertions.load(Ordering::Relaxed);
-    let lost_insertions = stats.lost_insertions.load(Ordering::Relaxed);
-    let replacements = stats.replacements.load(Ordering::Relaxed);
-    let one_hit_wonders = stats.one_hit_wonders.load(Ordering::Relaxed);
-    let prunes_orphan = stats.prunes_orphan.load(Ordering::Relaxed);
-    let prunes_environment = stats.prunes_environment.load(Ordering::Relaxed);
-    let empty_entries = stats.empty_entries.load(Ordering::Relaxed);
-    let water_level = stats.water_level.load(Ordering::Relaxed);
-    // datapoint_info!(
+pub(crate) fn report_loaded_programs_stats(stats: &ProgramCacheStats, _slot: Slot) {
+    // let hits = stats.hits.load(Ordering::Relaxed);
+    // let misses = stats.misses.load(Ordering::Relaxed);
+    // let evictions: u64 = stats.evictions.values().sum();
+    // let reloads = stats.reloads.load(Ordering::Relaxed);
+    // let insertions = stats.insertions.load(Ordering::Relaxed);
+    // let lost_insertions = stats.lost_insertions.load(Ordering::Relaxed);
+    // let replacements = stats.replacements.load(Ordering::Relaxed);
+    // let one_hit_wonders = stats.one_hit_wonders.load(Ordering::Relaxed);
+    // let prunes_orphan = stats.prunes_orphan.load(Ordering::Relaxed);
+    // let prunes_environment = stats.prunes_environment.load(Ordering::Relaxed);
+    // let empty_entries = stats.empty_entries.load(Ordering::Relaxed);
+    // let water_level = stats.water_level.load(Ordering::Relaxed);
+    // // datapoint_info!(
     //     "loaded-programs-cache-stats",
     //     ("slot", slot, i64),
     //     ("hits", hits, i64),

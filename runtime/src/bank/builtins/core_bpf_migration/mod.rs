@@ -340,7 +340,7 @@ impl Bank {
         &mut self,
         core_bpf_program_address: &Pubkey,
         source_buffer_address: &Pubkey,
-        datapoint_name: &'static str,
+        _datapoint_name: &'static str,
     ) -> Result<(), CoreBpfMigrationError> {
         // datapoint_info!(datapoint_name, ("slot", self.slot, i64));
 
