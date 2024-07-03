@@ -6,7 +6,6 @@ use {
     im::HashMap as ImHashMap,
     log::error,
     num_derive::ToPrimitive,
-    num_traits::ToPrimitive,
     rayon::{prelude::*, ThreadPool},
     solana_accounts_db::stake_rewards::StakeReward,
     solana_sdk::{
@@ -152,7 +151,7 @@ impl StakesCache {
     pub(crate) fn handle_invalid_keys(
         &self,
         invalid_vote_keys: DashMap<Pubkey, InvalidCacheEntryReason>,
-        current_slot: Slot,
+        _current_slot: Slot,
     ) {
         if invalid_vote_keys.is_empty() {
             return;
@@ -162,14 +161,14 @@ impl StakesCache {
         // not properly evicted in normal operation.
         let mut stakes = self.0.write().unwrap();
 
-        for (vote_pubkey, reason) in invalid_vote_keys {
+        for (vote_pubkey, _reason) in invalid_vote_keys {
             stakes.remove_vote_account(&vote_pubkey);
-            datapoint_warn!(
-                "bank-stake_delegation_accounts-invalid-account",
-                ("slot", current_slot as i64, i64),
-                ("vote-address", format!("{vote_pubkey:?}"), String),
-                ("reason", reason.to_i64().unwrap_or_default(), i64),
-            );
+            // datapoint_warn!(
+            //     "bank-stake_delegation_accounts-invalid-account",
+            //     ("slot", current_slot as i64, i64),
+            //     ("vote-address", format!("{vote_pubkey:?}"), String),
+            //     ("reason", reason.to_i64().unwrap_or_default(), i64),
+            // );
         }
     }
 }

@@ -1,7 +1,7 @@
 //! Stats for Accounts Background Services
 
 use {
-    solana_metrics::datapoint_info,
+    // solana_metrics::datapoint_info,
     std::time::{Duration, Instant},
 };
 
@@ -40,27 +40,27 @@ impl StatsManager {
             return;
         }
 
-        datapoint_info!(
-            "accounts_background_service",
-            (
-                "duration_since_previous_submit_us",
-                duration_since_previous_submit.as_micros(),
-                i64
-            ),
-            ("num_iterations", self.stats.num_iterations, i64),
-            (
-                "cumulative_runtime_us",
-                self.stats.cumulative_runtime.as_micros(),
-                i64
-            ),
-            (
-                "mean_runtime_us",
-                self.stats.mean_runtime().as_micros(),
-                i64
-            ),
-            ("min_runtime_us", self.stats.min_runtime.as_micros(), i64),
-            ("max_runtime_us", self.stats.max_runtime.as_micros(), i64),
-        );
+        // datapoint_info!(
+        //     "accounts_background_service",
+        //     (
+        //         "duration_since_previous_submit_us",
+        //         duration_since_previous_submit.as_micros(),
+        //         i64
+        //     ),
+        //     ("num_iterations", self.stats.num_iterations, i64),
+        //     (
+        //         "cumulative_runtime_us",
+        //         self.stats.cumulative_runtime.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "mean_runtime_us",
+        //         self.stats.mean_runtime().as_micros(),
+        //         i64
+        //     ),
+        //     ("min_runtime_us", self.stats.min_runtime.as_micros(), i64),
+        //     ("max_runtime_us", self.stats.max_runtime.as_micros(), i64),
+        // );
 
         // reset the stats back to default
         *self = Self::new();
@@ -94,7 +94,7 @@ impl Stats {
     /// Calculate the mean runtime of all iterations
     ///
     /// Requires that the number of iterations recorded is in the range [0, u32::MAX].
-    fn mean_runtime(&self) -> Duration {
+    fn _mean_runtime(&self) -> Duration {
         debug_assert!(self.num_iterations > 0);
         debug_assert!(self.num_iterations <= u32::MAX as usize);
         self.cumulative_runtime / self.num_iterations as u32

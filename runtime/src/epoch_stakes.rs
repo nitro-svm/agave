@@ -82,14 +82,14 @@ impl EpochStakes {
                 let vote_state = account.vote_state();
                 let vote_state = match vote_state.as_ref() {
                     Err(_) => {
-                        datapoint_warn!(
-                            "parse_epoch_vote_accounts",
-                            (
-                                "warn",
-                                format!("Unable to get vote_state from account {key}"),
-                                String
-                            ),
-                        );
+                        // datapoint_warn!(
+                        //     "parse_epoch_vote_accounts",
+                        //     (
+                        //         "warn",
+                        //         format!("Unable to get vote_state from account {key}"),
+                        //         String
+                        //     ),
+                        // );
                         return None;
                     }
                     Ok(vote_state) => vote_state,
