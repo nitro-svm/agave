@@ -490,91 +490,91 @@ impl BankForks {
             accounts_background_request_sender,
             highest_super_majority_root,
         )?;
-        datapoint_info!(
-            "bank-forks_set_root",
-            (
-                "elapsed_ms",
-                timing::duration_as_ms(&set_root_start.elapsed()) as usize,
-                i64
-            ),
-            ("slot", root, i64),
-            (
-                "total_parent_banks",
-                set_root_metrics.total_parent_banks,
-                i64
-            ),
-            ("total_banks", self.banks.len(), i64),
-            (
-                "total_squash_cache_ms",
-                set_root_metrics.timings.total_squash_time.squash_cache_ms,
-                i64
-            ),
-            (
-                "total_squash_accounts_ms",
-                set_root_metrics
-                    .timings
-                    .total_squash_time
-                    .squash_accounts_ms,
-                i64
-            ),
-            (
-                "total_squash_accounts_index_ms",
-                set_root_metrics
-                    .timings
-                    .total_squash_time
-                    .squash_accounts_index_ms,
-                i64
-            ),
-            (
-                "total_squash_accounts_cache_ms",
-                set_root_metrics
-                    .timings
-                    .total_squash_time
-                    .squash_accounts_cache_ms,
-                i64
-            ),
-            (
-                "total_squash_accounts_store_ms",
-                set_root_metrics
-                    .timings
-                    .total_squash_time
-                    .squash_accounts_store_ms,
-                i64
-            ),
-            (
-                "total_snapshot_ms",
-                set_root_metrics.timings.total_snapshot_ms,
-                i64
-            ),
-            ("tx_count", set_root_metrics.tx_count, i64),
-            (
-                "prune_non_rooted_ms",
-                set_root_metrics.timings.prune_non_rooted_ms,
-                i64
-            ),
-            (
-                "drop_parent_banks_ms",
-                set_root_metrics.timings.drop_parent_banks_ms,
-                i64
-            ),
-            (
-                "prune_slots_ms",
-                set_root_metrics.timings.prune_slots_ms,
-                i64
-            ),
-            (
-                "prune_remove_ms",
-                set_root_metrics.timings.prune_remove_ms,
-                i64
-            ),
-            (
-                "program_cache_prune_ms",
-                timing::duration_as_ms(&program_cache_prune_start.elapsed()),
-                i64
-            ),
-            ("dropped_banks_len", set_root_metrics.dropped_banks_len, i64),
-            ("accounts_data_len", set_root_metrics.accounts_data_len, i64),
-        );
+        // datapoint_info!(
+        //     "bank-forks_set_root",
+        //     (
+        //         "elapsed_ms",
+        //         timing::duration_as_ms(&set_root_start.elapsed()) as usize,
+        //         i64
+        //     ),
+        //     ("slot", root, i64),
+        //     (
+        //         "total_parent_banks",
+        //         set_root_metrics.total_parent_banks,
+        //         i64
+        //     ),
+        //     ("total_banks", self.banks.len(), i64),
+        //     (
+        //         "total_squash_cache_ms",
+        //         set_root_metrics.timings.total_squash_time.squash_cache_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "total_squash_accounts_ms",
+        //         set_root_metrics
+        //             .timings
+        //             .total_squash_time
+        //             .squash_accounts_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "total_squash_accounts_index_ms",
+        //         set_root_metrics
+        //             .timings
+        //             .total_squash_time
+        //             .squash_accounts_index_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "total_squash_accounts_cache_ms",
+        //         set_root_metrics
+        //             .timings
+        //             .total_squash_time
+        //             .squash_accounts_cache_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "total_squash_accounts_store_ms",
+        //         set_root_metrics
+        //             .timings
+        //             .total_squash_time
+        //             .squash_accounts_store_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "total_snapshot_ms",
+        //         set_root_metrics.timings.total_snapshot_ms,
+        //         i64
+        //     ),
+        //     ("tx_count", set_root_metrics.tx_count, i64),
+        //     (
+        //         "prune_non_rooted_ms",
+        //         set_root_metrics.timings.prune_non_rooted_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "drop_parent_banks_ms",
+        //         set_root_metrics.timings.drop_parent_banks_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "prune_slots_ms",
+        //         set_root_metrics.timings.prune_slots_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "prune_remove_ms",
+        //         set_root_metrics.timings.prune_remove_ms,
+        //         i64
+        //     ),
+        //     (
+        //         "program_cache_prune_ms",
+        //         timing::duration_as_ms(&program_cache_prune_start.elapsed()),
+        //         i64
+        //     ),
+        //     ("dropped_banks_len", set_root_metrics.dropped_banks_len, i64),
+        //     ("accounts_data_len", set_root_metrics.accounts_data_len, i64),
+        // );
         Ok(removed_banks)
     }
 

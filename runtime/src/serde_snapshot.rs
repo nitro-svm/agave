@@ -780,11 +780,11 @@ impl<'a> Serialize for SerializableAccountsDb<'a> {
         )
             .serialize(serializer);
         serialize_account_storage_timer.stop();
-        datapoint_info!(
-            "serialize_account_storage_ms",
-            ("duration", serialize_account_storage_timer.as_ms(), i64),
-            ("num_entries", *entry_count.borrow(), i64),
-        );
+        // datapoint_info!(
+        //     "serialize_account_storage_ms",
+        //     ("duration", serialize_account_storage_timer.as_ms(), i64),
+        //     ("num_entries", *entry_count.borrow(), i64),
+        // );
         result
     }
 }
@@ -1194,10 +1194,10 @@ where
     handle.join().unwrap();
     measure_notify.stop();
 
-    datapoint_info!(
-        "reconstruct_accountsdb_from_fields()",
-        ("accountsdb-notify-at-start-us", measure_notify.as_us(), i64),
-    );
+    // datapoint_info!(
+    //     "reconstruct_accountsdb_from_fields()",
+    //     ("accountsdb-notify-at-start-us", measure_notify.as_us(), i64),
+    // );
 
     Ok((
         Arc::try_unwrap(accounts_db).unwrap(),

@@ -59,7 +59,6 @@ solana-frozen-abi-macro = { workspace = true, optional = true }
 solana-inline-spl = { workspace = true }
 solana-loader-v4-program = { workspace = true }
 solana-measure = { workspace = true }
-solana-metrics = { workspace = true }
 solana-perf = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-rayon-threadlimit = { workspace = true }

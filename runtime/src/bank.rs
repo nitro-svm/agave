@@ -1688,24 +1688,24 @@ impl Bank {
         assert_eq!(bank.epoch_schedule, genesis_config.epoch_schedule);
         assert_eq!(bank.epoch, bank.epoch_schedule.get_epoch(bank.slot));
 
-        datapoint_info!(
-            "bank-new-from-fields",
-            (
-                "accounts_data_len-from-snapshot",
-                fields.accounts_data_len as i64,
-                i64
-            ),
-            (
-                "accounts_data_len-from-generate_index",
-                accounts_data_size_initial as i64,
-                i64
-            ),
-            (
-                "stakes_accounts_load_duration_us",
-                stakes_accounts_load_duration.as_micros(),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "bank-new-from-fields",
+        //     (
+        //         "accounts_data_len-from-snapshot",
+        //         fields.accounts_data_len as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "accounts_data_len-from-generate_index",
+        //         accounts_data_size_initial as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "stakes_accounts_load_duration_us",
+        //         stakes_accounts_load_duration.as_micros(),
+        //         i64
+        //     ),
+        // );
         bank
     }
 
@@ -1874,13 +1874,13 @@ impl Bank {
                 unix_timestamp = ancestor_timestamp;
             }
         }
-        datapoint_info!(
-            "bank-timestamp-correction",
-            ("slot", self.slot(), i64),
-            ("from_genesis", self.unix_timestamp_from_genesis(), i64),
-            ("corrected", unix_timestamp, i64),
-            ("ancestor_timestamp", ancestor_timestamp, i64),
-        );
+        // datapoint_info!(
+        //     "bank-timestamp-correction",
+        //     ("slot", self.slot(), i64),
+        //     ("from_genesis", self.unix_timestamp_from_genesis(), i64),
+        //     ("corrected", unix_timestamp, i64),
+        //     ("ancestor_timestamp", ancestor_timestamp, i64),
+        // );
         let mut epoch_start_timestamp =
             // On epoch boundaries, update epoch_start_timestamp
             if parent_epoch.is_some() && parent_epoch.unwrap() != self.epoch() {
@@ -2241,20 +2241,20 @@ impl Bank {
             0
         };
 
-        datapoint_warn!(
-            "epoch_rewards",
-            ("slot", self.slot, i64),
-            ("epoch", prev_epoch, i64),
-            ("validator_rate", validator_rate, f64),
-            ("foundation_rate", foundation_rate, f64),
-            ("epoch_duration_in_years", prev_epoch_duration_in_years, f64),
-            ("validator_rewards", validator_rewards_paid, i64),
-            ("active_stake", active_stake, i64),
-            ("pre_capitalization", capitalization, i64),
-            ("post_capitalization", self.capitalization(), i64),
-            ("num_stake_accounts", num_stake_accounts, i64),
-            ("num_vote_accounts", num_vote_accounts, i64),
-        );
+        // datapoint_warn!(
+        //     "epoch_rewards",
+        //     ("slot", self.slot, i64),
+        //     ("epoch", prev_epoch, i64),
+        //     ("validator_rate", validator_rate, f64),
+        //     ("foundation_rate", foundation_rate, f64),
+        //     ("epoch_duration_in_years", prev_epoch_duration_in_years, f64),
+        //     ("validator_rewards", validator_rewards_paid, i64),
+        //     ("active_stake", active_stake, i64),
+        //     ("pre_capitalization", capitalization, i64),
+        //     ("post_capitalization", self.capitalization(), i64),
+        //     ("num_stake_accounts", num_stake_accounts, i64),
+        //     ("num_vote_accounts", num_vote_accounts, i64),
+        // );
     }
 
     fn filter_stake_delegations<'a>(
@@ -2278,12 +2278,12 @@ impl Bank {
                 })
                 .collect::<Vec<_>>());
 
-            datapoint_info!(
-                "stake_account_filter_time",
-                ("filter_time_us", filter_timer.as_us(), i64),
-                ("num_stake_delegations_before", num_stake_delegations, i64),
-                ("num_stake_delegations_after", stake_delegations.len(), i64)
-            );
+            // datapoint_info!(
+            //     "stake_account_filter_time",
+            //     ("filter_time_us", filter_timer.as_us(), i64),
+            //     ("num_stake_delegations_before", num_stake_delegations, i64),
+            //     ("num_stake_delegations_after", stake_delegations.len(), i64)
+            // );
             stake_delegations
         } else {
             stakes.stake_delegations().iter().collect()
@@ -2798,14 +2798,14 @@ impl Bank {
                 .is_active(&feature_set::warp_timestamp_again::id()),
         );
         get_timestamp_estimate_time.stop();
-        datapoint_info!(
-            "bank-timestamp",
-            (
-                "get_timestamp_estimate_us",
-                get_timestamp_estimate_time.as_us(),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "bank-timestamp",
+        //     (
+        //         "get_timestamp_estimate_us",
+        //         get_timestamp_estimate_time.as_us(),
+        //         i64
+        //     ),
+        // );
         stake_weighted_timestamp
     }
 
@@ -4400,21 +4400,21 @@ impl Bank {
                 .for_each(|partition| self.collect_rent_in_partition(partition, &rent_metrics));
         }
         measure.stop();
-        datapoint_info!(
-            "collect_rent_eagerly",
-            ("accounts", rent_metrics.count.load(Relaxed), i64),
-            ("partitions", count, i64),
-            ("total_time_us", measure.as_us(), i64),
-            (
-                "hold_range_us",
-                rent_metrics.hold_range_us.load(Relaxed),
-                i64
-            ),
-            ("load_us", rent_metrics.load_us.load(Relaxed), i64),
-            ("collect_us", rent_metrics.collect_us.load(Relaxed), i64),
-            ("hash_us", rent_metrics.hash_us.load(Relaxed), i64),
-            ("store_us", rent_metrics.store_us.load(Relaxed), i64),
-        );
+        // datapoint_info!(
+        //     "collect_rent_eagerly",
+        //     ("accounts", rent_metrics.count.load(Relaxed), i64),
+        //     ("partitions", count, i64),
+        //     ("total_time_us", measure.as_us(), i64),
+        //     (
+        //         "hold_range_us",
+        //         rent_metrics.hold_range_us.load(Relaxed),
+        //         i64
+        //     ),
+        //     ("load_us", rent_metrics.load_us.load(Relaxed), i64),
+        //     ("collect_us", rent_metrics.collect_us.load(Relaxed), i64),
+        //     ("hash_us", rent_metrics.hash_us.load(Relaxed), i64),
+        //     ("store_us", rent_metrics.store_us.load(Relaxed), i64),
+        // );
     }
 
     fn rent_collection_partitions(&self) -> Vec<Partition> {
@@ -4507,13 +4507,13 @@ impl Bank {
                                 self.epoch_schedule.slots_per_epoch,
                             );
                             // Submit datapoint instead of assert while we verify this is correct
-                            datapoint_warn!(
-                                "bank-unexpected_rent_paying_pubkey",
-                                ("slot", self.slot(), i64),
-                                ("pubkey", pubkey.to_string(), String),
-                                ("partition_index", partition_index, i64),
-                                ("partition_from_pubkey", partition_from_pubkey, i64)
-                            );
+                            // datapoint_warn!(
+                            //     "bank-unexpected_rent_paying_pubkey",
+                            //     ("slot", self.slot(), i64),
+                            //     ("pubkey", pubkey.to_string(), String),
+                            //     ("partition_index", partition_index, i64),
+                            //     ("partition_from_pubkey", partition_from_pubkey, i64)
+                            // );
                             warn!(
                                 "Collecting rent from unexpected pubkey: {}, slot: {}, parent_slot: {:?}, \
                                 partition_index: {}, partition_from_pubkey: {}",
@@ -5612,11 +5612,11 @@ impl Bank {
             .epoch_accounts_hash_manager
             .wait_get_epoch_accounts_hash());
 
-        datapoint_info!(
-            "bank-wait_get_epoch_accounts_hash",
-            ("slot", self.slot() as i64, i64),
-            ("waiting-time-us", measure.as_us() as i64, i64),
-        );
+        // datapoint_info!(
+        //     "bank-wait_get_epoch_accounts_hash",
+        //     ("slot", self.slot() as i64, i64),
+        //     ("waiting-time-us", measure.as_us() as i64, i64),
+        // );
         epoch_accounts_hash
     }
 
@@ -5971,12 +5971,12 @@ impl Bank {
                 is_startup,
             );
         if total_lamports != self.capitalization() {
-            datapoint_info!(
-                "capitalization_mismatch",
-                ("slot", self.slot(), i64),
-                ("calculated_lamports", total_lamports, i64),
-                ("capitalization", self.capitalization(), i64),
-            );
+            // datapoint_info!(
+            //     "capitalization_mismatch",
+            //     ("slot", self.slot(), i64),
+            //     ("calculated_lamports", total_lamports, i64),
+            //     ("capitalization", self.capitalization(), i64),
+            // );
 
             if !debug_verify {
                 // cap mismatch detected. It has been logged to metrics above.
@@ -6106,13 +6106,13 @@ impl Bank {
         let (verified_bank, verify_bank_time_us) = measure_us!(self.verify_hash());
         info!("Verifying bank... Done.");
 
-        datapoint_info!(
-            "verify_snapshot_bank",
-            ("clean_us", clean_time_us, i64),
-            ("shrink_us", shrink_time_us, i64),
-            ("verify_accounts_us", verify_accounts_time_us, i64),
-            ("verify_bank_us", verify_bank_time_us, i64),
-        );
+        // datapoint_info!(
+        //     "verify_snapshot_bank",
+        //     ("clean_us", clean_time_us, i64),
+        //     ("shrink_us", shrink_time_us, i64),
+        //     ("verify_accounts_us", verify_accounts_time_us, i64),
+        //     ("verify_bank_us", verify_bank_time_us, i64),
+        // );
 
         verified_accounts && verified_bank
     }
@@ -6692,7 +6692,7 @@ impl Bank {
     ) {
         if let Some(old_account) = self.get_account_with_fixed_root(old_address) {
             if let Some(new_account) = self.get_account_with_fixed_root(new_address) {
-                datapoint_info!(datapoint_name, ("slot", self.slot, i64));
+                // datapoint_info!(datapoint_name, ("slot", self.slot, i64));
 
                 // Burn lamports in the old account
                 self.capitalization
@@ -6762,11 +6762,11 @@ impl Bank {
             .epoch_accounts_hash_manager
             .wait_get_epoch_accounts_hash());
 
-        datapoint_info!(
-            "bank-get_epoch_accounts_hash_to_serialize",
-            ("slot", self.slot(), i64),
-            ("waiting-time-us", measure.as_us(), i64),
-        );
+        // datapoint_info!(
+        //     "bank-get_epoch_accounts_hash_to_serialize",
+        //     ("slot", self.slot(), i64),
+        //     ("waiting-time-us", measure.as_us(), i64),
+        // );
         Some(epoch_accounts_hash)
     }
 

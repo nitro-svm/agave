@@ -242,7 +242,7 @@ impl Bank {
         builtin_program_id: &Pubkey,
         config: &CoreBpfMigrationConfig,
     ) -> Result<(), CoreBpfMigrationError> {
-        datapoint_info!(config.datapoint_name, ("slot", self.slot, i64));
+        // datapoint_info!(config.datapoint_name, ("slot", self.slot, i64));
 
         let target =
             TargetBuiltin::new_checked(self, builtin_program_id, &config.migration_target)?;
@@ -342,7 +342,7 @@ impl Bank {
         source_buffer_address: &Pubkey,
         datapoint_name: &'static str,
     ) -> Result<(), CoreBpfMigrationError> {
-        datapoint_info!(datapoint_name, ("slot", self.slot, i64));
+        // datapoint_info!(datapoint_name, ("slot", self.slot, i64));
 
         let target = TargetCoreBpf::new_checked(self, core_bpf_program_address)?;
         let source = SourceBuffer::new_checked(self, source_buffer_address)?;

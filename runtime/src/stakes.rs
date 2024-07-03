@@ -164,12 +164,12 @@ impl StakesCache {
 
         for (vote_pubkey, reason) in invalid_vote_keys {
             stakes.remove_vote_account(&vote_pubkey);
-            datapoint_warn!(
-                "bank-stake_delegation_accounts-invalid-account",
-                ("slot", current_slot as i64, i64),
-                ("vote-address", format!("{vote_pubkey:?}"), String),
-                ("reason", reason.to_i64().unwrap_or_default(), i64),
-            );
+            // datapoint_warn!(
+            //     "bank-stake_delegation_accounts-invalid-account",
+            //     ("slot", current_slot as i64, i64),
+            //     ("vote-address", format!("{vote_pubkey:?}"), String),
+            //     ("reason", reason.to_i64().unwrap_or_default(), i64),
+            // );
         }
     }
 }

@@ -916,31 +916,31 @@ fn serialize_snapshot(
         measure_everything.stop();
 
         // Monitor sizes because they're capped to MAX_SNAPSHOT_DATA_FILE_SIZE
-        datapoint_info!(
-            "snapshot_bank",
-            ("slot", slot, i64),
-            ("bank_size", bank_snapshot_consumed_size, i64),
-            ("status_cache_size", status_cache_consumed_size, i64),
-            ("flush_storages_us", measure_flush.as_us(), i64),
-            ("hard_link_storages_us", measure_hard_linking.as_us(), i64),
-            ("bank_serialize_us", bank_serialize.as_us(), i64),
-            (
-                "status_cache_serialize_us",
-                status_cache_serialize.as_us(),
-                i64
-            ),
-            (
-                "write_version_file_us",
-                measure_write_version_file.as_us(),
-                i64
-            ),
-            (
-                "write_state_complete_file_us",
-                measure_write_state_complete_file.as_us(),
-                i64
-            ),
-            ("total_us", measure_everything.as_us(), i64),
-        );
+        // datapoint_info!(
+        //     "snapshot_bank",
+        //     ("slot", slot, i64),
+        //     ("bank_size", bank_snapshot_consumed_size, i64),
+        //     ("status_cache_size", status_cache_consumed_size, i64),
+        //     ("flush_storages_us", measure_flush.as_us(), i64),
+        //     ("hard_link_storages_us", measure_hard_linking.as_us(), i64),
+        //     ("bank_serialize_us", bank_serialize.as_us(), i64),
+        //     (
+        //         "status_cache_serialize_us",
+        //         status_cache_serialize.as_us(),
+        //         i64
+        //     ),
+        //     (
+        //         "write_version_file_us",
+        //         measure_write_version_file.as_us(),
+        //         i64
+        //     ),
+        //     (
+        //         "write_state_complete_file_us",
+        //         measure_write_state_complete_file.as_us(),
+        //         i64
+        //     ),
+        //     ("total_us", measure_everything.as_us(), i64),
+        // );
 
         info!(
             "{} for slot {} at {}",
@@ -1119,21 +1119,21 @@ fn archive_snapshot(
         metadata.len()
     );
 
-    datapoint_info!(
-        "archive-snapshot-package",
-        ("slot", snapshot_slot, i64),
-        ("archive_format", archive_format.to_string(), String),
-        ("duration_ms", timer.as_ms(), i64),
-        (
-            if snapshot_kind.is_full_snapshot() {
-                "full-snapshot-archive-size"
-            } else {
-                "incremental-snapshot-archive-size"
-            },
-            metadata.len(),
-            i64
-        ),
-    );
+    // datapoint_info!(
+    //     "archive-snapshot-package",
+    //     ("slot", snapshot_slot, i64),
+    //     ("archive_format", archive_format.to_string(), String),
+    //     ("duration_ms", timer.as_ms(), i64),
+    //     (
+    //         if snapshot_kind.is_full_snapshot() {
+    //             "full-snapshot-archive-size"
+    //         } else {
+    //             "incremental-snapshot-archive-size"
+    //         },
+    //         metadata.len(),
+    //         i64
+    //     ),
+    // );
     Ok(SnapshotArchiveInfo {
         path: archive_path,
         slot: snapshot_slot,

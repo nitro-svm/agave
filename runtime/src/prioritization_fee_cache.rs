@@ -81,43 +81,43 @@ impl PrioritizationFeeCacheMetrics {
     }
 
     fn report(&self, slot: Slot) {
-        datapoint_info!(
-            "block_prioritization_fee_counters",
-            ("slot", slot as i64, i64),
-            (
-                "successful_transaction_update_count",
-                self.successful_transaction_update_count
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "purged_duplicated_bank_count",
-                self.purged_duplicated_bank_count.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_update_elapsed_us",
-                self.total_update_elapsed_us.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_cache_lock_elapsed_us",
-                self.total_cache_lock_elapsed_us.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_entry_update_elapsed_us",
-                self.total_entry_update_elapsed_us
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_block_finalize_elapsed_us",
-                self.total_block_finalize_elapsed_us
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "block_prioritization_fee_counters",
+        //     ("slot", slot as i64, i64),
+        //     (
+        //         "successful_transaction_update_count",
+        //         self.successful_transaction_update_count
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "purged_duplicated_bank_count",
+        //         self.purged_duplicated_bank_count.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_update_elapsed_us",
+        //         self.total_update_elapsed_us.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_cache_lock_elapsed_us",
+        //         self.total_cache_lock_elapsed_us.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_entry_update_elapsed_us",
+        //         self.total_entry_update_elapsed_us
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_block_finalize_elapsed_us",
+        //         self.total_block_finalize_elapsed_us
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        // );
     }
 }
 

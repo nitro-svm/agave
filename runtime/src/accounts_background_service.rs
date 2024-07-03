@@ -61,7 +61,7 @@ impl PrunedBankQueueLenReporter {
         if q_len > MAX_DROP_BANK_SIGNAL_QUEUE_SIZE
             && now.saturating_sub(last_report_time) > BANK_DROP_SIGNAL_CHANNEL_REPORT_INTERVAL
         {
-            datapoint_warn!("excessive_pruned_bank_channel_len", ("len", q_len, i64));
+            // datapoint_warn!("excessive_pruned_bank_channel_len", ("len", q_len, i64));
             self.last_report_time.store(now, Ordering::Release);
         }
     }
@@ -157,16 +157,16 @@ impl SnapshotRequestHandler {
             num_re_enqueued_requests,
         ) = self.get_next_snapshot_request(*last_full_snapshot_slot)?;
 
-        datapoint_info!(
-            "handle_snapshot_requests",
-            ("num_outstanding_requests", num_outstanding_requests, i64),
-            ("num_re_enqueued_requests", num_re_enqueued_requests, i64),
-            (
-                "enqueued_time_us",
-                snapshot_request.enqueued.elapsed().as_micros(),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "handle_snapshot_requests",
+        //     ("num_outstanding_requests", num_outstanding_requests, i64),
+        //     ("num_re_enqueued_requests", num_re_enqueued_requests, i64),
+        //     (
+        //         "enqueued_time_us",
+        //         snapshot_request.enqueued.elapsed().as_micros(),
+        //         i64
+        //     ),
+        // );
 
         Some(self.handle_snapshot_request(
             test_hash_calculation,
@@ -426,20 +426,20 @@ impl SnapshotRequestHandler {
 
         total_time.stop();
 
-        datapoint_info!(
-            "handle_snapshot_requests-timing",
-            (
-                "flush_accounts_cache_time",
-                flush_accounts_cache_time.as_us(),
-                i64
-            ),
-            ("shrink_time", shrink_time.as_us(), i64),
-            ("clean_time", clean_time.as_us(), i64),
-            ("snapshot_time", snapshot_time.as_us(), i64),
-            ("total_us", total_time.as_us(), i64),
-            ("non_snapshot_time_us", non_snapshot_time_us, i64),
-            ("shrink_ancient_time_us", shrink_ancient_time_us, i64),
-        );
+        // datapoint_info!(
+        //     "handle_snapshot_requests-timing",
+        //     (
+        //         "flush_accounts_cache_time",
+        //         flush_accounts_cache_time.as_us(),
+        //         i64
+        //     ),
+        //     ("shrink_time", shrink_time.as_us(), i64),
+        //     ("clean_time", clean_time.as_us(), i64),
+        //     ("snapshot_time", snapshot_time.as_us(), i64),
+        //     ("total_us", total_time.as_us(), i64),
+        //     ("non_snapshot_time_us", non_snapshot_time_us, i64),
+        //     ("shrink_ancient_time_us", shrink_ancient_time_us, i64),
+        // );
         Ok(snapshot_root_bank.block_height())
     }
 }
@@ -495,11 +495,11 @@ impl PrunedBanksRequestHandler {
         let num_banks_with_same_slot =
             num_banks_to_purge.saturating_sub(grouped_banks_to_purge.len());
         if num_banks_with_same_slot > 0 {
-            datapoint_info!(
-                "pruned_banks_request_handler",
-                ("num_pruned_banks", num_banks_to_purge, i64),
-                ("num_banks_with_same_slot", num_banks_with_same_slot, i64),
-            );
+            // datapoint_info!(
+            //     "pruned_banks_request_handler",
+            //     ("num_pruned_banks", num_banks_to_purge, i64),
+            //     ("num_banks_with_same_slot", num_banks_with_same_slot, i64),
+            // );
         }
 
         // Purge all the slots in parallel
@@ -528,11 +528,11 @@ impl PrunedBanksRequestHandler {
         *total_remove_slots_time += remove_slots_time.as_us();
 
         if *removed_slots_count >= 100 {
-            datapoint_info!(
-                "remove_slots_timing",
-                ("remove_slots_time", *total_remove_slots_time, i64),
-                ("removed_slots_count", *removed_slots_count, i64),
-            );
+            // datapoint_info!(
+            //     "remove_slots_timing",
+            //     ("remove_slots_time", *total_remove_slots_time, i64),
+            //     ("removed_slots_count", *removed_slots_count, i64),
+            // );
             *total_remove_slots_time = 0;
             *removed_slots_count = 0;
         }
