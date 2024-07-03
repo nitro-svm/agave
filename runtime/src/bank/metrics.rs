@@ -4,7 +4,7 @@ use {
     solana_sdk::clock::{Epoch, Slot},
     std::sync::atomic::{
         AtomicU64,
-        Ordering::{self, Relaxed},
+        Ordering::{self},
     },
 };
 
