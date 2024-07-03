@@ -94,7 +94,7 @@ impl Stats {
     /// Calculate the mean runtime of all iterations
     ///
     /// Requires that the number of iterations recorded is in the range [0, u32::MAX].
-    fn mean_runtime(&self) -> Duration {
+    fn _mean_runtime(&self) -> Duration {
         debug_assert!(self.num_iterations > 0);
         debug_assert!(self.num_iterations <= u32::MAX as usize);
         self.cumulative_runtime / self.num_iterations as u32

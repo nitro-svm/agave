@@ -2,12 +2,9 @@ use {
     crate::bank::Bank,
     solana_program_runtime::loaded_programs::ProgramCacheStats,
     solana_sdk::clock::{Epoch, Slot},
-    std::sync::atomic::{
-        AtomicU64,
-        Ordering::{self},
-    },
+    std::sync::atomic::AtomicU64,
 };
-
+#[allow(dead_code)]
 pub(crate) struct NewEpochTimings {
     pub(crate) thread_pool_time_us: u64,
     pub(crate) apply_feature_activations_time_us: u64,
@@ -24,9 +21,10 @@ pub(crate) struct RewardsMetrics {
     pub(crate) store_stake_accounts_us: AtomicU64,
     pub(crate) store_vote_accounts_us: AtomicU64,
     pub(crate) vote_accounts_cache_miss_count: usize,
+    #[allow(dead_code)]
     pub(crate) hash_partition_rewards_us: u64,
 }
-
+#[allow(dead_code)]
 pub(crate) struct NewBankTimings {
     pub(crate) bank_rc_creation_time_us: u64,
     pub(crate) total_elapsed_time_us: u64,
@@ -169,6 +167,7 @@ pub(crate) fn report_new_bank_metrics(
 
 /// Metrics for partitioned epoch reward store
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub(crate) struct RewardsStoreMetrics {
     pub(crate) partition_index: u64,
     pub(crate) store_stake_accounts_us: u64,

@@ -51,6 +51,7 @@ pub enum SetRootError {
 }
 
 #[derive(Debug, Default, Copy, Clone)]
+#[allow(dead_code)]
 struct SetRootMetrics {
     timings: SetRootTimings,
     total_parent_banks: i64,
@@ -60,6 +61,7 @@ struct SetRootMetrics {
 }
 
 #[derive(Debug, Default, Copy, Clone)]
+#[allow(dead_code)]
 struct SetRootTimings {
     total_squash_time: SquashTiming,
     total_snapshot_ms: i64,
@@ -482,9 +484,9 @@ impl BankForks {
         accounts_background_request_sender: &AbsRequestSender,
         highest_super_majority_root: Option<Slot>,
     ) -> Result<Vec<BankWithScheduler>, SetRootError> {
-        let program_cache_prune_start = Instant::now();
-        let set_root_start = Instant::now();
-        let (removed_banks, set_root_metrics) = self.do_set_root_return_metrics(
+        let _program_cache_prune_start = Instant::now();
+        let _set_root_start = Instant::now();
+        let (removed_banks, _set_root_metrics) = self.do_set_root_return_metrics(
             root,
             accounts_background_request_sender,
             highest_super_majority_root,

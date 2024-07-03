@@ -115,6 +115,7 @@ pub(super) struct EpochRewardCalculateParamInfo<'a> {
 /// Hold all results from calculating the rewards for partitioned distribution.
 /// This struct exists so we can have a function which does all the calculation with no
 /// side effects.
+#[allow(dead_code)]
 pub(super) struct PartitionedRewardsCalculation {
     pub(super) vote_account_rewards: VoteRewardsAccounts,
     pub(super) stake_rewards_by_partition: StakeRewardCalculationPartitioned,

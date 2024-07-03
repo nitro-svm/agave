@@ -80,7 +80,7 @@ impl PrioritizationFeeCacheMetrics {
             .fetch_add(val, Ordering::Relaxed);
     }
 
-    fn report(&self, slot: Slot) {
+    fn report(&self, _slot: Slot) {
         // datapoint_info!(
         //     "block_prioritization_fee_counters",
         //     ("slot", slot as i64, i64),

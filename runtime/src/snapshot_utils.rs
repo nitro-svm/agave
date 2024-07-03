@@ -855,7 +855,7 @@ fn serialize_snapshot(
             bank_snapshot_path.display(),
         );
 
-        let (_, measure_flush) = measure!({
+        let (_, _measure_flush) = measure!({
             for storage in snapshot_storages {
                 storage.flush().map_err(|err| {
                     AddBankSnapshotError::FlushStorage(err, storage.path().to_path_buf())
@@ -867,7 +867,7 @@ fn serialize_snapshot(
         // constructing a bank from this directory.  It acts like an archive to include the full state.
         // The set of the account storages files is the necessary part of this snapshot state.  Hard-link them
         // from the operational accounts/ directory to here.
-        let (_, measure_hard_linking) =
+        let (_, _measure_hard_linking) =
             measure!(
                 hard_link_storages_to_snapshot(&bank_snapshot_dir, slot, snapshot_storages)
                     .map_err(AddBankSnapshotError::HardLinkStorages)?
@@ -887,20 +887,20 @@ fn serialize_snapshot(
             )?;
             Ok(())
         };
-        let (bank_snapshot_consumed_size, bank_serialize) = measure!(
+        let (_bank_snapshot_consumed_size, bank_serialize) = measure!(
             serialize_snapshot_data_file(&bank_snapshot_path, bank_snapshot_serializer)
                 .map_err(|err| AddBankSnapshotError::SerializeBank(Box::new(err)))?,
             "bank serialize"
         );
 
         let status_cache_path = bank_snapshot_dir.join(SNAPSHOT_STATUS_CACHE_FILENAME);
-        let (status_cache_consumed_size, status_cache_serialize) = measure!(
+        let (_status_cache_consumed_size, _status_cache_serialize) = measure!(
             snapshot_bank_utils::serialize_status_cache(slot_deltas, &status_cache_path)
                 .map_err(|err| AddBankSnapshotError::SerializeStatusCache(Box::new(err)))?
         );
 
         let version_path = bank_snapshot_dir.join(SNAPSHOT_VERSION_FILENAME);
-        let (_, measure_write_version_file) = measure!(fs::write(
+        let (_, _measure_write_version_file) = measure!(fs::write(
             &version_path,
             snapshot_version.as_str().as_bytes(),
         )
@@ -908,7 +908,7 @@ fn serialize_snapshot(
 
         // Mark this directory complete so it can be used.  Check this flag first before selecting for deserialization.
         let state_complete_path = bank_snapshot_dir.join(SNAPSHOT_STATE_COMPLETE_FILENAME);
-        let (_, measure_write_state_complete_file) =
+        let (_, _measure_write_state_complete_file) =
             measure!(fs::File::create(&state_complete_path).map_err(|err| {
                 AddBankSnapshotError::CreateStateCompleteFile(err, state_complete_path)
             })?);

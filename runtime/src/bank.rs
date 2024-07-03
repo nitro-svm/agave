@@ -244,6 +244,7 @@ struct RentMetrics {
     hold_range_us: AtomicU64,
     load_us: AtomicU64,
     collect_us: AtomicU64,
+    #[allow(dead_code)]
     hash_us: AtomicU64,
     store_us: AtomicU64,
     count: AtomicUsize,
@@ -484,6 +485,7 @@ pub struct BankFieldsToDeserialize {
     pub(crate) stakes: Stakes<Delegation>,
     pub(crate) epoch_stakes: HashMap<Epoch, EpochStakes>,
     pub(crate) is_delta: bool,
+    #[allow(dead_code)]
     pub(crate) accounts_data_len: u64,
     pub(crate) incremental_snapshot_persistence: Option<BankIncrementalSnapshotPersistence>,
     pub(crate) epoch_accounts_hash: Option<Hash>,
@@ -2233,7 +2235,7 @@ impl Bank {
         self.capitalization
             .fetch_add(validator_rewards_paid, Relaxed);
 
-        let active_stake = if let Some(stake_history_entry) =
+        let _active_stake = if let Some(stake_history_entry) =
             self.stakes_cache.stakes().history().get(prev_epoch)
         {
             stake_history_entry.effective
@@ -2265,12 +2267,12 @@ impl Bank {
             .feature_set
             .is_active(&feature_set::stake_minimum_delegation_for_rewards::id())
         {
-            let num_stake_delegations = stakes.stake_delegations().len();
+            let _num_stake_delegations = stakes.stake_delegations().len();
             let min_stake_delegation =
                 solana_stake_program::get_minimum_delegation(&self.feature_set)
                     .max(LAMPORTS_PER_SOL);
 
-            let (stake_delegations, filter_timer) = measure!(stakes
+            let (stake_delegations, _filter_timer) = measure!(stakes
                 .stake_delegations()
                 .iter()
                 .filter(|(_stake_pubkey, cached_stake_account)| {
@@ -5605,7 +5607,7 @@ impl Bank {
     /// If the epoch accounts hash should be included in this Bank, then fetch it.  If the EAH
     /// calculation has not completed yet, this fn will block until it does complete.
     fn wait_get_epoch_accounts_hash(&self) -> EpochAccountsHash {
-        let (epoch_accounts_hash, measure) = measure!(self
+        let (epoch_accounts_hash, _measure) = measure!(self
             .rc
             .accounts
             .accounts_db
@@ -6040,7 +6042,7 @@ impl Bank {
         last_full_snapshot_slot: Slot,
         base: Option<(Slot, /*capitalization*/ u64)>,
     ) -> bool {
-        let (_, clean_time_us) = measure_us!({
+        let (_, _clean_time_us) = measure_us!({
             let should_clean = force_clean || (!skip_shrink && self.slot() > 0);
             if should_clean {
                 info!("Cleaning...");
@@ -6060,7 +6062,7 @@ impl Bank {
             }
         });
 
-        let (_, shrink_time_us) = measure_us!({
+        let (_, _shrink_time_us) = measure_us!({
             let should_shrink = !skip_shrink && self.slot() > 0;
             if should_shrink {
                 info!("Shrinking...");
@@ -6075,7 +6077,7 @@ impl Bank {
             }
         });
 
-        let (verified_accounts, verify_accounts_time_us) = measure_us!({
+        let (verified_accounts, _verify_accounts_time_us) = measure_us!({
             let should_verify_accounts = !self.rc.accounts.accounts_db.skip_initial_hash_calc;
             if should_verify_accounts {
                 info!("Verifying accounts...");
@@ -6103,7 +6105,7 @@ impl Bank {
         });
 
         info!("Verifying bank...");
-        let (verified_bank, verify_bank_time_us) = measure_us!(self.verify_hash());
+        let (verified_bank, _verify_bank_time_us) = measure_us!(self.verify_hash());
         info!("Verifying bank... Done.");
 
         // datapoint_info!(
@@ -6688,7 +6690,7 @@ impl Bank {
         &mut self,
         old_address: &Pubkey,
         new_address: &Pubkey,
-        datapoint_name: &'static str,
+        _datapoint_name: &'static str,
     ) {
         if let Some(old_account) = self.get_account_with_fixed_root(old_address) {
             if let Some(new_account) = self.get_account_with_fixed_root(new_address) {
@@ -6755,7 +6757,7 @@ impl Bank {
             return None;
         }
 
-        let (epoch_accounts_hash, measure) = measure!(self
+        let (epoch_accounts_hash, _measure) = measure!(self
             .rc
             .accounts
             .accounts_db
