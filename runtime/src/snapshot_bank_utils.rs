@@ -250,21 +250,21 @@ pub fn bank_from_snapshot_archives(
         rebuild_bank_us: measure_rebuild.as_us(),
         verify_bank_us: measure_verify.as_us(),
     };
-    datapoint_info!(
-        "bank_from_snapshot_archives",
-        (
-            "untar_full_snapshot_archive_us",
-            timings.untar_full_snapshot_archive_us,
-            i64
-        ),
-        (
-            "untar_incremental_snapshot_archive_us",
-            timings.untar_incremental_snapshot_archive_us,
-            i64
-        ),
-        ("rebuild_bank_us", timings.rebuild_bank_us, i64),
-        ("verify_bank_us", timings.verify_bank_us, i64),
-    );
+    // datapoint_info!(
+    //     "bank_from_snapshot_archives",
+    //     (
+    //         "untar_full_snapshot_archive_us",
+    //         timings.untar_full_snapshot_archive_us,
+    //         i64
+    //     ),
+    //     (
+    //         "untar_incremental_snapshot_archive_us",
+    //         timings.untar_incremental_snapshot_archive_us,
+    //         i64
+    //     ),
+    //     ("rebuild_bank_us", timings.rebuild_bank_us, i64),
+    //     ("verify_bank_us", timings.verify_bank_us, i64),
+    // );
     Ok((bank, timings))
 }
 
@@ -415,11 +415,11 @@ pub fn bank_from_snapshot_dir(
         rebuild_storages_us: measure_rebuild_storages.as_us(),
         rebuild_bank_us: measure_rebuild_bank.as_us(),
     };
-    datapoint_info!(
-        "bank_from_snapshot_dir",
-        ("rebuild_storages_us", timings.rebuild_storages_us, i64),
-        ("rebuild_bank_us", timings.rebuild_bank_us, i64),
-    );
+    // datapoint_info!(
+    //     "bank_from_snapshot_dir",
+    //     ("rebuild_storages_us", timings.rebuild_storages_us, i64),
+    //     ("rebuild_bank_us", timings.rebuild_bank_us, i64),
+    // );
     Ok((bank, timings))
 }
 
@@ -855,14 +855,14 @@ pub fn get_snapshot_storages(bank: &Bank) -> Vec<Arc<AccountStorageEntry>> {
     let mut measure_snapshot_storages = Measure::start("snapshot-storages");
     let snapshot_storages = bank.get_snapshot_storages(None);
     measure_snapshot_storages.stop();
-    datapoint_info!(
-        "get_snapshot_storages",
-        (
-            "snapshot-storages-time-ms",
-            measure_snapshot_storages.as_ms(),
-            i64
-        ),
-    );
+    // datapoint_info!(
+    //     "get_snapshot_storages",
+    //     (
+    //         "snapshot-storages-time-ms",
+    //         measure_snapshot_storages.as_ms(),
+    //         i64
+    //     ),
+    // );
 
     snapshot_storages
 }

@@ -62,17 +62,17 @@ impl Bank {
         }
 
         if height.saturating_add(1) >= distribution_end_exclusive {
-            datapoint_info!(
-                "epoch-rewards-status-update",
-                ("slot", self.slot(), i64),
-                ("block_height", height, i64),
-                ("active", 0, i64),
-                (
-                    "distribution_starting_block_height",
-                    distribution_starting_block_height,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "epoch-rewards-status-update",
+            //     ("slot", self.slot(), i64),
+            //     ("block_height", height, i64),
+            //     ("active", 0, i64),
+            //     (
+            //         "distribution_starting_block_height",
+            //         distribution_starting_block_height,
+            //         i64
+            //     ),
+            // );
 
             assert!(matches!(
                 self.epoch_reward_status,

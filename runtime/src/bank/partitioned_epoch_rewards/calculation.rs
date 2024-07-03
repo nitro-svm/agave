@@ -43,8 +43,8 @@ impl Bank {
         reward_calc_tracer: Option<impl Fn(&RewardCalculationEvent) + Send + Sync>,
         thread_pool: &ThreadPool,
         parent_epoch: Epoch,
-        parent_slot: Slot,
-        parent_block_height: u64,
+        _parent_slot: Slot,
+        _parent_block_height: u64,
         rewards_metrics: &mut RewardsMetrics,
     ) {
         let CalculateRewardsAndDistributeVoteRewardsResult {
@@ -59,7 +59,7 @@ impl Bank {
             rewards_metrics,
         );
 
-        let slot = self.slot();
+        let _slot = self.slot();
         let distribution_starting_block_height =
             // For live-cluster testing pre-activation
             if self.force_partition_rewards_in_first_block_of_epoch() {
@@ -83,14 +83,14 @@ impl Bank {
             total_points,
         );
 
-        datapoint_info!(
-            "epoch-rewards-status-update",
-            ("start_slot", slot, i64),
-            ("calculation_block_height", self.block_height(), i64),
-            ("active", 1, i64),
-            ("parent_slot", parent_slot, i64),
-            ("parent_block_height", parent_block_height, i64),
-        );
+        // datapoint_info!(
+        //     "epoch-rewards-status-update",
+        //     ("start_slot", slot, i64),
+        //     ("calculation_block_height", self.block_height(), i64),
+        //     ("active", 1, i64),
+        //     ("parent_slot", parent_slot, i64),
+        //     ("parent_block_height", parent_block_height, i64),
+        // );
     }
 
     // Calculate rewards from previous epoch and distribute vote rewards
@@ -106,10 +106,10 @@ impl Bank {
             stake_rewards_by_partition,
             old_vote_balance_and_staked,
             validator_rewards,
-            validator_rate,
-            foundation_rate,
-            prev_epoch_duration_in_years,
-            capitalization,
+            validator_rate: _,
+            foundation_rate: _,
+            prev_epoch_duration_in_years: _,
+            capitalization: _,
             total_points,
         } = self.calculate_rewards_for_partitioning(
             prev_epoch,
@@ -143,7 +143,7 @@ impl Bank {
             validator_rewards_paid, validator_rewards, total_stake_rewards_lamports
         );
 
-        let (num_stake_accounts, num_vote_accounts) = {
+        let (_num_stake_accounts, _num_vote_accounts) = {
             let stakes = self.stakes_cache.stakes();
             (
                 stakes.stake_delegations().len(),
@@ -153,7 +153,7 @@ impl Bank {
         self.capitalization
             .fetch_add(validator_rewards_paid, Relaxed);
 
-        let active_stake = if let Some(stake_history_entry) =
+        let _active_stake = if let Some(stake_history_entry) =
             self.stakes_cache.stakes().history().get(prev_epoch)
         {
             stake_history_entry.effective
@@ -161,20 +161,20 @@ impl Bank {
             0
         };
 
-        datapoint_info!(
-            "epoch_rewards",
-            ("slot", self.slot, i64),
-            ("epoch", prev_epoch, i64),
-            ("validator_rate", validator_rate, f64),
-            ("foundation_rate", foundation_rate, f64),
-            ("epoch_duration_in_years", prev_epoch_duration_in_years, f64),
-            ("validator_rewards", validator_rewards_paid, i64),
-            ("active_stake", active_stake, i64),
-            ("pre_capitalization", capitalization, i64),
-            ("post_capitalization", self.capitalization(), i64),
-            ("num_stake_accounts", num_stake_accounts, i64),
-            ("num_vote_accounts", num_vote_accounts, i64),
-        );
+        // datapoint_info!(
+        //     "epoch_rewards",
+        //     ("slot", self.slot, i64),
+        //     ("epoch", prev_epoch, i64),
+        //     ("validator_rate", validator_rate, f64),
+        //     ("foundation_rate", foundation_rate, f64),
+        //     ("epoch_duration_in_years", prev_epoch_duration_in_years, f64),
+        //     ("validator_rewards", validator_rewards_paid, i64),
+        //     ("active_stake", active_stake, i64),
+        //     ("pre_capitalization", capitalization, i64),
+        //     ("post_capitalization", self.capitalization(), i64),
+        //     ("num_stake_accounts", num_stake_accounts, i64),
+        //     ("num_vote_accounts", num_vote_accounts, i64),
+        // );
 
         CalculateRewardsAndDistributeVoteRewardsResult {
             total_rewards: validator_rewards_paid + total_stake_rewards_lamports,
