@@ -170,14 +170,14 @@ pub(crate) fn report_new_bank_metrics(
 /// Metrics for partitioned epoch reward store
 #[derive(Debug, Default)]
 pub(crate) struct RewardsStoreMetrics {
-    pub(crate) _partition_index: u64,
-    pub(crate) _store_stake_accounts_us: u64,
-    pub(crate) _store_stake_accounts_count: usize,
-    pub(crate) _total_stake_accounts_count: usize,
-    pub(crate) _distributed_rewards: u64,
-    pub(crate) _burned_rewards: u64,
-    pub(crate) _pre_capitalization: u64,
-    pub(crate) _post_capitalization: u64,
+    pub(crate) partition_index: u64,
+    pub(crate) store_stake_accounts_us: u64,
+    pub(crate) store_stake_accounts_count: usize,
+    pub(crate) total_stake_accounts_count: usize,
+    pub(crate) distributed_rewards: u64,
+    pub(crate) burned_rewards: u64,
+    pub(crate) pre_capitalization: u64,
+    pub(crate) post_capitalization: u64,
 }
 
 pub(crate) fn report_partitioned_reward_metrics(_bank: &Bank, _timings: RewardsStoreMetrics) {
