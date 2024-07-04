@@ -1,7 +1,7 @@
 use {
     crate::{account_storage::meta::StoredAccountMeta, accounts_db::AccountsDb},
     solana_measure::measure::Measure,
-    solana_metrics::*,
+    // solana_metrics::*,
     solana_sdk::{
         account::AccountSharedData, clock::Slot, pubkey::Pubkey, transaction::SanitizedTransaction,
     },
@@ -21,16 +21,16 @@ pub struct GeyserPluginNotifyAtSnapshotRestoreStats {
 
 impl GeyserPluginNotifyAtSnapshotRestoreStats {
     pub fn report(&self) {
-        datapoint_info!(
-            "accountsdb_plugin_notify_account_restore_from_snapshot_summary",
-            ("total_accounts", self.total_accounts, i64),
-            ("skipped_accounts", self.skipped_accounts, i64),
-            ("notified_accounts", self.notified_accounts, i64),
-            ("elapsed_filtering_us", self.elapsed_filtering_us, i64),
-            ("elapsed_notifying_us", self.elapsed_notifying_us, i64),
-            ("total_pure_notify_us", self.total_pure_notify, i64),
-            ("total_pure_bookeeping_us", self.total_pure_bookeeping, i64),
-        );
+        // datapoint_info!(
+        //     "accountsdb_plugin_notify_account_restore_from_snapshot_summary",
+        //     ("total_accounts", self.total_accounts, i64),
+        //     ("skipped_accounts", self.skipped_accounts, i64),
+        //     ("notified_accounts", self.notified_accounts, i64),
+        //     ("elapsed_filtering_us", self.elapsed_filtering_us, i64),
+        //     ("elapsed_notifying_us", self.elapsed_notifying_us, i64),
+        //     ("total_pure_notify_us", self.total_pure_notify, i64),
+        //     ("total_pure_bookeeping_us", self.total_pure_bookeeping, i64),
+        // );
     }
 }
 

@@ -297,7 +297,7 @@ impl<T: IndexValue> AccountMapEntryInner<T> {
         let previous = self.ref_count.fetch_sub(1, Ordering::Release);
         self.set_dirty(true);
         if previous == 0 {
-            inc_new_counter_info!("accounts_index-deref_from_0", 1);
+            // inc_new_counter_info!("accounts_index-deref_from_0", 1);
         }
         previous == 0
     }
@@ -1039,15 +1039,15 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
 
         total_elapsed_timer.stop();
         if !metric_name.is_empty() {
-            datapoint_info!(
-                metric_name,
-                ("total_elapsed", total_elapsed_timer.as_us(), i64),
-                ("latest_slot_elapsed", latest_slot_elapsed, i64),
-                ("read_lock_elapsed", read_lock_elapsed, i64),
-                ("load_account_elapsed", load_account_elapsed, i64),
-                ("iterator_elapsed", iterator_elapsed, i64),
-                ("num_keys_iterated", num_keys_iterated, i64),
-            )
+            // datapoint_info!(
+            //     metric_name,
+            //     ("total_elapsed", total_elapsed_timer.as_us(), i64),
+            //     ("latest_slot_elapsed", latest_slot_elapsed, i64),
+            //     ("read_lock_elapsed", read_lock_elapsed, i64),
+            //     ("load_account_elapsed", load_account_elapsed, i64),
+            //     ("iterator_elapsed", iterator_elapsed, i64),
+            //     ("num_keys_iterated", num_keys_iterated, i64),
+            // )
         }
     }
 
@@ -1941,7 +1941,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
         if !w_roots_tracker.alive_roots.remove(&slot) {
             if removed_from_unclean_roots {
                 error!("clean_dead_slot-removed_from_unclean_roots: {}", slot);
-                inc_new_counter_error!("clean_dead_slot-removed_from_unclean_roots", 1, 1);
+                // inc_new_counter_error!("clean_dead_slot-removed_from_unclean_roots", 1, 1);
             }
             false
         } else {
