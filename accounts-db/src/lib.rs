@@ -49,8 +49,8 @@ pub use {
     cache_hash_data::Header as CacheHashDataFileHeader,
 };
 
-#[macro_use]
-extern crate solana_metrics;
+// #[macro_use]
+// extern crate solana_metrics;
 #[macro_use]
 extern crate serde_derive;
 

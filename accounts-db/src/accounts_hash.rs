@@ -133,10 +133,10 @@ impl AccountHashesFile {
                                 num_retries
                             );
                         }
-                        datapoint_info!(
-                            "retry_account_hashes_file_allocation",
-                            ("retry", num_retries, i64)
-                        );
+                        // datapoint_info!(
+                        //     "retry_account_hashes_file_allocation",
+                        //     ("retry", num_retries, i64)
+                        // );
                         thread::sleep(time::Duration::from_millis(num_retries * 100));
                     }
                 }
@@ -234,79 +234,79 @@ impl HashStats {
     }
 
     pub fn log(&self) {
-        datapoint_info!(
-            "calculate_accounts_hash_from_storages",
-            ("total_us", self.total_us, i64),
-            ("mark_time_us", self.mark_time_us, i64),
-            ("cache_hash_data_us", self.cache_hash_data_us, i64),
-            ("accounts_scan_us", self.scan_time_total_us, i64),
-            ("eliminate_zeros_us", self.zeros_time_total_us, i64),
-            ("hash_us", self.hash_time_total_us, i64),
-            ("sort_us", self.sort_time_total_us, i64),
-            ("hash_total", self.hash_total, i64),
-            ("storage_sort_us", self.storage_sort_us, i64),
-            ("collect_snapshots_us", self.collect_snapshots_us, i64),
-            ("num_snapshot_storage", self.num_snapshot_storage, i64),
-            ("scan_chunks", self.scan_chunks, i64),
-            ("num_slots", self.num_slots, i64),
-            ("num_dirty_slots", self.num_dirty_slots, i64),
-            ("storage_size_min", self.storage_size_quartiles[0], i64),
-            (
-                "storage_size_quartile_1",
-                self.storage_size_quartiles[1],
-                i64
-            ),
-            (
-                "storage_size_quartile_2",
-                self.storage_size_quartiles[2],
-                i64
-            ),
-            (
-                "storage_size_quartile_3",
-                self.storage_size_quartiles[3],
-                i64
-            ),
-            ("storage_size_max", self.storage_size_quartiles[4], i64),
-            ("storage_size_avg", self.storage_size_quartiles[5], i64),
-            (
-                "roots_older_than_epoch",
-                self.roots_older_than_epoch.load(Ordering::Relaxed),
-                i64
-            ),
-            ("oldest_root", self.oldest_root, i64),
-            (
-                "longest_ancient_scan_us",
-                self.longest_ancient_scan_us.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "sum_ancient_scans_us",
-                self.sum_ancient_scans_us.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "count_ancient_scans",
-                self.count_ancient_scans.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "append_vec_sizes_older_than_epoch",
-                self.append_vec_sizes_older_than_epoch
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "accounts_in_roots_older_than_epoch",
-                self.accounts_in_roots_older_than_epoch
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "pubkey_bin_search_us",
-                self.pubkey_bin_search_us.load(Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "calculate_accounts_hash_from_storages",
+        //     ("total_us", self.total_us, i64),
+        //     ("mark_time_us", self.mark_time_us, i64),
+        //     ("cache_hash_data_us", self.cache_hash_data_us, i64),
+        //     ("accounts_scan_us", self.scan_time_total_us, i64),
+        //     ("eliminate_zeros_us", self.zeros_time_total_us, i64),
+        //     ("hash_us", self.hash_time_total_us, i64),
+        //     ("sort_us", self.sort_time_total_us, i64),
+        //     ("hash_total", self.hash_total, i64),
+        //     ("storage_sort_us", self.storage_sort_us, i64),
+        //     ("collect_snapshots_us", self.collect_snapshots_us, i64),
+        //     ("num_snapshot_storage", self.num_snapshot_storage, i64),
+        //     ("scan_chunks", self.scan_chunks, i64),
+        //     ("num_slots", self.num_slots, i64),
+        //     ("num_dirty_slots", self.num_dirty_slots, i64),
+        //     ("storage_size_min", self.storage_size_quartiles[0], i64),
+        //     (
+        //         "storage_size_quartile_1",
+        //         self.storage_size_quartiles[1],
+        //         i64
+        //     ),
+        //     (
+        //         "storage_size_quartile_2",
+        //         self.storage_size_quartiles[2],
+        //         i64
+        //     ),
+        //     (
+        //         "storage_size_quartile_3",
+        //         self.storage_size_quartiles[3],
+        //         i64
+        //     ),
+        //     ("storage_size_max", self.storage_size_quartiles[4], i64),
+        //     ("storage_size_avg", self.storage_size_quartiles[5], i64),
+        //     (
+        //         "roots_older_than_epoch",
+        //         self.roots_older_than_epoch.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     ("oldest_root", self.oldest_root, i64),
+        //     (
+        //         "longest_ancient_scan_us",
+        //         self.longest_ancient_scan_us.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "sum_ancient_scans_us",
+        //         self.sum_ancient_scans_us.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "count_ancient_scans",
+        //         self.count_ancient_scans.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "append_vec_sizes_older_than_epoch",
+        //         self.append_vec_sizes_older_than_epoch
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "accounts_in_roots_older_than_epoch",
+        //         self.accounts_in_roots_older_than_epoch
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "pubkey_bin_search_us",
+        //         self.pubkey_bin_search_us.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
     }
 }
 
