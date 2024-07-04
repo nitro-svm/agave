@@ -697,60 +697,60 @@ type StorageSizeAndCountMap = DashMap<AccountsFileId, StorageSizeAndCount>;
 
 impl GenerateIndexTimings {
     pub fn report(&self, startup_stats: &StartupStats) {
-        datapoint_info!(
-            "generate_index",
-            ("overall_us", self.total_time_us, i64),
-            // we cannot accurately measure index insertion time because of many threads and lock contention
-            ("total_us", self.index_time, i64),
-            ("scan_stores_us", self.scan_time, i64),
-            ("insertion_time_us", self.insertion_time_us, i64),
-            ("min_bin_size", self.min_bin_size as i64, i64),
-            ("max_bin_size", self.max_bin_size as i64, i64),
-            (
-                "storage_size_storages_us",
-                self.storage_size_storages_us as i64,
-                i64
-            ),
-            ("index_flush_us", self.index_flush_us as i64, i64),
-            (
-                "total_rent_paying",
-                self.rent_paying.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "amount_to_top_off_rent",
-                self.amount_to_top_off_rent.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_items_including_duplicates",
-                self.total_including_duplicates as i64,
-                i64
-            ),
-            ("total_items", self.total_items as i64, i64),
-            (
-                "accounts_data_len_dedup_time_us",
-                self.accounts_data_len_dedup_time_us as i64,
-                i64
-            ),
-            (
-                "total_duplicate_slot_keys",
-                self.total_duplicate_slot_keys as i64,
-                i64
-            ),
-            (
-                "populate_duplicate_keys_us",
-                self.populate_duplicate_keys_us as i64,
-                i64
-            ),
-            ("total_slots", self.total_slots, i64),
-            ("slots_to_clean", self.slots_to_clean, i64),
-            (
-                "copy_data_us",
-                startup_stats.copy_data_us.swap(0, Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "generate_index",
+        //     ("overall_us", self.total_time_us, i64),
+        //     // we cannot accurately measure index insertion time because of many threads and lock contention
+        //     ("total_us", self.index_time, i64),
+        //     ("scan_stores_us", self.scan_time, i64),
+        //     ("insertion_time_us", self.insertion_time_us, i64),
+        //     ("min_bin_size", self.min_bin_size as i64, i64),
+        //     ("max_bin_size", self.max_bin_size as i64, i64),
+        //     (
+        //         "storage_size_storages_us",
+        //         self.storage_size_storages_us as i64,
+        //         i64
+        //     ),
+        //     ("index_flush_us", self.index_flush_us as i64, i64),
+        //     (
+        //         "total_rent_paying",
+        //         self.rent_paying.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "amount_to_top_off_rent",
+        //         self.amount_to_top_off_rent.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_items_including_duplicates",
+        //         self.total_including_duplicates as i64,
+        //         i64
+        //     ),
+        //     ("total_items", self.total_items as i64, i64),
+        //     (
+        //         "accounts_data_len_dedup_time_us",
+        //         self.accounts_data_len_dedup_time_us as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_duplicate_slot_keys",
+        //         self.total_duplicate_slot_keys as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "populate_duplicate_keys_us",
+        //         self.populate_duplicate_keys_us as i64,
+        //         i64
+        //     ),
+        //     ("total_slots", self.total_slots, i64),
+        //     ("slots_to_clean", self.slots_to_clean, i64),
+        //     (
+        //         "copy_data_us",
+        //         startup_stats.copy_data_us.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
     }
 }
 
@@ -1553,71 +1553,71 @@ impl PurgeStats {
             .unwrap_or(true);
 
         if should_report {
-            datapoint_info!(
-                metric_name,
-                (
-                    "safety_checks_elapsed",
-                    self.safety_checks_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "remove_cache_elapsed",
-                    self.remove_cache_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "remove_storage_entries_elapsed",
-                    self.remove_storage_entries_elapsed
-                        .swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "drop_storage_entries_elapsed",
-                    self.drop_storage_entries_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "num_cached_slots_removed",
-                    self.num_cached_slots_removed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "num_stored_slots_removed",
-                    self.num_stored_slots_removed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "total_removed_storage_entries",
-                    self.total_removed_storage_entries
-                        .swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "total_removed_cached_bytes",
-                    self.total_removed_cached_bytes.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "total_removed_stored_bytes",
-                    self.total_removed_stored_bytes.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "scan_storages_elapsed",
-                    self.scan_storages_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "purge_accounts_index_elapsed",
-                    self.purge_accounts_index_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "handle_reclaims_elapsed",
-                    self.handle_reclaims_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     metric_name,
+            //     (
+            //         "safety_checks_elapsed",
+            //         self.safety_checks_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "remove_cache_elapsed",
+            //         self.remove_cache_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "remove_storage_entries_elapsed",
+            //         self.remove_storage_entries_elapsed
+            //             .swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "drop_storage_entries_elapsed",
+            //         self.drop_storage_entries_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "num_cached_slots_removed",
+            //         self.num_cached_slots_removed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "num_stored_slots_removed",
+            //         self.num_stored_slots_removed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "total_removed_storage_entries",
+            //         self.total_removed_storage_entries
+            //             .swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "total_removed_cached_bytes",
+            //         self.total_removed_cached_bytes.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "total_removed_stored_bytes",
+            //         self.total_removed_stored_bytes.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "scan_storages_elapsed",
+            //         self.scan_storages_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "purge_accounts_index_elapsed",
+            //         self.purge_accounts_index_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "handle_reclaims_elapsed",
+            //         self.handle_reclaims_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            // );
         }
     }
 }
@@ -1871,54 +1871,54 @@ impl LatestAccountsIndexRootsStats {
     }
 
     fn report(&self) {
-        datapoint_info!(
-            "accounts_index_roots_len",
-            (
-                "roots_len",
-                self.roots_len.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "uncleaned_roots_len",
-                self.uncleaned_roots_len.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "roots_range_width",
-                self.roots_range.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "unrooted_cleaned_count",
-                self.unrooted_cleaned_count.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "rooted_cleaned_count",
-                self.rooted_cleaned_count.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "clean_unref_from_storage_us",
-                self.clean_unref_from_storage_us.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "clean_dead_slot_us",
-                self.clean_dead_slot_us.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "append_vecs_open",
-                APPEND_VEC_MMAPPED_FILES_OPEN.load(Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "append_vecs_dirty",
-                APPEND_VEC_MMAPPED_FILES_DIRTY.load(Ordering::Relaxed),
-                i64
-            )
-        );
+        // datapoint_info!(
+        //     "accounts_index_roots_len",
+        //     (
+        //         "roots_len",
+        //         self.roots_len.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "uncleaned_roots_len",
+        //         self.uncleaned_roots_len.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "roots_range_width",
+        //         self.roots_range.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "unrooted_cleaned_count",
+        //         self.unrooted_cleaned_count.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "rooted_cleaned_count",
+        //         self.rooted_cleaned_count.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "clean_unref_from_storage_us",
+        //         self.clean_unref_from_storage_us.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "clean_dead_slot_us",
+        //         self.clean_dead_slot_us.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "append_vecs_open",
+        //         APPEND_VEC_MMAPPED_FILES_OPEN.load(Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "append_vecs_dirty",
+        //         APPEND_VEC_MMAPPED_FILES_DIRTY.load(Ordering::Relaxed),
+        //         i64
+        //     )
+        // );
 
         // Don't need to reset since this tracks the latest updates, not a cumulative total
     }
@@ -2005,263 +2005,263 @@ pub struct ShrinkStats {
 impl ShrinkStats {
     fn report(&self) {
         if self.last_report.should_update(1000) {
-            datapoint_info!(
-                "shrink_stats",
-                (
-                    "num_slots_shrunk",
-                    self.num_slots_shrunk.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "storage_read_elapsed",
-                    self.storage_read_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "index_read_elapsed",
-                    self.index_read_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "create_and_insert_store_elapsed",
-                    self.create_and_insert_store_elapsed
-                        .swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "store_accounts_elapsed",
-                    self.store_accounts_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "update_index_elapsed",
-                    self.update_index_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "handle_reclaims_elapsed",
-                    self.handle_reclaims_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "remove_old_stores_shrink_us",
-                    self.remove_old_stores_shrink_us.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "rewrite_elapsed",
-                    self.rewrite_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "drop_storage_entries_elapsed",
-                    self.drop_storage_entries_elapsed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "accounts_removed",
-                    self.accounts_removed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "bytes_removed",
-                    self.bytes_removed.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "bytes_written",
-                    self.bytes_written.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "skipped_shrink",
-                    self.skipped_shrink.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "alive_accounts",
-                    self.alive_accounts.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "dead_accounts",
-                    self.dead_accounts.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "accounts_loaded",
-                    self.accounts_loaded.swap(0, Ordering::Relaxed) as i64,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "shrink_stats",
+            //     (
+            //         "num_slots_shrunk",
+            //         self.num_slots_shrunk.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "storage_read_elapsed",
+            //         self.storage_read_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "index_read_elapsed",
+            //         self.index_read_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "create_and_insert_store_elapsed",
+            //         self.create_and_insert_store_elapsed
+            //             .swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "store_accounts_elapsed",
+            //         self.store_accounts_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "update_index_elapsed",
+            //         self.update_index_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "handle_reclaims_elapsed",
+            //         self.handle_reclaims_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "remove_old_stores_shrink_us",
+            //         self.remove_old_stores_shrink_us.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "rewrite_elapsed",
+            //         self.rewrite_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "drop_storage_entries_elapsed",
+            //         self.drop_storage_entries_elapsed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "accounts_removed",
+            //         self.accounts_removed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "bytes_removed",
+            //         self.bytes_removed.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "bytes_written",
+            //         self.bytes_written.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "skipped_shrink",
+            //         self.skipped_shrink.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "alive_accounts",
+            //         self.alive_accounts.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "dead_accounts",
+            //         self.dead_accounts.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "accounts_loaded",
+            //         self.accounts_loaded.swap(0, Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            // );
         }
     }
 }
 
 impl ShrinkAncientStats {
     pub(crate) fn report(&self) {
-        datapoint_info!(
-            "shrink_ancient_stats",
-            (
-                "num_slots_shrunk",
-                self.shrink_stats
-                    .num_slots_shrunk
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "storage_read_elapsed",
-                self.shrink_stats
-                    .storage_read_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "index_read_elapsed",
-                self.shrink_stats
-                    .index_read_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "create_and_insert_store_elapsed",
-                self.shrink_stats
-                    .create_and_insert_store_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "store_accounts_elapsed",
-                self.shrink_stats
-                    .store_accounts_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "update_index_elapsed",
-                self.shrink_stats
-                    .update_index_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "handle_reclaims_elapsed",
-                self.shrink_stats
-                    .handle_reclaims_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "remove_old_stores_shrink_us",
-                self.shrink_stats
-                    .remove_old_stores_shrink_us
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "rewrite_elapsed",
-                self.shrink_stats.rewrite_elapsed.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "unpackable_slots_count",
-                self.shrink_stats
-                    .unpackable_slots_count
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "newest_alive_packed_count",
-                self.shrink_stats
-                    .newest_alive_packed_count
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "drop_storage_entries_elapsed",
-                self.shrink_stats
-                    .drop_storage_entries_elapsed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "accounts_removed",
-                self.shrink_stats
-                    .accounts_removed
-                    .swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "bytes_removed",
-                self.shrink_stats.bytes_removed.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "bytes_written",
-                self.shrink_stats.bytes_written.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "alive_accounts",
-                self.shrink_stats.alive_accounts.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "dead_accounts",
-                self.shrink_stats.dead_accounts.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "accounts_loaded",
-                self.shrink_stats.accounts_loaded.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "ancient_append_vecs_shrunk",
-                self.ancient_append_vecs_shrunk.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "random",
-                self.random_shrink.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "slots_considered",
-                self.slots_considered.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "ancient_scanned",
-                self.ancient_scanned.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "total_us",
-                self.total_us.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "bytes_ancient_created",
-                self.bytes_ancient_created.swap(0, Ordering::Relaxed) as i64,
-                i64
-            ),
-            (
-                "many_ref_slots_skipped",
-                self.many_ref_slots_skipped.swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "slots_cannot_move_count",
-                self.slots_cannot_move_count.swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "many_refs_old_alive",
-                self.many_refs_old_alive.swap(0, Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "shrink_ancient_stats",
+        //     (
+        //         "num_slots_shrunk",
+        //         self.shrink_stats
+        //             .num_slots_shrunk
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "storage_read_elapsed",
+        //         self.shrink_stats
+        //             .storage_read_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "index_read_elapsed",
+        //         self.shrink_stats
+        //             .index_read_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "create_and_insert_store_elapsed",
+        //         self.shrink_stats
+        //             .create_and_insert_store_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "store_accounts_elapsed",
+        //         self.shrink_stats
+        //             .store_accounts_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "update_index_elapsed",
+        //         self.shrink_stats
+        //             .update_index_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "handle_reclaims_elapsed",
+        //         self.shrink_stats
+        //             .handle_reclaims_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "remove_old_stores_shrink_us",
+        //         self.shrink_stats
+        //             .remove_old_stores_shrink_us
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "rewrite_elapsed",
+        //         self.shrink_stats.rewrite_elapsed.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "unpackable_slots_count",
+        //         self.shrink_stats
+        //             .unpackable_slots_count
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "newest_alive_packed_count",
+        //         self.shrink_stats
+        //             .newest_alive_packed_count
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "drop_storage_entries_elapsed",
+        //         self.shrink_stats
+        //             .drop_storage_entries_elapsed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "accounts_removed",
+        //         self.shrink_stats
+        //             .accounts_removed
+        //             .swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "bytes_removed",
+        //         self.shrink_stats.bytes_removed.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "bytes_written",
+        //         self.shrink_stats.bytes_written.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "alive_accounts",
+        //         self.shrink_stats.alive_accounts.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "dead_accounts",
+        //         self.shrink_stats.dead_accounts.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "accounts_loaded",
+        //         self.shrink_stats.accounts_loaded.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "ancient_append_vecs_shrunk",
+        //         self.ancient_append_vecs_shrunk.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "random",
+        //         self.random_shrink.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "slots_considered",
+        //         self.slots_considered.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "ancient_scanned",
+        //         self.ancient_scanned.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_us",
+        //         self.total_us.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "bytes_ancient_created",
+        //         self.bytes_ancient_created.swap(0, Ordering::Relaxed) as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "many_ref_slots_skipped",
+        //         self.many_ref_slots_skipped.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "slots_cannot_move_count",
+        //         self.slots_cannot_move_count.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "many_refs_old_alive",
+        //         self.many_refs_old_alive.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
     }
 }
 
@@ -3488,125 +3488,125 @@ impl AccountsDb {
         measure_all.stop();
 
         self.clean_accounts_stats.report();
-        datapoint_info!(
-            "clean_accounts",
-            ("total_us", measure_all.as_us(), i64),
-            (
-                "collect_delta_keys_us",
-                key_timings.collect_delta_keys_us,
-                i64
-            ),
-            ("oldest_dirty_slot", key_timings.oldest_dirty_slot, i64),
-            (
-                "pubkeys_removed_from_accounts_index",
-                pubkeys_removed_from_accounts_index.len(),
-                i64
-            ),
-            (
-                "dirty_ancient_stores",
-                key_timings.dirty_ancient_stores,
-                i64
-            ),
-            (
-                "dirty_store_processing_us",
-                key_timings.dirty_store_processing_us,
-                i64
-            ),
-            ("accounts_scan", accounts_scan.as_us() as i64, i64),
-            ("clean_old_rooted", clean_old_rooted.as_us() as i64, i64),
-            ("store_counts", store_counts_time.as_us() as i64, i64),
-            ("purge_filter", purge_filter.as_us() as i64, i64),
-            ("calc_deps", calc_deps_time.as_us() as i64, i64),
-            ("reclaims", reclaims_time.as_us() as i64, i64),
-            ("delta_insert_us", key_timings.delta_insert_us, i64),
-            ("delta_key_count", key_timings.delta_key_count, i64),
-            ("dirty_pubkeys_count", key_timings.dirty_pubkeys_count, i64),
-            ("sort_us", sort.as_us(), i64),
-            ("useful_keys", useful_accum.load(Ordering::Relaxed), i64),
-            ("total_keys_count", total_keys_count, i64),
-            (
-                "scan_found_not_zero",
-                found_not_zero_accum.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "scan_not_found_on_fork",
-                not_found_on_fork_accum.load(Ordering::Relaxed),
-                i64
-            ),
-            ("scan_missing", missing_accum.load(Ordering::Relaxed), i64),
-            ("uncleaned_roots_len", uncleaned_roots.len(), i64),
-            (
-                "clean_old_root_us",
-                self.clean_accounts_stats
-                    .clean_old_root_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "clean_old_root_reclaim_us",
-                self.clean_accounts_stats
-                    .clean_old_root_reclaim_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "reset_uncleaned_roots_us",
-                self.clean_accounts_stats
-                    .reset_uncleaned_roots_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "remove_dead_accounts_remove_us",
-                self.clean_accounts_stats
-                    .remove_dead_accounts_remove_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "remove_dead_accounts_shrink_us",
-                self.clean_accounts_stats
-                    .remove_dead_accounts_shrink_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "clean_stored_dead_slots_us",
-                self.clean_accounts_stats
-                    .clean_stored_dead_slots_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "roots_added",
-                self.accounts_index.roots_added.swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "roots_removed",
-                self.accounts_index.roots_removed.swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "active_scans",
-                self.accounts_index.active_scans.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "max_distance_to_min_scan_slot",
-                self.accounts_index
-                    .max_distance_to_min_scan_slot
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "ancient_account_cleans",
-                ancient_account_cleans.load(Ordering::Relaxed),
-                i64
-            ),
-            ("next_store_id", self.next_id.load(Ordering::Relaxed), i64),
-        );
+        // datapoint_info!(
+        //     "clean_accounts",
+        //     ("total_us", measure_all.as_us(), i64),
+        //     (
+        //         "collect_delta_keys_us",
+        //         key_timings.collect_delta_keys_us,
+        //         i64
+        //     ),
+        //     ("oldest_dirty_slot", key_timings.oldest_dirty_slot, i64),
+        //     (
+        //         "pubkeys_removed_from_accounts_index",
+        //         pubkeys_removed_from_accounts_index.len(),
+        //         i64
+        //     ),
+        //     (
+        //         "dirty_ancient_stores",
+        //         key_timings.dirty_ancient_stores,
+        //         i64
+        //     ),
+        //     (
+        //         "dirty_store_processing_us",
+        //         key_timings.dirty_store_processing_us,
+        //         i64
+        //     ),
+        //     ("accounts_scan", accounts_scan.as_us() as i64, i64),
+        //     ("clean_old_rooted", clean_old_rooted.as_us() as i64, i64),
+        //     ("store_counts", store_counts_time.as_us() as i64, i64),
+        //     ("purge_filter", purge_filter.as_us() as i64, i64),
+        //     ("calc_deps", calc_deps_time.as_us() as i64, i64),
+        //     ("reclaims", reclaims_time.as_us() as i64, i64),
+        //     ("delta_insert_us", key_timings.delta_insert_us, i64),
+        //     ("delta_key_count", key_timings.delta_key_count, i64),
+        //     ("dirty_pubkeys_count", key_timings.dirty_pubkeys_count, i64),
+        //     ("sort_us", sort.as_us(), i64),
+        //     ("useful_keys", useful_accum.load(Ordering::Relaxed), i64),
+        //     ("total_keys_count", total_keys_count, i64),
+        //     (
+        //         "scan_found_not_zero",
+        //         found_not_zero_accum.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "scan_not_found_on_fork",
+        //         not_found_on_fork_accum.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     ("scan_missing", missing_accum.load(Ordering::Relaxed), i64),
+        //     ("uncleaned_roots_len", uncleaned_roots.len(), i64),
+        //     (
+        //         "clean_old_root_us",
+        //         self.clean_accounts_stats
+        //             .clean_old_root_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "clean_old_root_reclaim_us",
+        //         self.clean_accounts_stats
+        //             .clean_old_root_reclaim_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "reset_uncleaned_roots_us",
+        //         self.clean_accounts_stats
+        //             .reset_uncleaned_roots_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "remove_dead_accounts_remove_us",
+        //         self.clean_accounts_stats
+        //             .remove_dead_accounts_remove_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "remove_dead_accounts_shrink_us",
+        //         self.clean_accounts_stats
+        //             .remove_dead_accounts_shrink_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "clean_stored_dead_slots_us",
+        //         self.clean_accounts_stats
+        //             .clean_stored_dead_slots_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "roots_added",
+        //         self.accounts_index.roots_added.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "roots_removed",
+        //         self.accounts_index.roots_removed.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "active_scans",
+        //         self.accounts_index.active_scans.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "max_distance_to_min_scan_slot",
+        //         self.accounts_index
+        //             .max_distance_to_min_scan_slot
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "ancient_account_cleans",
+        //         ancient_account_cleans.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     ("next_store_id", self.next_id.load(Ordering::Relaxed), i64),
+        // );
     }
 
     /// Removes the accounts in the input `reclaims` from the tracked "count" of
@@ -4105,11 +4105,11 @@ impl AccountsDb {
                         // entry for `pubkey`. Log a warning for now. In future,
                         // we will panic when this happens.
                         warn!("pubkey {pubkey} in slot {slot} was NOT found in accounts index during shrink");
-                        datapoint_warn!(
-                            "accounts_db-shink_pubkey_missing_from_index",
-                            ("store_slot", slot, i64),
-                            ("pubkey", pubkey.to_string(), String),
-                        )
+                        // datapoint_warn!(
+                        //     "accounts_db-shink_pubkey_missing_from_index",
+                        //     ("store_slot", slot, i64),
+                        //     ("pubkey", pubkey.to_string(), String),
+                        // )
                     }
                     AccountsIndexScanResult::OnlyKeepInMemoryIfDirty
                 },
@@ -4369,18 +4369,18 @@ impl AccountsDb {
             }
         }
         measure.stop();
-        inc_new_counter_debug!(
-            "shrink_select_top_sparse_storage_entries-ms",
-            measure.as_ms() as usize
-        );
-        inc_new_counter_debug!(
-            "shrink_select_top_sparse_storage_entries-seeds",
-            candidates_count
-        );
-        inc_new_counter_debug!(
-            "shrink_total_preliminary_candidate_stores",
-            total_candidate_stores
-        );
+        // inc_new_counter_debug!(
+        //     "shrink_select_top_sparse_storage_entries-ms",
+        //     measure.as_ms() as usize
+        // );
+        // inc_new_counter_debug!(
+        //     "shrink_select_top_sparse_storage_entries-seeds",
+        //     candidates_count
+        // );
+        // inc_new_counter_debug!(
+        //     "shrink_total_preliminary_candidate_stores",
+        //     total_candidate_stores
+        // );
 
         (shrink_slots, shrink_slots_next_batch)
     }
@@ -4833,24 +4833,24 @@ impl AccountsDb {
                     let mut measure = Measure::start("shrink_candidate_slots-ms");
                     self.do_shrink_slot_store(slot, &slot_shrink_candidate);
                     measure.stop();
-                    inc_new_counter_info!("shrink_candidate_slots-ms", measure.as_ms() as usize);
+                    // inc_new_counter_info!("shrink_candidate_slots-ms", measure.as_ms() as usize);
                 });
         });
         measure_shrink_all_candidates.stop();
-        inc_new_counter_info!(
-            "shrink_all_candidate_slots-ms",
-            measure_shrink_all_candidates.as_ms() as usize
-        );
-        inc_new_counter_info!("shrink_all_candidate_slots-count", shrink_candidates_count);
-        let mut pended_counts: usize = 0;
-        if let Some(shrink_slots_next_batch) = shrink_slots_next_batch {
-            let mut shrink_slots = self.shrink_candidate_slots.lock().unwrap();
-            pended_counts += shrink_slots_next_batch.len();
-            for slot in shrink_slots_next_batch {
-                shrink_slots.insert(slot);
-            }
-        }
-        inc_new_counter_info!("shrink_pended_stores-count", pended_counts);
+        // inc_new_counter_info!(
+        //     "shrink_all_candidate_slots-ms",
+        //     measure_shrink_all_candidates.as_ms() as usize
+        // );
+        // inc_new_counter_info!("shrink_all_candidate_slots-count", shrink_candidates_count);
+        // let mut pended_counts: usize = 0;
+        // if let Some(shrink_slots_next_batch) = shrink_slots_next_batch {
+        //     let mut shrink_slots = self.shrink_candidate_slots.lock().unwrap();
+        //     pended_counts += shrink_slots_next_batch.len();
+        //     for slot in shrink_slots_next_batch {
+        //         shrink_slots.insert(slot);
+        //     }
+        // }
+        // inc_new_counter_info!("shrink_pended_stores-count", pended_counts);
 
         num_candidates
     }
@@ -5403,7 +5403,7 @@ impl AccountsDb {
                     "do_load() failed to get key: {pubkey} from storage, latest attempt was for \
                      slot: {slot}, storage_location: {storage_location:?}, load_hint: {load_hint:?}",
                 );
-                datapoint_warn!("accounts_db-do_load_warn", ("warn", message, String));
+                // datapoint_warn!("accounts_db-do_load_warn", ("warn", message, String));
                 true
             } else {
                 false
@@ -5420,7 +5420,7 @@ impl AccountsDb {
             // Notice the subtle `?` at previous line, we bail out pretty early if missing.
 
             if new_slot == slot && new_storage_location.is_store_id_equal(&storage_location) {
-                inc_new_counter_info!("retry_to_get_account_accessor-panic", 1);
+                // inc_new_counter_info!("retry_to_get_account_accessor-panic", 1);
                 let message = format!(
                     "Bad index entry detected ({}, {}, {:?}, {:?}, {:?}, {:?})",
                     pubkey,
@@ -6351,57 +6351,57 @@ impl AccountsDb {
                     unflushable_unrooted_slot_count += 1;
                 }
             });
-            datapoint_info!(
-                "accounts_db-flush_accounts_cache_aggressively",
-                ("num_flushed", flush_stats.num_flushed.0, i64),
-                ("num_purged", flush_stats.num_purged.0, i64),
-                ("total_flush_size", flush_stats.total_size.0, i64),
-                ("total_cache_size", self.accounts_cache.size(), i64),
-                ("total_frozen_slots", excess_slot_count, i64),
-                ("total_slots", self.accounts_cache.num_slots(), i64),
-            );
+            // datapoint_info!(
+            //     "accounts_db-flush_accounts_cache_aggressively",
+            //     ("num_flushed", flush_stats.num_flushed.0, i64),
+            //     ("num_purged", flush_stats.num_purged.0, i64),
+            //     ("total_flush_size", flush_stats.total_size.0, i64),
+            //     ("total_cache_size", self.accounts_cache.size(), i64),
+            //     ("total_frozen_slots", excess_slot_count, i64),
+            //     ("total_slots", self.accounts_cache.num_slots(), i64),
+            // );
         }
 
-        datapoint_info!(
-            "accounts_db-flush_accounts_cache",
-            ("total_new_cleaned_roots", total_new_cleaned_roots, i64),
-            ("num_cleaned_roots_flushed", num_cleaned_roots_flushed, i64),
-            ("total_new_excess_roots", total_new_excess_roots, i64),
-            ("num_excess_roots_flushed", num_excess_roots_flushed, i64),
-            ("excess_slot_count", excess_slot_count, i64),
-            (
-                "unflushable_unrooted_slot_count",
-                unflushable_unrooted_slot_count,
-                i64
-            ),
-            (
-                "flush_roots_elapsed",
-                flush_roots_elapsed.as_us() as i64,
-                i64
-            ),
-            ("account_bytes_saved", account_bytes_saved, i64),
-            ("num_accounts_saved", num_accounts_saved, i64),
-            (
-                "store_accounts_total_us",
-                flush_stats.store_accounts_total_us.0,
-                i64
-            ),
-            (
-                "update_index_us",
-                flush_stats.store_accounts_timing.update_index_elapsed,
-                i64
-            ),
-            (
-                "store_accounts_elapsed_us",
-                flush_stats.store_accounts_timing.store_accounts_elapsed,
-                i64
-            ),
-            (
-                "handle_reclaims_elapsed_us",
-                flush_stats.store_accounts_timing.handle_reclaims_elapsed,
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "accounts_db-flush_accounts_cache",
+        //     ("total_new_cleaned_roots", total_new_cleaned_roots, i64),
+        //     ("num_cleaned_roots_flushed", num_cleaned_roots_flushed, i64),
+        //     ("total_new_excess_roots", total_new_excess_roots, i64),
+        //     ("num_excess_roots_flushed", num_excess_roots_flushed, i64),
+        //     ("excess_slot_count", excess_slot_count, i64),
+        //     (
+        //         "unflushable_unrooted_slot_count",
+        //         unflushable_unrooted_slot_count,
+        //         i64
+        //     ),
+        //     (
+        //         "flush_roots_elapsed",
+        //         flush_roots_elapsed.as_us() as i64,
+        //         i64
+        //     ),
+        //     ("account_bytes_saved", account_bytes_saved, i64),
+        //     ("num_accounts_saved", num_accounts_saved, i64),
+        //     (
+        //         "store_accounts_total_us",
+        //         flush_stats.store_accounts_total_us.0,
+        //         i64
+        //     ),
+        //     (
+        //         "update_index_us",
+        //         flush_stats.store_accounts_timing.update_index_elapsed,
+        //         i64
+        //     ),
+        //     (
+        //         "store_accounts_elapsed_us",
+        //         flush_stats.store_accounts_timing.store_accounts_elapsed,
+        //         i64
+        //     ),
+        //     (
+        //         "handle_reclaims_elapsed_us",
+        //         flush_stats.store_accounts_timing.handle_reclaims_elapsed,
+        //         i64
+        //     ),
+        // );
     }
 
     fn flush_rooted_accounts_cache(
@@ -6727,40 +6727,40 @@ impl AccountsDb {
             0.
         };
 
-        datapoint_info!(
-            "accounts_db-stores",
-            ("total_count", total_count, i64),
-            ("total_bytes", total_bytes, i64),
-            ("total_alive_bytes", total_alive_bytes, i64),
-            ("total_alive_ratio", total_alive_ratio, f64),
-        );
-        datapoint_info!(
-            "accounts_db-perf-stats",
-            (
-                "delta_hash_num",
-                self.stats.delta_hash_num.swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "delta_hash_scan_us",
-                self.stats
-                    .delta_hash_scan_time_total_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "delta_hash_accumulate_us",
-                self.stats
-                    .delta_hash_accumulate_time_total_us
-                    .swap(0, Ordering::Relaxed),
-                i64
-            ),
-            (
-                "skipped_rewrites_num",
-                self.stats.skipped_rewrites_num.swap(0, Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "accounts_db-stores",
+        //     ("total_count", total_count, i64),
+        //     ("total_bytes", total_bytes, i64),
+        //     ("total_alive_bytes", total_alive_bytes, i64),
+        //     ("total_alive_ratio", total_alive_ratio, f64),
+        // );
+        // datapoint_info!(
+        //     "accounts_db-perf-stats",
+        //     (
+        //         "delta_hash_num",
+        //         self.stats.delta_hash_num.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "delta_hash_scan_us",
+        //         self.stats
+        //             .delta_hash_scan_time_total_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "delta_hash_accumulate_us",
+        //         self.stats
+        //             .delta_hash_accumulate_time_total_us
+        //             .swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "skipped_rewrites_num",
+        //         self.stats.skipped_rewrites_num.swap(0, Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
     }
 
     pub fn checked_iterative_sum_for_capitalization(total_cap: u64, new_cap: u64) -> u64 {
@@ -6858,13 +6858,13 @@ impl AccountsDb {
         let (accumulated_hash, hash_total) = AccountsHasher::calculate_hash(account_hashes);
         hash_time.stop();
 
-        datapoint_info!(
-            "calculate_accounts_hash_from_index",
-            ("accounts_scan", scan.as_us(), i64),
-            ("hash", hash_time.as_us(), i64),
-            ("hash_total", hash_total, i64),
-            ("collect", collect.as_us(), i64),
-        );
+        // datapoint_info!(
+        //     "calculate_accounts_hash_from_index",
+        //     ("accounts_scan", scan.as_us(), i64),
+        //     ("hash", hash_time.as_us(), i64),
+        //     ("hash_total", hash_total, i64),
+        //     ("collect", collect.as_us(), i64),
+        // );
 
         let accounts_hash = AccountsHash(accumulated_hash);
         (accounts_hash, total_lamports)
@@ -7203,7 +7203,7 @@ impl AccountsDb {
             CalcAccountsHashDataSource::Storages => {
                 if self.accounts_cache.contains_any_slots(slot) {
                     // this indicates a race condition
-                    inc_new_counter_info!("accounts_hash_items_in_write_cache", 1);
+                    // inc_new_counter_info!("accounts_hash_items_in_write_cache", 1);
                 }
 
                 let mut collect_time = Measure::start("collect");
@@ -8163,7 +8163,7 @@ impl AccountsDb {
         drop(bank_hash_stats);
 
         measure.stop();
-        inc_new_counter_info!("remove_dead_slots_metadata-ms", measure.as_ms() as usize);
+        // inc_new_counter_info!("remove_dead_slots_metadata-ms", measure.as_ms() as usize);
     }
 
     /// lookup each pubkey in 'pubkeys' and unref it in the accounts index
@@ -8317,7 +8317,7 @@ impl AccountsDb {
             pubkeys_removed_from_accounts_index,
         );
         measure.stop();
-        inc_new_counter_info!("clean_stored_dead_slots-ms", measure.as_ms() as usize);
+        // inc_new_counter_info!("clean_stored_dead_slots-ms", measure.as_ms() as usize);
         self.clean_accounts_stats
             .clean_stored_dead_slots_us
             .fetch_add(measure.as_us(), Ordering::Relaxed);
@@ -8415,141 +8415,141 @@ impl AccountsDb {
     fn report_store_timings(&self) {
         if self.stats.last_store_report.should_update(1000) {
             let read_cache_stats = self.read_only_accounts_cache.get_and_reset_stats();
-            datapoint_info!(
-                "accounts_db_store_timings",
-                (
-                    "hash_accounts",
-                    self.stats.store_hash_accounts.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "store_accounts",
-                    self.stats.store_accounts.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "update_index",
-                    self.stats.store_update_index.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "handle_reclaims",
-                    self.stats.store_handle_reclaims.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "append_accounts",
-                    self.stats.store_append_accounts.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "stakes_cache_check_and_store_us",
-                    self.stats
-                        .stakes_cache_check_and_store_us
-                        .swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "num_accounts",
-                    self.stats.store_num_accounts.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "total_data",
-                    self.stats.store_total_data.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_entries",
-                    self.read_only_accounts_cache.cache_len(),
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_data_size",
-                    self.read_only_accounts_cache.data_size(),
-                    i64
-                ),
-                ("read_only_accounts_cache_hits", read_cache_stats.hits, i64),
-                (
-                    "read_only_accounts_cache_misses",
-                    read_cache_stats.misses,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_evicts",
-                    read_cache_stats.evicts,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_load_us",
-                    read_cache_stats.load_us,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_store_us",
-                    read_cache_stats.store_us,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_evict_us",
-                    read_cache_stats.evict_us,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_evictor_wakeup_count_all",
-                    read_cache_stats.evictor_wakeup_count_all,
-                    i64
-                ),
-                (
-                    "read_only_accounts_cache_evictor_wakeup_count_productive",
-                    read_cache_stats.evictor_wakeup_count_productive,
-                    i64
-                ),
-                (
-                    "calc_stored_meta_us",
-                    self.stats.calc_stored_meta.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "handle_dead_keys_us",
-                    self.stats.handle_dead_keys_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "purge_exact_us",
-                    self.stats.purge_exact_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "purge_exact_count",
-                    self.stats.purge_exact_count.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "accounts_db_store_timings",
+            //     (
+            //         "hash_accounts",
+            //         self.stats.store_hash_accounts.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "store_accounts",
+            //         self.stats.store_accounts.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "update_index",
+            //         self.stats.store_update_index.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "handle_reclaims",
+            //         self.stats.store_handle_reclaims.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "append_accounts",
+            //         self.stats.store_append_accounts.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "stakes_cache_check_and_store_us",
+            //         self.stats
+            //             .stakes_cache_check_and_store_us
+            //             .swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "num_accounts",
+            //         self.stats.store_num_accounts.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "total_data",
+            //         self.stats.store_total_data.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_entries",
+            //         self.read_only_accounts_cache.cache_len(),
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_data_size",
+            //         self.read_only_accounts_cache.data_size(),
+            //         i64
+            //     ),
+            //     ("read_only_accounts_cache_hits", read_cache_stats.hits, i64),
+            //     (
+            //         "read_only_accounts_cache_misses",
+            //         read_cache_stats.misses,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_evicts",
+            //         read_cache_stats.evicts,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_load_us",
+            //         read_cache_stats.load_us,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_store_us",
+            //         read_cache_stats.store_us,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_evict_us",
+            //         read_cache_stats.evict_us,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_evictor_wakeup_count_all",
+            //         read_cache_stats.evictor_wakeup_count_all,
+            //         i64
+            //     ),
+            //     (
+            //         "read_only_accounts_cache_evictor_wakeup_count_productive",
+            //         read_cache_stats.evictor_wakeup_count_productive,
+            //         i64
+            //     ),
+            //     (
+            //         "calc_stored_meta_us",
+            //         self.stats.calc_stored_meta.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "handle_dead_keys_us",
+            //         self.stats.handle_dead_keys_us.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "purge_exact_us",
+            //         self.stats.purge_exact_us.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "purge_exact_count",
+            //         self.stats.purge_exact_count.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            // );
 
-            datapoint_info!(
-                "accounts_db_store_timings2",
-                (
-                    "create_store_count",
-                    self.stats.create_store_count.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "store_get_slot_store",
-                    self.stats.store_get_slot_store.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "store_find_existing",
-                    self.stats.store_find_existing.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "dropped_stores",
-                    self.stats.dropped_stores.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "accounts_db_store_timings2",
+            //     (
+            //         "create_store_count",
+            //         self.stats.create_store_count.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "store_get_slot_store",
+            //         self.stats.store_get_slot_store.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "store_find_existing",
+            //         self.stats.store_find_existing.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            //     (
+            //         "dropped_stores",
+            //         self.stats.dropped_stores.swap(0, Ordering::Relaxed),
+            //         i64
+            //     ),
+            // );
         }
     }
 
