@@ -184,16 +184,16 @@ impl<T: Default + Reset> RecyclerX<T> {
                 Ordering::Relaxed,
             );
         }
-        let total = self.stats.total.load(Ordering::Relaxed);
-        let reuse = self.stats.reuse.load(Ordering::Relaxed);
-        let freed = self.stats.freed.load(Ordering::Relaxed);
-        datapoint_debug!(
-            "recycler",
-            ("gc_len", len as i64, i64),
-            ("total", total as i64, i64),
-            ("freed", freed as i64, i64),
-            ("reuse", reuse as i64, i64),
-        );
+        let _total = self.stats.total.load(Ordering::Relaxed);
+        let _reuse = self.stats.reuse.load(Ordering::Relaxed);
+        let _freed = self.stats.freed.load(Ordering::Relaxed);
+        // datapoint_debug!(
+        //     "recycler",
+        //     ("gc_len", len as i64, i64),
+        //     ("total", total as i64, i64),
+        //     ("freed", freed as i64, i64),
+        //     ("reuse", reuse as i64, i64),
+        // );
     }
 }
 
