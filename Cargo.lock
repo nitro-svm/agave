@@ -3271,16 +3271,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lz4"
-version = "1.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6eab492fe7f8651add23237ea56dbf11b3c4ff762ab83d40a47f11433421f91"
-dependencies = [
- "libc",
- "lz4-sys",
-]
-
-[[package]]
 name = "lz4-sys"
 version = "1.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5325,7 +5315,6 @@ dependencies = [
  "lazy_static",
  "libsecp256k1",
  "log",
- "lz4",
  "memmap2",
  "memoffset",
  "modular-bitfield",
@@ -6973,7 +6962,6 @@ dependencies = [
  "libc",
  "libsecp256k1",
  "log",
- "lz4",
  "memmap2",
  "memoffset",
  "mockall",

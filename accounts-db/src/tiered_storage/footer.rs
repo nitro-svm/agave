@@ -60,7 +60,7 @@ pub enum AccountMetaFormat {
 pub enum AccountBlockFormat {
     #[default]
     AlignedRaw = 0,
-    Lz4 = 1,
+    // Lz4 = 1, // not supported in svm-rollup
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

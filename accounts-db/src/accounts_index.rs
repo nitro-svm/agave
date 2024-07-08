@@ -991,6 +991,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
     // Scan accounts and return latest version of each account that is either:
     // 1) rooted or
     // 2) present in ancestors
+    #[allow(unused_variables)]
     fn do_scan_accounts<F, R>(
         &self,
         metric_name: &'static str,
