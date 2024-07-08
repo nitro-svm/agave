@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use {
     // bzip2::bufread::BzDecoder,
     flate2::read::GzDecoder,
@@ -14,10 +15,10 @@ use {
         },
         time::Instant,
     },
-    tar::{
-        Archive,
-        EntryType::{Directory, GNUSparse, Regular},
-    },
+    // tar::{
+    //     Archive,
+    //     EntryType::{Directory, GNUSparse, Regular},
+    // },
     thiserror::Error,
 };
 
@@ -36,16 +37,20 @@ pub type Result<T> = std::result::Result<T, UnpackError>;
 // note that this is directly related to the mmaped data size
 // so protect against insane value
 // This is the file size including holes for sparse files
+#[allow(dead_code)]
 const MAX_SNAPSHOT_ARCHIVE_UNPACKED_APPARENT_SIZE: u64 = 64 * 1024 * 1024 * 1024 * 1024;
 
 // 4 TiB;
 // This is the actually consumed disk usage for sparse files
+#[allow(dead_code)]
 const MAX_SNAPSHOT_ARCHIVE_UNPACKED_ACTUAL_SIZE: u64 = 4 * 1024 * 1024 * 1024 * 1024;
-
+#[allow(dead_code)]
 const MAX_SNAPSHOT_ARCHIVE_UNPACKED_COUNT: u64 = 5_000_000;
 pub const MAX_GENESIS_ARCHIVE_UNPACKED_SIZE: u64 = 10 * 1024 * 1024; // 10 MiB
+#[allow(dead_code)]
 const MAX_GENESIS_ARCHIVE_UNPACKED_COUNT: u64 = 100;
 
+#[allow(dead_code)]
 fn checked_total_size_sum(total_size: u64, entry_size: u64, limit_size: u64) -> Result<u64> {
     trace!(
         "checked_total_size_sum: {} + {} < {}",
@@ -61,7 +66,7 @@ fn checked_total_size_sum(total_size: u64, entry_size: u64, limit_size: u64) -> 
     }
     Ok(total_size)
 }
-
+#[allow(dead_code)]
 fn checked_total_count_increment(total_count: u64, limit_count: u64) -> Result<u64> {
     let total_count = total_count + 1;
     if total_count > limit_count {
@@ -71,7 +76,7 @@ fn checked_total_count_increment(total_count: u64, limit_count: u64) -> Result<u
     }
     Ok(total_count)
 }
-
+#[allow(dead_code)]
 fn check_unpack_result(unpack_result: bool, path: String) -> Result<()> {
     if !unpack_result {
         return Err(UnpackError::Archive(format!("failed to unpack: {path:?}")));
@@ -86,137 +91,138 @@ pub enum UnpackPath<'a> {
     Invalid,
 }
 
-fn unpack_archive<'a, A, C, D>(
-    archive: &mut Archive<A>,
-    apparent_limit_size: u64,
-    actual_limit_size: u64,
-    limit_count: u64,
-    mut entry_checker: C, // checks if entry is valid
-    entry_processor: D,   // processes entry after setting permissions
-) -> Result<()>
-where
-    A: Read,
-    C: FnMut(&[&str], tar::EntryType) -> UnpackPath<'a>,
-    D: Fn(PathBuf),
-{
-    let mut apparent_total_size: u64 = 0;
-    let mut actual_total_size: u64 = 0;
-    let mut total_count: u64 = 0;
+// fn unpack_archive<'a, A, C, D>(
+//     // archive: &mut Archive<A>,
+//     apparent_limit_size: u64,
+//     actual_limit_size: u64,
+//     limit_count: u64,
+//     mut entry_checker: C, // checks if entry is valid
+//     entry_processor: D,   // processes entry after setting permissions
+// ) -> Result<()>
+// where
+//     A: Read,
+//     C: FnMut(&[&str], tar::EntryType) -> UnpackPath<'a>,
+//     D: Fn(PathBuf),
+// {
+//     let mut apparent_total_size: u64 = 0;
+//     let mut actual_total_size: u64 = 0;
+//     let mut total_count: u64 = 0;
 
-    let mut total_entries = 0;
-    for entry in archive.entries()? {
-        let mut entry = entry?;
-        let path = entry.path()?;
-        let path_str = path.display().to_string();
+//     let mut total_entries = 0;
+//     for entry in archive.entries()? {
+//         let mut entry = entry?;
+//         let path = entry.path()?;
+//         let path_str = path.display().to_string();
 
-        // Although the `tar` crate safely skips at the actual unpacking, fail
-        // first by ourselves when there are odd paths like including `..` or /
-        // for our clearer pattern matching reasoning:
-        //   https://docs.rs/tar/0.4.26/src/tar/entry.rs.html#371
-        let parts = path
-            .components()
-            .map(|p| match p {
-                CurDir => Ok("."),
-                Normal(c) => c.to_str().ok_or(()),
-                _ => Err(()), // Prefix (for Windows) and RootDir are forbidden
-            })
-            .collect::<std::result::Result<Vec<_>, _>>();
+//         // Although the `tar` crate safely skips at the actual unpacking, fail
+//         // first by ourselves when there are odd paths like including `..` or /
+//         // for our clearer pattern matching reasoning:
+//         //   https://docs.rs/tar/0.4.26/src/tar/entry.rs.html#371
+//         let parts = path
+//             .components()
+//             .map(|p| match p {
+//                 CurDir => Ok("."),
+//                 Normal(c) => c.to_str().ok_or(()),
+//                 _ => Err(()), // Prefix (for Windows) and RootDir are forbidden
+//             })
+//             .collect::<std::result::Result<Vec<_>, _>>();
 
-        // Reject old-style BSD directory entries that aren't explicitly tagged as directories
-        let legacy_dir_entry =
-            entry.header().as_ustar().is_none() && entry.path_bytes().ends_with(b"/");
-        let kind = entry.header().entry_type();
-        let reject_legacy_dir_entry = legacy_dir_entry && (kind != Directory);
-        let (Ok(parts), false) = (parts, reject_legacy_dir_entry) else {
-            return Err(UnpackError::Archive(format!(
-                "invalid path found: {path_str:?}"
-            )));
-        };
+//         // Reject old-style BSD directory entries that aren't explicitly tagged as directories
+//         let legacy_dir_entry =
+//             entry.header().as_ustar().is_none() && entry.path_bytes().ends_with(b"/");
+//         let kind = entry.header().entry_type();
+//         let reject_legacy_dir_entry = legacy_dir_entry && (kind != Directory);
+//         let (Ok(parts), false) = (parts, reject_legacy_dir_entry) else {
+//             return Err(UnpackError::Archive(format!(
+//                 "invalid path found: {path_str:?}"
+//             )));
+//         };
 
-        let unpack_dir = match entry_checker(parts.as_slice(), kind) {
-            UnpackPath::Invalid => {
-                return Err(UnpackError::Archive(format!(
-                    "extra entry found: {:?} {:?}",
-                    path_str,
-                    entry.header().entry_type(),
-                )));
-            }
-            UnpackPath::Ignore => {
-                continue;
-            }
-            UnpackPath::Valid(unpack_dir) => unpack_dir,
-        };
+//         let unpack_dir = match entry_checker(parts.as_slice(), kind) {
+//             UnpackPath::Invalid => {
+//                 return Err(UnpackError::Archive(format!(
+//                     "extra entry found: {:?} {:?}",
+//                     path_str,
+//                     entry.header().entry_type(),
+//                 )));
+//             }
+//             UnpackPath::Ignore => {
+//                 continue;
+//             }
+//             UnpackPath::Valid(unpack_dir) => unpack_dir,
+//         };
 
-        apparent_total_size = checked_total_size_sum(
-            apparent_total_size,
-            entry.header().size()?,
-            apparent_limit_size,
-        )?;
-        actual_total_size = checked_total_size_sum(
-            actual_total_size,
-            entry.header().entry_size()?,
-            actual_limit_size,
-        )?;
-        total_count = checked_total_count_increment(total_count, limit_count)?;
+//         apparent_total_size = checked_total_size_sum(
+//             apparent_total_size,
+//             entry.header().size()?,
+//             apparent_limit_size,
+//         )?;
+//         actual_total_size = checked_total_size_sum(
+//             actual_total_size,
+//             entry.header().entry_size()?,
+//             actual_limit_size,
+//         )?;
+//         total_count = checked_total_count_increment(total_count, limit_count)?;
 
-        let account_filename = match parts.as_slice() {
-            ["accounts", account_filename] => Some(PathBuf::from(account_filename)),
-            _ => None,
-        };
-        let entry_path = if let Some(account) = account_filename {
-            // Special case account files. We're unpacking an account entry inside one of the
-            // account_paths returned by `entry_checker`. We want to unpack into
-            // account_path/<account> instead of account_path/accounts/<account> so we strip the
-            // accounts/ prefix.
-            sanitize_path(&account, unpack_dir)
-        } else {
-            sanitize_path(&path, unpack_dir)
-        }?; // ? handles file system errors
-        let Some(entry_path) = entry_path else {
-            continue; // skip it
-        };
+//         let account_filename = match parts.as_slice() {
+//             ["accounts", account_filename] => Some(PathBuf::from(account_filename)),
+//             _ => None,
+//         };
+//         let entry_path = if let Some(account) = account_filename {
+//             // Special case account files. We're unpacking an account entry inside one of the
+//             // account_paths returned by `entry_checker`. We want to unpack into
+//             // account_path/<account> instead of account_path/accounts/<account> so we strip the
+//             // accounts/ prefix.
+//             sanitize_path(&account, unpack_dir)
+//         } else {
+//             sanitize_path(&path, unpack_dir)
+//         }?; // ? handles file system errors
+//         let Some(entry_path) = entry_path else {
+//             continue; // skip it
+//         };
 
-        let unpack = entry.unpack(&entry_path);
-        check_unpack_result(unpack.map(|_unpack| true)?, path_str)?;
+//         let unpack = entry.unpack(&entry_path);
+//         check_unpack_result(unpack.map(|_unpack| true)?, path_str)?;
 
-        // Sanitize permissions.
-        let mode = match entry.header().entry_type() {
-            GNUSparse | Regular => 0o644,
-            _ => 0o755,
-        };
-        set_perms(&entry_path, mode)?;
+//         // Sanitize permissions.
+//         let mode = match entry.header().entry_type() {
+//             // GNUSparse | Regular => 0o644,
+//             _ => 0o755,
+//         };
+//         set_perms(&entry_path, mode)?;
 
-        // Process entry after setting permissions
-        entry_processor(entry_path);
+//         // Process entry after setting permissions
+//         entry_processor(entry_path);
 
-        total_entries += 1;
-    }
-    info!("unpacked {} entries total", total_entries);
+//         total_entries += 1;
+//     }
+//     info!("unpacked {} entries total", total_entries);
 
-    return Ok(());
+//     return Ok(());
 
-    #[cfg(unix)]
-    fn set_perms(dst: &Path, mode: u32) -> std::io::Result<()> {
-        use std::os::unix::fs::PermissionsExt;
+//     #[cfg(unix)]
+//     fn set_perms(dst: &Path, mode: u32) -> std::io::Result<()> {
+//         use std::os::unix::fs::PermissionsExt;
 
-        let perm = fs::Permissions::from_mode(mode as _);
-        fs::set_permissions(dst, perm)
-    }
+//         let perm = fs::Permissions::from_mode(mode as _);
+//         fs::set_permissions(dst, perm)
+//     }
 
-    #[cfg(windows)]
-    fn set_perms(dst: &Path, _mode: u32) -> std::io::Result<()> {
-        let mut perm = fs::metadata(dst)?.permissions();
-        // This is OK for Windows, but clippy doesn't realize we're doing this
-        // only on Windows.
-        #[allow(clippy::permissions_set_readonly_false)]
-        perm.set_readonly(false);
-        fs::set_permissions(dst, perm)
-    }
-}
+//     #[cfg(windows)]
+//     fn set_perms(dst: &Path, _mode: u32) -> std::io::Result<()> {
+//         let mut perm = fs::metadata(dst)?.permissions();
+//         // This is OK for Windows, but clippy doesn't realize we're doing this
+//         // only on Windows.
+//         #[allow(clippy::permissions_set_readonly_false)]
+//         perm.set_readonly(false);
+//         fs::set_permissions(dst, perm)
+//     }
+// }
 
 // return Err on file system error
 // return Some(path) if path is good
 // return None if we should skip this file
+#[allow(dead_code)]
 fn sanitize_path(entry_path: &Path, dst: &Path) -> Result<Option<PathBuf>> {
     // We cannot call unpack_in because it errors if we try to use 2 account paths.
     // So, this code is borrowed from unpack_in
@@ -266,6 +272,7 @@ fn sanitize_path(entry_path: &Path, dst: &Path) -> Result<Option<PathBuf>> {
 
 // copied from:
 // https://github.com/alexcrichton/tar-rs/blob/d90a02f582c03dfa0fd11c78d608d0974625ae5d/src/entry.rs#L781
+#[allow(dead_code)]
 fn validate_inside_dst(dst: &Path, file_dst: &Path) -> Result<PathBuf> {
     // Abort if target (canonical) parent is outside of `dst`
     let canon_parent = file_dst.canonicalize().map_err(|err| {
@@ -303,105 +310,105 @@ impl ParallelSelector {
 }
 
 /// Unpacks snapshot and collects AppendVec file names & paths
-pub fn unpack_snapshot<A: Read>(
-    archive: &mut Archive<A>,
-    ledger_dir: &Path,
-    account_paths: &[PathBuf],
-    parallel_selector: Option<ParallelSelector>,
-) -> Result<UnpackedAppendVecMap> {
-    let mut unpacked_append_vec_map = UnpackedAppendVecMap::new();
+// pub fn unpack_snapshot<A: Read>(
+//     archive: &mut Archive<A>,
+//     ledger_dir: &Path,
+//     account_paths: &[PathBuf],
+//     parallel_selector: Option<ParallelSelector>,
+// ) -> Result<UnpackedAppendVecMap> {
+//     let mut unpacked_append_vec_map = UnpackedAppendVecMap::new();
 
-    unpack_snapshot_with_processors(
-        archive,
-        ledger_dir,
-        account_paths,
-        parallel_selector,
-        |file, path| {
-            unpacked_append_vec_map.insert(file.to_string(), path.join("accounts").join(file));
-        },
-        |_| {},
-    )
-    .map(|_| unpacked_append_vec_map)
-}
+//     unpack_snapshot_with_processors(
+//         archive,
+//         ledger_dir,
+//         account_paths,
+//         parallel_selector,
+//         |file, path| {
+//             unpacked_append_vec_map.insert(file.to_string(), path.join("accounts").join(file));
+//         },
+//         |_| {},
+//     )
+//     .map(|_| unpacked_append_vec_map)
+// }
 
 /// Unpacks snapshots and sends entry file paths through the `sender` channel
-pub fn streaming_unpack_snapshot<A: Read>(
-    archive: &mut Archive<A>,
-    ledger_dir: &Path,
-    account_paths: &[PathBuf],
-    parallel_selector: Option<ParallelSelector>,
-    sender: &crossbeam_channel::Sender<PathBuf>,
-) -> Result<()> {
-    unpack_snapshot_with_processors(
-        archive,
-        ledger_dir,
-        account_paths,
-        parallel_selector,
-        |_, _| {},
-        |entry_path_buf| {
-            if entry_path_buf.is_file() {
-                sender.send(entry_path_buf).unwrap();
-            }
-        },
-    )
-}
+// pub fn streaming_unpack_snapshot<A: Read>(
+//     archive: &mut Archive<A>,
+//     ledger_dir: &Path,
+//     account_paths: &[PathBuf],
+//     parallel_selector: Option<ParallelSelector>,
+//     sender: &crossbeam_channel::Sender<PathBuf>,
+// ) -> Result<()> {
+//     unpack_snapshot_with_processors(
+//         archive,
+//         ledger_dir,
+//         account_paths,
+//         parallel_selector,
+//         |_, _| {},
+//         |entry_path_buf| {
+//             if entry_path_buf.is_file() {
+//                 sender.send(entry_path_buf).unwrap();
+//             }
+//         },
+//     )
+// }
 
-fn unpack_snapshot_with_processors<A, F, G>(
-    archive: &mut Archive<A>,
-    ledger_dir: &Path,
-    account_paths: &[PathBuf],
-    parallel_selector: Option<ParallelSelector>,
-    mut accounts_path_processor: F,
-    entry_processor: G,
-) -> Result<()>
-where
-    A: Read,
-    F: FnMut(&str, &Path),
-    G: Fn(PathBuf),
-{
-    assert!(!account_paths.is_empty());
-    let mut i = 0;
+// fn unpack_snapshot_with_processors<A, F, G>(
+//     archive: &mut Archive<A>,
+//     ledger_dir: &Path,
+//     account_paths: &[PathBuf],
+//     parallel_selector: Option<ParallelSelector>,
+//     mut accounts_path_processor: F,
+//     entry_processor: G,
+// ) -> Result<()>
+// where
+//     A: Read,
+//     F: FnMut(&str, &Path),
+//     G: Fn(PathBuf),
+// {
+//     assert!(!account_paths.is_empty());
+//     let mut i = 0;
 
-    unpack_archive(
-        archive,
-        MAX_SNAPSHOT_ARCHIVE_UNPACKED_APPARENT_SIZE,
-        MAX_SNAPSHOT_ARCHIVE_UNPACKED_ACTUAL_SIZE,
-        MAX_SNAPSHOT_ARCHIVE_UNPACKED_COUNT,
-        |parts, kind| {
-            if is_valid_snapshot_archive_entry(parts, kind) {
-                i += 1;
-                match &parallel_selector {
-                    Some(parallel_selector) => {
-                        if !parallel_selector.select_index(i - 1) {
-                            return UnpackPath::Ignore;
-                        }
-                    }
-                    None => {}
-                };
-                if let ["accounts", file] = parts {
-                    // Randomly distribute the accounts files about the available `account_paths`,
-                    let path_index = thread_rng().gen_range(0..account_paths.len());
-                    match account_paths
-                        .get(path_index)
-                        .map(|path_buf| path_buf.as_path())
-                    {
-                        Some(path) => {
-                            accounts_path_processor(file, path);
-                            UnpackPath::Valid(path)
-                        }
-                        None => UnpackPath::Invalid,
-                    }
-                } else {
-                    UnpackPath::Valid(ledger_dir)
-                }
-            } else {
-                UnpackPath::Invalid
-            }
-        },
-        entry_processor,
-    )
-}
-
+//     unpack_archive(
+//         archive,
+//         MAX_SNAPSHOT_ARCHIVE_UNPACKED_APPARENT_SIZE,
+//         MAX_SNAPSHOT_ARCHIVE_UNPACKED_ACTUAL_SIZE,
+//         MAX_SNAPSHOT_ARCHIVE_UNPACKED_COUNT,
+//         |parts, kind| {
+//             if is_valid_snapshot_archive_entry(parts, kind) {
+//                 i += 1;
+//                 match &parallel_selector {
+//                     Some(parallel_selector) => {
+//                         if !parallel_selector.select_index(i - 1) {
+//                             return UnpackPath::Ignore;
+//                         }
+//                     }
+//                     None => {}
+//                 };
+//                 if let ["accounts", file] = parts {
+//                     // Randomly distribute the accounts files about the available `account_paths`,
+//                     let path_index = thread_rng().gen_range(0..account_paths.len());
+//                     match account_paths
+//                         .get(path_index)
+//                         .map(|path_buf| path_buf.as_path())
+//                     {
+//                         Some(path) => {
+//                             accounts_path_processor(file, path);
+//                             UnpackPath::Valid(path)
+//                         }
+//                         None => UnpackPath::Invalid,
+//                     }
+//                 } else {
+//                     UnpackPath::Valid(ledger_dir)
+//                 }
+//             } else {
+//                 UnpackPath::Invalid
+//             }
+//         },
+//         entry_processor,
+//     )
+// }
+#[allow(dead_code)]
 fn all_digits(v: &str) -> bool {
     if v.is_empty() {
         return false;
@@ -413,7 +420,7 @@ fn all_digits(v: &str) -> bool {
     }
     true
 }
-
+#[allow(dead_code)]
 fn like_storage(v: &str) -> bool {
     let mut periods = 0;
     let mut saw_numbers = false;
@@ -435,21 +442,21 @@ fn like_storage(v: &str) -> bool {
     saw_numbers && periods == 1
 }
 
-fn is_valid_snapshot_archive_entry(parts: &[&str], kind: tar::EntryType) -> bool {
-    match (parts, kind) {
-        (["version"], Regular) => true,
-        (["accounts"], Directory) => true,
-        (["accounts", file], GNUSparse) if like_storage(file) => true,
-        (["accounts", file], Regular) if like_storage(file) => true,
-        (["snapshots"], Directory) => true,
-        (["snapshots", "status_cache"], GNUSparse) => true,
-        (["snapshots", "status_cache"], Regular) => true,
-        (["snapshots", dir, file], GNUSparse) if all_digits(dir) && all_digits(file) => true,
-        (["snapshots", dir, file], Regular) if all_digits(dir) && all_digits(file) => true,
-        (["snapshots", dir], Directory) if all_digits(dir) => true,
-        _ => false,
-    }
-}
+// fn is_valid_snapshot_archive_entry(parts: &[&str], kind: tar::EntryType) -> bool {
+//     match (parts, kind) {
+//         (["version"], Regular) => true,
+//         (["accounts"], Directory) => true,
+//         (["accounts", file], GNUSparse) if like_storage(file) => true,
+//         (["accounts", file], Regular) if like_storage(file) => true,
+//         (["snapshots"], Directory) => true,
+//         (["snapshots", "status_cache"], GNUSparse) => true,
+//         (["snapshots", "status_cache"], Regular) => true,
+//         (["snapshots", dir, file], GNUSparse) if all_digits(dir) && all_digits(file) => true,
+//         (["snapshots", dir, file], Regular) if all_digits(dir) && all_digits(file) => true,
+//         (["snapshots", dir], Directory) if all_digits(dir) => true,
+//         _ => false,
+//     }
+// }
 
 #[derive(Error, Debug)]
 pub enum OpenGenesisConfigError {
@@ -459,6 +466,7 @@ pub enum OpenGenesisConfigError {
     Load(#[from] std::io::Error),
 }
 
+#[allow(unused_variables)]
 pub fn open_genesis_config(
     ledger_path: &Path,
     max_genesis_archive_unpacked_size: u64,
@@ -472,76 +480,76 @@ pub fn open_genesis_config(
             );
 
             let genesis_package = ledger_path.join(DEFAULT_GENESIS_ARCHIVE);
-            unpack_genesis_archive(
-                &genesis_package,
-                ledger_path,
-                max_genesis_archive_unpacked_size,
-            )?;
+            // unpack_genesis_archive(
+            //     &genesis_package,
+            //     ledger_path,
+            //     max_genesis_archive_unpacked_size,
+            // )?;
             GenesisConfig::load(ledger_path).map_err(OpenGenesisConfigError::Load)
         }
     }
 }
 
-pub fn unpack_genesis_archive(
-    archive_filename: &Path,
-    destination_dir: &Path,
-    max_genesis_archive_unpacked_size: u64,
-) -> std::result::Result<(), UnpackError> {
-    info!("Extracting {:?}...", archive_filename);
-    let extract_start = Instant::now();
+// pub fn unpack_genesis_archive(
+//     archive_filename: &Path,
+//     destination_dir: &Path,
+//     max_genesis_archive_unpacked_size: u64,
+// ) -> std::result::Result<(), UnpackError> {
+//     info!("Extracting {:?}...", archive_filename);
+//     let extract_start = Instant::now();
 
-    fs::create_dir_all(destination_dir)?;
-    // replaced bz2 with gz
-    let tar_gz = File::open(archive_filename)?;
-    let tar = GzDecoder::new(BufReader::new(tar_gz));
-    let mut archive = Archive::new(tar);
-    unpack_genesis(
-        &mut archive,
-        destination_dir,
-        max_genesis_archive_unpacked_size,
-    )?;
-    info!(
-        "Extracted {:?} in {:?}",
-        archive_filename,
-        Instant::now().duration_since(extract_start)
-    );
-    Ok(())
-}
+//     fs::create_dir_all(destination_dir)?;
+//     // replaced bz2 with gz
+//     let tar_gz = File::open(archive_filename)?;
+//     let tar = GzDecoder::new(BufReader::new(tar_gz));
+//     let mut archive = Archive::new(tar);
+//     unpack_genesis(
+//         &mut archive,
+//         destination_dir,
+//         max_genesis_archive_unpacked_size,
+//     )?;
+//     info!(
+//         "Extracted {:?} in {:?}",
+//         archive_filename,
+//         Instant::now().duration_since(extract_start)
+//     );
+//     Ok(())
+// }
 
-fn unpack_genesis<A: Read>(
-    archive: &mut Archive<A>,
-    unpack_dir: &Path,
-    max_genesis_archive_unpacked_size: u64,
-) -> Result<()> {
-    unpack_archive(
-        archive,
-        max_genesis_archive_unpacked_size,
-        max_genesis_archive_unpacked_size,
-        MAX_GENESIS_ARCHIVE_UNPACKED_COUNT,
-        |p, k| is_valid_genesis_archive_entry(unpack_dir, p, k),
-        |_| {},
-    )
-}
+// fn unpack_genesis<A: Read>(
+//     archive: &mut Archive<A>,
+//     unpack_dir: &Path,
+//     max_genesis_archive_unpacked_size: u64,
+// ) -> Result<()> {
+//     unpack_archive(
+//         archive,
+//         max_genesis_archive_unpacked_size,
+//         max_genesis_archive_unpacked_size,
+//         MAX_GENESIS_ARCHIVE_UNPACKED_COUNT,
+//         |p, k| is_valid_genesis_archive_entry(unpack_dir, p, k),
+//         |_| {},
+//     )
+// }
 
-fn is_valid_genesis_archive_entry<'a>(
-    unpack_dir: &'a Path,
-    parts: &[&str],
-    kind: tar::EntryType,
-) -> UnpackPath<'a> {
-    trace!("validating: {:?} {:?}", parts, kind);
-    #[allow(clippy::match_like_matches_macro)]
-    match (parts, kind) {
-        ([DEFAULT_GENESIS_FILE], GNUSparse) => UnpackPath::Valid(unpack_dir),
-        ([DEFAULT_GENESIS_FILE], Regular) => UnpackPath::Valid(unpack_dir),
-        (["rocksdb"], Directory) => UnpackPath::Ignore,
-        (["rocksdb", _], GNUSparse) => UnpackPath::Ignore,
-        (["rocksdb", _], Regular) => UnpackPath::Ignore,
-        (["rocksdb_fifo"], Directory) => UnpackPath::Ignore,
-        (["rocksdb_fifo", _], GNUSparse) => UnpackPath::Ignore,
-        (["rocksdb_fifo", _], Regular) => UnpackPath::Ignore,
-        _ => UnpackPath::Invalid,
-    }
-}
+// fn is_valid_genesis_archive_entry<'a>(
+//     unpack_dir: &'a Path,
+//     parts: &[&str],
+//     kind: tar::EntryType,
+// ) -> UnpackPath<'a> {
+//     trace!("validating: {:?} {:?}", parts, kind);
+//     #[allow(clippy::match_like_matches_macro)]
+//     match (parts, kind) {
+//         ([DEFAULT_GENESIS_FILE], GNUSparse) => UnpackPath::Valid(unpack_dir),
+//         ([DEFAULT_GENESIS_FILE], Regular) => UnpackPath::Valid(unpack_dir),
+//         (["rocksdb"], Directory) => UnpackPath::Ignore,
+//         (["rocksdb", _], GNUSparse) => UnpackPath::Ignore,
+//         (["rocksdb", _], Regular) => UnpackPath::Ignore,
+//         (["rocksdb_fifo"], Directory) => UnpackPath::Ignore,
+//         (["rocksdb_fifo", _], GNUSparse) => UnpackPath::Ignore,
+//         (["rocksdb_fifo", _], Regular) => UnpackPath::Ignore,
+//         _ => UnpackPath::Invalid,
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

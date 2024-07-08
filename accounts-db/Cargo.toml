@@ -48,7 +48,7 @@ solana-stake-program = { workspace = true, optional = true }
 solana-svm = { workspace = true }
 solana-vote-program = { workspace = true, optional = true }
 static_assertions = { workspace = true }
-tar = { workspace = true }
+# tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
 

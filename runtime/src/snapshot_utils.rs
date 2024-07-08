@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use {
     crate::{
         bank::{BankFieldsToSerialize, BankSlotDelta},
@@ -48,7 +49,7 @@ use {
         sync::Arc,
         thread::{Builder, JoinHandle},
     },
-    tar::{self, Archive},
+    // tar::{self, Archive},
     tempfile::TempDir,
     thiserror::Error,
 };
@@ -961,6 +962,8 @@ fn serialize_snapshot(
 }
 
 /// Archives a snapshot into `archive_path`
+#[allow(unused_variables)]
+#[allow(dead_code)]
 fn archive_snapshot(
     snapshot_kind: SnapshotKind,
     snapshot_slot: Slot,
@@ -1033,39 +1036,39 @@ fn archive_snapshot(
             .map_err(|err| E::CreateArchiveFile(err, staging_archive_path.clone()))?;
 
         let do_archive_files = |encoder: &mut dyn Write| -> std::result::Result<(), E> {
-            let mut archive = tar::Builder::new(encoder);
-            // Serialize the version and snapshots files before accounts so we can quickly determine the version
-            // and other bank fields. This is necessary if we want to interleave unpacking with reconstruction
-            archive
-                .append_path_with_name(&staging_version_file, SNAPSHOT_VERSION_FILENAME)
-                .map_err(E::ArchiveVersionFile)?;
-            archive
-                .append_dir_all(SNAPSHOTS_DIR, &staging_snapshots_dir)
-                .map_err(E::ArchiveSnapshotsDir)?;
+            // let mut archive = tar::Builder::new(encoder);
+            // // Serialize the version and snapshots files before accounts so we can quickly determine the version
+            // // and other bank fields. This is necessary if we want to interleave unpacking with reconstruction
+            // archive
+            //     .append_path_with_name(&staging_version_file, SNAPSHOT_VERSION_FILENAME)
+            //     .map_err(E::ArchiveVersionFile)?;
+            // archive
+            //     .append_dir_all(SNAPSHOTS_DIR, &staging_snapshots_dir)
+            //     .map_err(E::ArchiveSnapshotsDir)?;
 
-            for storage in snapshot_storages {
-                let path_in_archive = Path::new(ACCOUNTS_DIR).join(AccountsFile::file_name(
-                    storage.slot(),
-                    storage.append_vec_id(),
-                ));
-                match storage.accounts.internals_for_archive() {
-                    InternalsForArchive::Mmap(data) => {
-                        let mut header = tar::Header::new_gnu();
-                        header.set_path(path_in_archive).map_err(|err| {
-                            E::ArchiveAccountStorageFile(err, storage.path().to_path_buf())
-                        })?;
-                        header.set_size(storage.capacity());
-                        header.set_cksum();
-                        archive.append(&header, data)
-                    }
-                    InternalsForArchive::FileIo(path) => {
-                        archive.append_path_with_name(path, path_in_archive)
-                    }
-                }
-                .map_err(|err| E::ArchiveAccountStorageFile(err, storage.path().to_path_buf()))?;
-            }
+            // for storage in snapshot_storages {
+            //     let path_in_archive = Path::new(ACCOUNTS_DIR).join(AccountsFile::file_name(
+            //         storage.slot(),
+            //         storage.append_vec_id(),
+            //     ));
+            //     match storage.accounts.internals_for_archive() {
+            //         InternalsForArchive::Mmap(data) => {
+            //             // let mut header = tar::Header::new_gnu();
+            //             // header.set_path(path_in_archive).map_err(|err| {
+            //             //     E::ArchiveAccountStorageFile(err, storage.path().to_path_buf())
+            //             // })?;
+            //             // header.set_size(storage.capacity());
+            //             // header.set_cksum();
+            //             // archive.append(&header, data)
+            //         }
+            //         InternalsForArchive::FileIo(path) => {
+            //             archive.append_path_with_name(path, path_in_archive)
+            //         }
+            //     }
+            //     .map_err(|err| E::ArchiveAccountStorageFile(err, storage.path().to_path_buf()))?;
+            // }
 
-            archive.into_inner().map_err(E::FinishArchive)?;
+            // archive.into_inner().map_err(E::FinishArchive)?;
             Ok(())
         };
 
@@ -1565,30 +1568,32 @@ pub fn verify_and_unarchive_snapshots(
 }
 
 /// Spawns a thread for unpacking a snapshot
-fn spawn_unpack_snapshot_thread(
-    file_sender: Sender<PathBuf>,
-    account_paths: Arc<Vec<PathBuf>>,
-    ledger_dir: Arc<PathBuf>,
-    mut archive: Archive<SharedBufferReader>,
-    parallel_selector: Option<ParallelSelector>,
-    thread_index: usize,
-) -> JoinHandle<()> {
-    Builder::new()
-        .name(format!("solUnpkSnpsht{thread_index:02}"))
-        .spawn(move || {
-            hardened_unpack::streaming_unpack_snapshot(
-                &mut archive,
-                ledger_dir.as_path(),
-                &account_paths,
-                parallel_selector,
-                &file_sender,
-            )
-            .unwrap();
-        })
-        .unwrap()
-}
+// fn spawn_unpack_snapshot_thread(
+//     file_sender: Sender<PathBuf>,
+//     account_paths: Arc<Vec<PathBuf>>,
+//     ledger_dir: Arc<PathBuf>,
+//     // mut archive: Archive<SharedBufferReader>,
+//     parallel_selector: Option<ParallelSelector>,
+//     thread_index: usize,
+// ) -> JoinHandle<()> {
+//     Builder::new()
+//         .name(format!("solUnpkSnpsht{thread_index:02}"))
+//         .spawn(move || {
+//             hardened_unpack::streaming_unpack_snapshot(
+//                 &mut archive,
+//                 ledger_dir.as_path(),
+//                 &account_paths,
+//                 parallel_selector,
+//                 &file_sender,
+//             )
+//             .unwrap();
+//         })
+//         .unwrap()
+// }
 
 /// Streams unpacked files across channel
+#[allow(dead_code)]
+#[allow(unused_variables)]
 fn streaming_unarchive_snapshot(
     file_sender: Sender<PathBuf>,
     account_paths: Vec<PathBuf>,
@@ -1597,37 +1602,38 @@ fn streaming_unarchive_snapshot(
     archive_format: ArchiveFormat,
     num_threads: usize,
 ) -> Vec<JoinHandle<()>> {
-    let account_paths = Arc::new(account_paths);
-    let ledger_dir = Arc::new(ledger_dir);
-    let shared_buffer = untar_snapshot_create_shared_buffer(&snapshot_archive_path, archive_format);
+    // let account_paths = Arc::new(account_paths);
+    // let ledger_dir = Arc::new(ledger_dir);
+    // let shared_buffer = untar_snapshot_create_shared_buffer(&snapshot_archive_path, archive_format);
 
-    // All shared buffer readers need to be created before the threads are spawned
-    let archives: Vec<_> = (0..num_threads)
-        .map(|_| {
-            let reader = SharedBufferReader::new(&shared_buffer);
-            Archive::new(reader)
-        })
-        .collect();
+    // // All shared buffer readers need to be created before the threads are spawned
+    // let archives: Vec<_> = (0..num_threads)
+    //     .map(|_| {
+    //         let reader = SharedBufferReader::new(&shared_buffer);
+    //         Archive::new(reader)
+    //     })
+    //     .collect();
 
-    archives
-        .into_iter()
-        .enumerate()
-        .map(|(thread_index, archive)| {
-            let parallel_selector = Some(ParallelSelector {
-                index: thread_index,
-                divisions: num_threads,
-            });
+    // archives
+    //     .into_iter()
+    //     .enumerate()
+    //     .map(|(thread_index, archive)| {
+    //         let parallel_selector = Some(ParallelSelector {
+    //             index: thread_index,
+    //             divisions: num_threads,
+    //         });
 
-            spawn_unpack_snapshot_thread(
-                file_sender.clone(),
-                account_paths.clone(),
-                ledger_dir.clone(),
-                archive,
-                parallel_selector,
-                thread_index,
-            )
-        })
-        .collect()
+    //         spawn_unpack_snapshot_thread(
+    //             file_sender.clone(),
+    //             account_paths.clone(),
+    //             ledger_dir.clone(),
+    //             archive,
+    //             parallel_selector,
+    //             thread_index,
+    //         )
+    //     })
+    //     .collect()
+    vec![]
 }
 
 /// BankSnapshotInfo::new_from_dir() requires a few meta files to accept a snapshot dir
@@ -2248,6 +2254,7 @@ fn unpack_snapshot_local(
     Ok(unpacked_append_vec_map)
 }
 
+#[allow(dead_code)]
 fn untar_snapshot_create_shared_buffer(
     snapshot_tar: &Path,
     archive_format: ArchiveFormat,
