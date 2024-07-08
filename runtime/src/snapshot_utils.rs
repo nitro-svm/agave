@@ -14,7 +14,7 @@ use {
             RebuiltSnapshotStorage, SnapshotStorageRebuilder,
         },
     },
-    bzip2::bufread::BzDecoder,
+    // bzip2::bufread::BzDecoder,
     crossbeam_channel::Sender,
     flate2::read::GzDecoder,
     lazy_static::lazy_static,
@@ -1070,12 +1070,12 @@ fn archive_snapshot(
         };
 
         match archive_format {
-            ArchiveFormat::TarBzip2 => {
-                let mut encoder =
-                    bzip2::write::BzEncoder::new(archive_file, bzip2::Compression::best());
-                do_archive_files(&mut encoder)?;
-                encoder.finish().map_err(E::FinishEncoder)?;
-            }
+            // ArchiveFormat::TarBzip2 => {
+            //     let mut encoder =
+            //         bzip2::write::BzEncoder::new(archive_file, bzip2::Compression::best());
+            //     do_archive_files(&mut encoder)?;
+            //     encoder.finish().map_err(E::FinishEncoder)?;
+            // }
             ArchiveFormat::TarGzip => {
                 let mut encoder =
                     flate2::write::GzEncoder::new(archive_file, flate2::Compression::default());
@@ -2263,7 +2263,7 @@ fn untar_snapshot_create_shared_buffer(
             .unwrap()
     };
     match archive_format {
-        ArchiveFormat::TarBzip2 => SharedBuffer::new(BzDecoder::new(BufReader::new(open_file()))),
+        // ArchiveFormat::TarBzip2 => SharedBuffer::new(BzDecoder::new(BufReader::new(open_file()))),
         ArchiveFormat::TarGzip => SharedBuffer::new(GzDecoder::new(BufReader::new(open_file()))),
         // ArchiveFormat::TarZstd => SharedBuffer::new(
         //     zstd::stream::read::Decoder::new(BufReader::new(open_file())).unwrap(),

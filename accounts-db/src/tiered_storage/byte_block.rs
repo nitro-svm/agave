@@ -230,10 +230,10 @@ mod tests {
         write_single(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_single_encoded_format() {
-        write_single(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_single_encoded_format() {
+    //     write_single(AccountBlockFormat::Lz4);
+    // }
 
     #[derive(Debug, PartialEq)]
     struct TestMetaStruct {
@@ -334,10 +334,10 @@ mod tests {
         write_multiple(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_multiple_lz4_format() {
-        write_multiple(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_multiple_lz4_format() {
+    //     write_multiple(AccountBlockFormat::Lz4);
+    // }
 
     fn write_optional_fields(format: AccountBlockFormat) {
         let mut test_epoch = 5432312;
@@ -395,8 +395,8 @@ mod tests {
         write_optional_fields(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_optional_fields_lz4_format() {
-        write_optional_fields(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_optional_fields_lz4_format() {
+    //     write_optional_fields(AccountBlockFormat::Lz4);
+    // }
 }

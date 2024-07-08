@@ -1,5 +1,6 @@
 use {
-    bzip2::bufread::BzDecoder,
+    // bzip2::bufread::BzDecoder,
+    flate2::read::GzDecoder,
     log::*,
     rand::{thread_rng, Rng},
     solana_sdk::genesis_config::{GenesisConfig, DEFAULT_GENESIS_ARCHIVE, DEFAULT_GENESIS_FILE},
@@ -490,8 +491,9 @@ pub fn unpack_genesis_archive(
     let extract_start = Instant::now();
 
     fs::create_dir_all(destination_dir)?;
-    let tar_bz2 = File::open(archive_filename)?;
-    let tar = BzDecoder::new(BufReader::new(tar_bz2));
+    // replaced bz2 with gz
+    let tar_gz = File::open(archive_filename)?;
+    let tar = GzDecoder::new(BufReader::new(tar_gz));
     let mut archive = Archive::new(tar);
     unpack_genesis(
         &mut archive,
