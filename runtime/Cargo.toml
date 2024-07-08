@@ -79,7 +79,7 @@ symlink = { workspace = true }
 tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
-zstd = { workspace = true }
+# zstd = { workspace = true }
 
 [lib]
 crate-type = ["lib"]

@@ -5258,7 +5258,6 @@ dependencies = [
  "spl-token-group-interface",
  "spl-token-metadata-interface",
  "thiserror",
- "zstd",
 ]
 
 [[package]]
@@ -7029,7 +7028,6 @@ dependencies = [
  "tempfile",
  "test-case",
  "thiserror",
- "zstd",
 ]
 
 [[package]]

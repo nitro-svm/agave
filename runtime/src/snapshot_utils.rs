@@ -1082,12 +1082,12 @@ fn archive_snapshot(
                 do_archive_files(&mut encoder)?;
                 encoder.finish().map_err(E::FinishEncoder)?;
             }
-            ArchiveFormat::TarZstd => {
-                let mut encoder =
-                    zstd::stream::Encoder::new(archive_file, 0).map_err(E::CreateEncoder)?;
-                do_archive_files(&mut encoder)?;
-                encoder.finish().map_err(E::FinishEncoder)?;
-            }
+            // ArchiveFormat::TarZstd => {
+            //     let mut encoder =
+            //         zstd::stream::Encoder::new(archive_file, 0).map_err(E::CreateEncoder)?;
+            //     do_archive_files(&mut encoder)?;
+            //     encoder.finish().map_err(E::FinishEncoder)?;
+            // }
             ArchiveFormat::TarLz4 => {
                 let mut encoder = lz4::EncoderBuilder::new()
                     .level(1)
@@ -2265,9 +2265,9 @@ fn untar_snapshot_create_shared_buffer(
     match archive_format {
         ArchiveFormat::TarBzip2 => SharedBuffer::new(BzDecoder::new(BufReader::new(open_file()))),
         ArchiveFormat::TarGzip => SharedBuffer::new(GzDecoder::new(BufReader::new(open_file()))),
-        ArchiveFormat::TarZstd => SharedBuffer::new(
-            zstd::stream::read::Decoder::new(BufReader::new(open_file())).unwrap(),
-        ),
+        // ArchiveFormat::TarZstd => SharedBuffer::new(
+        //     zstd::stream::read::Decoder::new(BufReader::new(open_file())).unwrap(),
+        // ),
         ArchiveFormat::TarLz4 => {
             SharedBuffer::new(lz4::Decoder::new(BufReader::new(open_file())).unwrap())
         }

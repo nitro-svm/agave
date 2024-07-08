@@ -23,7 +23,7 @@ pub const TAR_EXTENSION: &str = "tar";
 pub enum ArchiveFormat {
     TarBzip2,
     TarGzip,
-    TarZstd,
+    // TarZstd, // Unsupproted in svm-rollup
     TarLz4,
     Tar,
 }
@@ -34,7 +34,7 @@ impl ArchiveFormat {
         match self {
             ArchiveFormat::TarBzip2 => TAR_BZIP2_EXTENSION,
             ArchiveFormat::TarGzip => TAR_GZIP_EXTENSION,
-            ArchiveFormat::TarZstd => TAR_ZSTD_EXTENSION,
+            // ArchiveFormat::TarZstd => TAR_ZSTD_EXTENSION,
             ArchiveFormat::TarLz4 => TAR_LZ4_EXTENSION,
             ArchiveFormat::Tar => TAR_EXTENSION,
         }
@@ -42,7 +42,7 @@ impl ArchiveFormat {
 
     pub fn from_cli_arg(archive_format_str: &str) -> Option<ArchiveFormat> {
         match archive_format_str {
-            "zstd" => Some(ArchiveFormat::TarZstd),
+            // "zstd" => Some(ArchiveFormat::TarZstd),
             "lz4" => Some(ArchiveFormat::TarLz4),
             _ => None,
         }
@@ -58,7 +58,7 @@ impl TryFrom<&str> for ArchiveFormat {
         match extension {
             TAR_BZIP2_EXTENSION => Ok(ArchiveFormat::TarBzip2),
             TAR_GZIP_EXTENSION => Ok(ArchiveFormat::TarGzip),
-            TAR_ZSTD_EXTENSION => Ok(ArchiveFormat::TarZstd),
+            // TAR_ZSTD_EXTENSION => Ok(ArchiveFormat::TarZstd),
             TAR_LZ4_EXTENSION => Ok(ArchiveFormat::TarLz4),
             TAR_EXTENSION => Ok(ArchiveFormat::Tar),
             _ => Err(ParseError::InvalidExtension(extension.to_string())),
