@@ -96,7 +96,7 @@ use {
     solana_cost_model::cost_tracker::CostTracker,
     solana_loader_v4_program::create_program_runtime_environment_v2,
     solana_measure::{measure, measure::Measure, measure_us},
-    solana_perf::perf_libs,
+    // solana_perf::perf_libs,
     solana_program_runtime::{
         invoke_context::BuiltinFunctionWithContext,
         loaded_programs::{
@@ -6794,12 +6794,13 @@ impl Bank {
         //  1. Transaction forwarding delay
         //  2. The slot at which the next leader will actually process the transaction
         // Drop the transaction if it will expire by the time the next node receives and processes it
-        let api = perf_libs::api();
-        let max_tx_fwd_delay = if api.is_none() {
-            MAX_TRANSACTION_FORWARDING_DELAY
-        } else {
-            MAX_TRANSACTION_FORWARDING_DELAY_GPU
-        };
+        // let api = perf_libs::api();
+        // let max_tx_fwd_delay = if api.is_none() {
+        //     MAX_TRANSACTION_FORWARDING_DELAY
+        // } else {
+        //     MAX_TRANSACTION_FORWARDING_DELAY_GPU
+        // };
+        let max_tx_fwd_delay = MAX_TRANSACTION_FORWARDING_DELAY_GPU;
 
         self.check_transactions(
             transactions,
