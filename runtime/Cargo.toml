@@ -114,6 +114,7 @@ frozen-abi = [
     "solana-accounts-db/frozen-abi",
     "solana-compute-budget/frozen-abi",
     "solana-cost-model/frozen-abi",
+    # "solana-perf/frozen-abi",
     "solana-program-runtime/frozen-abi",
     "solana-sdk/frozen-abi",
     "solana-svm/frozen-abi",
