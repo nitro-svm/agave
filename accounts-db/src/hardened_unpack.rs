@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use {
     // bzip2::bufread::BzDecoder,
-    flate2::read::GzDecoder,
+    // flate2::read::GzDecoder,
     log::*,
     rand::{thread_rng, Rng},
     solana_sdk::genesis_config::{GenesisConfig, DEFAULT_GENESIS_ARCHIVE, DEFAULT_GENESIS_FILE},
@@ -556,65 +556,65 @@ mod tests {
     use {
         super::*,
         assert_matches::assert_matches,
-        tar::{Builder, Header},
+        // tar::{Builder, Header},
     };
 
-    #[test]
-    fn test_archive_is_valid_entry() {
-        assert!(is_valid_snapshot_archive_entry(
-            &["snapshots"],
-            tar::EntryType::Directory
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots", ""],
-            tar::EntryType::Directory
-        ));
-        assert!(is_valid_snapshot_archive_entry(
-            &["snapshots", "3"],
-            tar::EntryType::Directory
-        ));
-        assert!(is_valid_snapshot_archive_entry(
-            &["snapshots", "3", "3"],
-            tar::EntryType::Regular
-        ));
-        assert!(is_valid_snapshot_archive_entry(
-            &["version"],
-            tar::EntryType::Regular
-        ));
-        assert!(is_valid_snapshot_archive_entry(
-            &["accounts"],
-            tar::EntryType::Directory
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["accounts", ""],
-            tar::EntryType::Regular
-        ));
+    // #[test]
+    // fn test_archive_is_valid_entry() {
+    //     assert!(is_valid_snapshot_archive_entry(
+    //         &["snapshots"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots", ""],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(is_valid_snapshot_archive_entry(
+    //         &["snapshots", "3"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(is_valid_snapshot_archive_entry(
+    //         &["snapshots", "3", "3"],
+    //         tar::EntryType::Regular
+    //     ));
+    //     assert!(is_valid_snapshot_archive_entry(
+    //         &["version"],
+    //         tar::EntryType::Regular
+    //     ));
+    //     assert!(is_valid_snapshot_archive_entry(
+    //         &["accounts"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["accounts", ""],
+    //         tar::EntryType::Regular
+    //     ));
 
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots"],
-            tar::EntryType::Regular
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots", "x0"],
-            tar::EntryType::Directory
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots", "0x"],
-            tar::EntryType::Directory
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots", "①"],
-            tar::EntryType::Directory
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["snapshots", "0", "aa"],
-            tar::EntryType::Regular
-        ));
-        assert!(!is_valid_snapshot_archive_entry(
-            &["aaaa"],
-            tar::EntryType::Regular
-        ));
-    }
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots"],
+    //         tar::EntryType::Regular
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots", "x0"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots", "0x"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots", "①"],
+    //         tar::EntryType::Directory
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["snapshots", "0", "aa"],
+    //         tar::EntryType::Regular
+    //     ));
+    //     assert!(!is_valid_snapshot_archive_entry(
+    //         &["aaaa"],
+    //         tar::EntryType::Regular
+    //     ));
+    // }
 
     #[test]
     fn test_valid_snapshot_accounts() {

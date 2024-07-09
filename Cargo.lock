@@ -5308,7 +5308,6 @@ dependencies = [
  "crossbeam-channel",
  "dashmap",
  "ed25519-dalek",
- "flate2",
  "index_list",
  "indexmap 2.2.6",
  "itertools 0.12.1",
