@@ -64,7 +64,7 @@ impl ActiveStats {
             ActiveStatItem::HashMerkleTree => &self.hash_merkle,
             ActiveStatItem::HashScan => &self.hash_scan,
         };
-        let value = modify_stat(stat);
+        let _value = modify_stat(stat);
         // match item {
         //     ActiveStatItem::Clean => datapoint_info!("accounts_db_active", ("clean", value, i64)),
         //     ActiveStatItem::SquashAncient => {

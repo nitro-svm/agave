@@ -103,6 +103,7 @@ impl SecondaryIndexEntry for RwLockSecondaryIndexEntry {
 }
 
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub struct SecondaryIndex<SecondaryIndexEntryType: SecondaryIndexEntry + Default + Sync + Send> {
     metrics_name: &'static str,
     // Map from index keys to index values

@@ -176,6 +176,7 @@ impl AccountsCache {
             is_frozen: AtomicBool::default(),
         })
     }
+    #[allow(dead_code)]
     fn unique_account_writes_size(&self) -> u64 {
         self.cache
             .iter()

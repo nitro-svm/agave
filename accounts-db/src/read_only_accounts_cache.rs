@@ -242,7 +242,7 @@ impl ReadOnlyAccountsCache {
         data_size.fetch_sub(account_size, Ordering::Relaxed);
         Some(entry.account)
     }
-
+    #[allow(dead_code)]
     pub(crate) fn cache_len(&self) -> usize {
         self.cache.len()
     }

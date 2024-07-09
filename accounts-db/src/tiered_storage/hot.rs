@@ -69,7 +69,8 @@ pub(crate) const HOT_ACCOUNT_ALIGNMENT: usize = 8;
 pub(crate) const HOT_BLOCK_ALIGNMENT: usize = 8;
 
 /// The maximum supported offset for hot accounts storage.
-const MAX_HOT_ACCOUNT_OFFSET: usize = u32::MAX as usize * HOT_ACCOUNT_ALIGNMENT;
+// const MAX_HOT_ACCOUNT_OFFSET: usize = u32::MAX as usize * HOT_ACCOUNT_ALIGNMENT;
+const MAX_HOT_ACCOUNT_OFFSET: usize = (u32::MAX as u64 * HOT_ACCOUNT_ALIGNMENT as u64) as usize;
 
 // returns the required number of padding
 fn padding_bytes(data_len: usize) -> u8 {
