@@ -1006,22 +1006,22 @@ fn archive_snapshot(
     })?;
     let staging_snapshot_file = staging_snapshot_dir.join(&slot_str);
     let src_snapshot_file = src_snapshot_dir.join(slot_str);
-    symlink::symlink_file(&src_snapshot_file, &staging_snapshot_file)
-        .map_err(|err| E::SymlinkSnapshot(err, src_snapshot_file, staging_snapshot_file))?;
+    // symlink::symlink_file(&src_snapshot_file, &staging_snapshot_file)
+    //     .map_err(|err| E::SymlinkSnapshot(err, src_snapshot_file, staging_snapshot_file))?;
 
     // Following the existing archive format, the status cache is under snapshots/, not under <slot>/
     // like in the snapshot dir.
     let staging_status_cache = staging_snapshots_dir.join(SNAPSHOT_STATUS_CACHE_FILENAME);
     let src_status_cache = src_snapshot_dir.join(SNAPSHOT_STATUS_CACHE_FILENAME);
-    symlink::symlink_file(&src_status_cache, &staging_status_cache)
-        .map_err(|err| E::SymlinkStatusCache(err, src_status_cache, staging_status_cache))?;
+    // symlink::symlink_file(&src_status_cache, &staging_status_cache)
+    //     .map_err(|err| E::SymlinkStatusCache(err, src_status_cache, staging_status_cache))?;
 
     // The bank snapshot has the version file, so symlink it to the correct staging path
     let staging_version_file = staging_dir.path().join(SNAPSHOT_VERSION_FILENAME);
     let src_version_file = src_snapshot_dir.join(SNAPSHOT_VERSION_FILENAME);
-    symlink::symlink_file(&src_version_file, &staging_version_file).map_err(|err| {
-        E::SymlinkVersionFile(err, src_version_file, staging_version_file.clone())
-    })?;
+    // symlink::symlink_file(&src_version_file, &staging_version_file).map_err(|err| {
+    //     E::SymlinkVersionFile(err, src_version_file, staging_version_file.clone())
+    // })?;
 
     // Tar the staging directory into the archive at `staging_archive_path`
     let staging_archive_path = tar_dir.join(format!(
@@ -1441,14 +1441,14 @@ fn get_snapshot_accounts_hardlink_dir(
                 snapshot_hardlink_dir.clone(),
             )
         })?;
-        let symlink_path = hardlinks_dir.as_ref().join(format!("account_path_{idx}"));
-        symlink::symlink_dir(&snapshot_hardlink_dir, &symlink_path).map_err(|err| {
-            GetSnapshotAccountsHardLinkDirError::SymlinkSnapshotHardLinkDir {
-                source: err,
-                original: snapshot_hardlink_dir.clone(),
-                link: symlink_path,
-            }
-        })?;
+        let _symlink_path = hardlinks_dir.as_ref().join(format!("account_path_{idx}"));
+        // symlink::symlink_dir(&snapshot_hardlink_dir, &symlink_path).map_err(|err| {
+        //     GetSnapshotAccountsHardLinkDirError::SymlinkSnapshotHardLinkDir {
+        //         source: err,
+        //         original: snapshot_hardlink_dir.clone(),
+        //         link: symlink_path,
+        //     }
+        // })?;
         account_paths.insert(account_path);
     };
 
@@ -2213,46 +2213,46 @@ pub fn purge_old_snapshot_archives(
     }
 }
 
-#[cfg(feature = "dev-context-only-utils")]
-fn unpack_snapshot_local(
-    shared_buffer: SharedBuffer,
-    ledger_dir: &Path,
-    account_paths: &[PathBuf],
-    parallel_divisions: usize,
-) -> Result<UnpackedAppendVecMap> {
-    assert!(parallel_divisions > 0);
+// #[cfg(feature = "dev-context-only-utils")]
+// fn unpack_snapshot_local(
+//     shared_buffer: SharedBuffer,
+//     ledger_dir: &Path,
+//     account_paths: &[PathBuf],
+//     parallel_divisions: usize,
+// ) -> Result<UnpackedAppendVecMap> {
+//     assert!(parallel_divisions > 0);
 
-    // allocate all readers before any readers start reading
-    let readers = (0..parallel_divisions)
-        .map(|_| SharedBufferReader::new(&shared_buffer))
-        .collect::<Vec<_>>();
+//     // allocate all readers before any readers start reading
+//     let readers = (0..parallel_divisions)
+//         .map(|_| SharedBufferReader::new(&shared_buffer))
+//         .collect::<Vec<_>>();
 
-    // create 'parallel_divisions' # of parallel workers, each responsible for 1/parallel_divisions of all the files to extract.
-    let all_unpacked_append_vec_map = readers
-        .into_par_iter()
-        .enumerate()
-        .map(|(index, reader)| {
-            let parallel_selector = Some(ParallelSelector {
-                index,
-                divisions: parallel_divisions,
-            });
-            let mut archive = Archive::new(reader);
-            hardened_unpack::unpack_snapshot(
-                &mut archive,
-                ledger_dir,
-                account_paths,
-                parallel_selector,
-            )
-        })
-        .collect::<Vec<_>>();
+//     // create 'parallel_divisions' # of parallel workers, each responsible for 1/parallel_divisions of all the files to extract.
+//     let all_unpacked_append_vec_map = readers
+//         .into_par_iter()
+//         .enumerate()
+//         .map(|(index, reader)| {
+//             let parallel_selector = Some(ParallelSelector {
+//                 index,
+//                 divisions: parallel_divisions,
+//             });
+//             let mut archive = Archive::new(reader);
+//             hardened_unpack::unpack_snapshot(
+//                 &mut archive,
+//                 ledger_dir,
+//                 account_paths,
+//                 parallel_selector,
+//             )
+//         })
+//         .collect::<Vec<_>>();
 
-    let mut unpacked_append_vec_map = UnpackedAppendVecMap::new();
-    for h in all_unpacked_append_vec_map {
-        unpacked_append_vec_map.extend(h?);
-    }
+//     let mut unpacked_append_vec_map = UnpackedAppendVecMap::new();
+//     for h in all_unpacked_append_vec_map {
+//         unpacked_append_vec_map.extend(h?);
+//     }
 
-    Ok(unpacked_append_vec_map)
-}
+//     Ok(unpacked_append_vec_map)
+// }
 
 #[allow(dead_code)]
 fn untar_snapshot_create_shared_buffer(
@@ -2282,17 +2282,17 @@ fn untar_snapshot_create_shared_buffer(
     }
 }
 
-#[cfg(feature = "dev-context-only-utils")]
-fn untar_snapshot_in(
-    snapshot_tar: impl AsRef<Path>,
-    unpack_dir: &Path,
-    account_paths: &[PathBuf],
-    archive_format: ArchiveFormat,
-    parallel_divisions: usize,
-) -> Result<UnpackedAppendVecMap> {
-    let shared_buffer = untar_snapshot_create_shared_buffer(snapshot_tar.as_ref(), archive_format);
-    unpack_snapshot_local(shared_buffer, unpack_dir, account_paths, parallel_divisions)
-}
+// #[cfg(feature = "dev-context-only-utils")]
+// fn untar_snapshot_in(
+//     snapshot_tar: impl AsRef<Path>,
+//     unpack_dir: &Path,
+//     account_paths: &[PathBuf],
+//     archive_format: ArchiveFormat,
+//     parallel_divisions: usize,
+// ) -> Result<UnpackedAppendVecMap> {
+//     let shared_buffer = untar_snapshot_create_shared_buffer(snapshot_tar.as_ref(), archive_format);
+//     unpack_snapshot_local(shared_buffer, unpack_dir, account_paths, parallel_divisions)
+// }
 
 pub fn verify_unpacked_snapshots_dir_and_version(
     unpacked_snapshots_dir_and_version: &UnpackedSnapshotsDirAndVersion,
@@ -2346,6 +2346,8 @@ pub enum VerifyBank {
 }
 
 #[cfg(feature = "dev-context-only-utils")]
+#[allow(dead_code)]
+#[allow(unused_variables)]
 pub fn verify_snapshot_archive(
     snapshot_archive: impl AsRef<Path>,
     snapshots_to_verify: impl AsRef<Path>,
@@ -2356,14 +2358,14 @@ pub fn verify_snapshot_archive(
     let temp_dir = tempfile::TempDir::new().unwrap();
     let unpack_dir = temp_dir.path();
     let unpack_account_dir = create_accounts_run_and_snapshot_dirs(unpack_dir).unwrap().0;
-    untar_snapshot_in(
-        snapshot_archive,
-        unpack_dir,
-        &[unpack_account_dir.clone()],
-        archive_format,
-        1,
-    )
-    .unwrap();
+    // untar_snapshot_in(
+    //     snapshot_archive,
+    //     unpack_dir,
+    //     &[unpack_account_dir.clone()],
+    //     archive_format,
+    //     1,
+    // )
+    // .unwrap();
 
     // Check snapshots are the same
     let unpacked_snapshots = unpack_dir.join("snapshots");
