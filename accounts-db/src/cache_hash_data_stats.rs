@@ -1,4 +1,5 @@
 //! Cached data for hashing accounts
+#[allow(unused_imports)]
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 #[derive(Default, Debug)]

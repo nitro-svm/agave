@@ -14,7 +14,7 @@ bincode = { workspace = true }
 blake3 = { workspace = true }
 bv = { workspace = true, features = ["serde"] }
 bytemuck = { workspace = true }
-bzip2 = { workspace = true }
+# bzip2 = { workspace = true }
 crossbeam-channel = { workspace = true }
 dashmap = { workspace = true, features = ["rayon", "raw-api"] }
 index_list = { workspace = true }
@@ -22,7 +22,7 @@ indexmap = { workspace = true }
 itertools = { workspace = true }
 lazy_static = { workspace = true }
 log = { workspace = true }
-lz4 = { workspace = true }
+# lz4 = { workspace = true }
 memmap2 = { workspace = true }
 modular-bitfield = { workspace = true }
 num_cpus = { workspace = true }
@@ -47,7 +47,7 @@ solana-stake-program = { workspace = true, optional = true }
 solana-svm = { workspace = true }
 solana-vote-program = { workspace = true, optional = true }
 static_assertions = { workspace = true }
-tar = { workspace = true }
+# tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
 

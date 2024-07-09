@@ -22,6 +22,7 @@ mod geyser_plugin_utils;
 
 #[cfg(feature = "dev-context-only-utils")]
 use qualifier_attr::qualifiers;
+#[allow(unused_imports)]
 use {
     crate::{
         account_info::{AccountInfo, StorageLocation},
@@ -666,6 +667,7 @@ struct SlotIndexGenerationInfo {
 }
 
 #[derive(Default, Debug)]
+#[allow(dead_code)]
 struct GenerateIndexTimings {
     pub total_time_us: u64,
     pub index_time: u64,
@@ -696,7 +698,7 @@ struct StorageSizeAndCount {
 type StorageSizeAndCountMap = DashMap<AccountsFileId, StorageSizeAndCount>;
 
 impl GenerateIndexTimings {
-    pub fn report(&self, startup_stats: &StartupStats) {
+    pub fn report(&self, _startup_stats: &StartupStats) {
         // datapoint_info!(
         //     "generate_index",
         //     ("overall_us", self.total_time_us, i64),
@@ -1503,6 +1505,7 @@ pub struct AccountsDb {
 }
 
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub struct AccountsStats {
     delta_hash_scan_time_total_us: AtomicU64,
     delta_hash_accumulate_time_total_us: AtomicU64,
@@ -1547,7 +1550,7 @@ pub struct PurgeStats {
 }
 
 impl PurgeStats {
-    fn report(&self, metric_name: &'static str, report_interval_ms: Option<u64>) {
+    fn report(&self, _metric_name: &'static str, report_interval_ms: Option<u64>) {
         let should_report = report_interval_ms
             .map(|report_interval_ms| self.last_report.should_update(report_interval_ms))
             .unwrap_or(true);
@@ -3258,7 +3261,7 @@ impl AccountsDb {
         }
         sort.stop();
 
-        let total_keys_count = pubkeys.len();
+        let _total_keys_count = pubkeys.len();
         let mut accounts_scan = Measure::start("accounts_scan");
         let uncleaned_roots = self.accounts_index.clone_uncleaned_roots();
         let found_not_zero_accum = AtomicU64::new(0);
@@ -4293,6 +4296,7 @@ impl AccountsDb {
     /// first tuple element: the filtered-down candidates and
     /// second duple element: the candidates which
     /// are skipped in this round and might be eligible for the future shrink.
+    #[allow(unused_variables)]
     fn select_candidates_by_total_usage(
         &self,
         shrink_slots: &ShrinkCandidates,
@@ -4825,7 +4829,7 @@ impl AccountsDb {
 
         let mut measure_shrink_all_candidates = Measure::start("shrink_all_candidate_slots-ms");
         let num_candidates = shrink_slots.len();
-        let shrink_candidates_count = shrink_slots.len();
+        let _shrink_candidates_count = shrink_slots.len();
         self.thread_pool_clean.install(|| {
             shrink_slots
                 .into_par_iter()
@@ -5399,7 +5403,7 @@ impl AccountsDb {
                 // The latest version of the account existed in the index, but could not be
                 // fetched from storage. This means a race occurred between this function and clean
                 // accounts/purge_slots
-                let message = format!(
+                let _message = format!(
                     "do_load() failed to get key: {pubkey} from storage, latest attempt was for \
                      slot: {slot}, storage_location: {storage_location:?}, load_hint: {load_hint:?}",
                 );
@@ -6307,7 +6311,7 @@ impl AccountsDb {
         // Note even if force_flush is false, we will still flush all roots <= the
         // given `requested_flush_root`, even if some of the later roots cannot be used for
         // cleaning due to an ongoing scan
-        let (total_new_cleaned_roots, num_cleaned_roots_flushed, mut flush_stats) = self
+        let (_total_new_cleaned_roots, _num_cleaned_roots_flushed, mut flush_stats) = self
             .flush_rooted_accounts_cache(
                 requested_flush_root,
                 Some((&mut account_bytes_saved, &mut num_accounts_saved)),
@@ -6319,7 +6323,7 @@ impl AccountsDb {
         // banks
 
         // If 'should_aggressively_flush_cache', then flush the excess ones to storage
-        let (total_new_excess_roots, num_excess_roots_flushed, flush_stats_aggressively) =
+        let (_total_new_excess_roots, _num_excess_roots_flushed, flush_stats_aggressively) =
             if self.should_aggressively_flush_cache() {
                 // Start by flushing the roots
                 //
@@ -6332,12 +6336,12 @@ impl AccountsDb {
             };
         flush_stats.accumulate(&flush_stats_aggressively);
 
-        let mut excess_slot_count = 0;
+        let mut _excess_slot_count = 0;
         let mut unflushable_unrooted_slot_count = 0;
         let max_flushed_root = self.accounts_cache.fetch_max_flush_root();
         if self.should_aggressively_flush_cache() {
             let old_slots = self.accounts_cache.cached_frozen_slots();
-            excess_slot_count = old_slots.len();
+            _excess_slot_count = old_slots.len();
             let mut flush_stats = FlushStats::default();
             old_slots.into_iter().for_each(|old_slot| {
                 // Don't flush slots that are known to be unrooted
@@ -6721,7 +6725,7 @@ impl AccountsDb {
             "total_stores: {total_count}, newest_slot: {newest_slot}, oldest_slot: {oldest_slot}"
         );
 
-        let total_alive_ratio = if total_bytes > 0 {
+        let _total_alive_ratio = if total_bytes > 0 {
             total_alive_bytes as f64 / total_bytes as f64
         } else {
             0.
@@ -6855,7 +6859,7 @@ impl AccountsDb {
         let total_lamports = *total_lamports.lock().unwrap();
 
         let mut hash_time = Measure::start("hash");
-        let (accumulated_hash, hash_total) = AccountsHasher::calculate_hash(account_hashes);
+        let (accumulated_hash, _hash_total) = AccountsHasher::calculate_hash(account_hashes);
         hash_time.stop();
 
         // datapoint_info!(
@@ -8414,7 +8418,7 @@ impl AccountsDb {
 
     fn report_store_timings(&self) {
         if self.stats.last_store_report.should_update(1000) {
-            let read_cache_stats = self.read_only_accounts_cache.get_and_reset_stats();
+            let _read_cache_stats = self.read_only_accounts_cache.get_and_reset_stats();
             // datapoint_info!(
             //     "accounts_db_store_timings",
             //     (

@@ -154,7 +154,7 @@ impl BucketMapHolderStats {
             )
         }
     }
-
+    #[allow(dead_code)]
     fn calc_percent(ms: u64, elapsed_ms: u64) -> f32 {
         if elapsed_ms == 0 {
             0.0
@@ -185,7 +185,8 @@ impl BucketMapHolderStats {
             + self.held_in_mem.ref_count.load(Ordering::Relaxed);
         in_mem.saturating_sub(held_in_mem) as usize
     }
-
+    #[allow(unused_variables)]
+    #[allow(unused_mut)]
     pub fn report_stats<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>>(
         &self,
         storage: &BucketMapHolder<T, U>,
@@ -216,7 +217,7 @@ impl BucketMapHolderStats {
             .unwrap_or_default();
         let in_mem_stats = Self::get_stats(in_mem_per_bucket_counts);
         let disk_stats = Self::get_stats(disk_per_bucket_counts);
-
+        #[allow(dead_code)]
         const US_PER_MS: u64 = 1_000;
 
         // all metrics during startup are written to a different data point

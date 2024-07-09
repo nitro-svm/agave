@@ -18,7 +18,7 @@ blake3 = { workspace = true }
 bv = { workspace = true, features = ["serde"] }
 bytemuck = { workspace = true }
 byteorder = { workspace = true }
-bzip2 = { workspace = true }
+# bzip2 = { workspace = true }
 crossbeam-channel = { workspace = true }
 dashmap = { workspace = true, features = ["rayon", "raw-api"] }
 dir-diff = { workspace = true }
@@ -30,7 +30,7 @@ itertools = { workspace = true }
 lazy_static = { workspace = true }
 libc = { workspace = true }
 log = { workspace = true }
-lz4 = { workspace = true }
+# lz4 = { workspace = true }
 memmap2 = { workspace = true }
 mockall = { workspace = true }
 modular-bitfield = { workspace = true }
@@ -59,7 +59,7 @@ solana-frozen-abi-macro = { workspace = true, optional = true }
 solana-inline-spl = { workspace = true }
 solana-loader-v4-program = { workspace = true }
 solana-measure = { workspace = true }
-solana-perf = { workspace = true }
+# solana-perf = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-rayon-threadlimit = { workspace = true }
 solana-sdk = { workspace = true }
@@ -75,11 +75,11 @@ solana-zk-token-sdk = { workspace = true }
 static_assertions = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
 strum_macros = { workspace = true }
-symlink = { workspace = true }
-tar = { workspace = true }
+# symlink = { workspace = true }
+# tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
-zstd = { workspace = true }
+# zstd = { workspace = true }
 
 [lib]
 crate-type = ["lib"]
@@ -114,7 +114,7 @@ frozen-abi = [
     "solana-accounts-db/frozen-abi",
     "solana-compute-budget/frozen-abi",
     "solana-cost-model/frozen-abi",
-    "solana-perf/frozen-abi",
+    # "solana-perf/frozen-abi",
     "solana-program-runtime/frozen-abi",
     "solana-sdk/frozen-abi",
     "solana-svm/frozen-abi",
