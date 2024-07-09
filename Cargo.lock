@@ -7008,7 +7008,6 @@ dependencies = [
  "static_assertions",
  "strum",
  "strum_macros",
- "symlink",
  "tempfile",
  "test-case",
  "thiserror",
