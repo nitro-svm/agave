@@ -1,7 +1,6 @@
 #[allow(unused_imports)]
 use {
     // bzip2::bufread::BzDecoder,
-    // flate2::read::GzDecoder,
     log::*,
     rand::{thread_rng, Rng},
     solana_sdk::genesis_config::{GenesisConfig, DEFAULT_GENESIS_ARCHIVE, DEFAULT_GENESIS_FILE},
@@ -499,9 +498,8 @@ pub fn open_genesis_config(
 //     let extract_start = Instant::now();
 
 //     fs::create_dir_all(destination_dir)?;
-//     // replaced bz2 with gz
-//     let tar_gz = File::open(archive_filename)?;
-//     let tar = GzDecoder::new(BufReader::new(tar_gz));
+//     let tar_bz2 = File::open(archive_filename)?;
+//     let tar = BzDecoder::new(BufReader::new(tar_bz2));
 //     let mut archive = Archive::new(tar);
 //     unpack_genesis(
 //         &mut archive,
