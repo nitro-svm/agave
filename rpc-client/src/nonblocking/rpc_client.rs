@@ -140,7 +140,7 @@ use {
 pub struct RpcClient {
     sender: Box<dyn RpcSender + Send + Sync + 'static>,
     config: RpcClientConfig,
-}
+
 
 impl RpcClient {
     /// Create an `RpcClient` from an [`RpcSender`] and an [`RpcClientConfig`].
@@ -3417,8 +3417,8 @@ impl RpcClient {
         commitment_config: CommitmentConfig,
     ) -> RpcResult<Option<Account>> {
         let config = RpcAccountInfoConfig {
-            encoding: Some(UiAccountEncoding::Base64Zstd),
-            commitment: Some(commitment_config),
+            encoding: Some(UiAccountEncoding::Base64), // Base64Zstd is not supported in RISC0
+            commitment: Some(self.maybe_map_commitment(commitment_config).await?),
             data_slice: None,
             min_context_slot: None,
         };
@@ -3644,8 +3644,8 @@ impl RpcClient {
         self.get_multiple_accounts_with_config(
             pubkeys,
             RpcAccountInfoConfig {
-                encoding: Some(UiAccountEncoding::Base64Zstd),
-                commitment: Some(commitment_config),
+               encoding: Some(UiAccountEncoding::Base64), // Base64Zstd is not supported in RISC0
+                commitment: Some(self.maybe_map_commitment(commitment_config).await?),
                 data_slice: None,
                 min_context_slot: None,
             },
@@ -3917,7 +3917,7 @@ impl RpcClient {
             pubkey,
             RpcProgramAccountsConfig {
                 account_config: RpcAccountInfoConfig {
-                    encoding: Some(UiAccountEncoding::Base64Zstd),
+                    encoding: Some(UiAccountEncoding::Base64), // Base64Zstd is not supported in RISC0
                     ..RpcAccountInfoConfig::default()
                 },
                 ..RpcProgramAccountsConfig::default()
