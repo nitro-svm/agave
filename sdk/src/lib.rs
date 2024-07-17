@@ -41,6 +41,10 @@ pub use signer::signers;
 pub use solana_program::program_stubs;
 // These solana_program imports could be *-imported, but that causes a bunch of
 // confusing duplication in the docs due to a rustdoc bug. #26211
+#[allow(deprecated)]
+pub use solana_program::sdk_ids;
+#[cfg(target_arch = "wasm32")]
+pub use solana_program::wasm_bindgen;
 pub use solana_program::{
     account_info, address_lookup_table, alt_bn128, big_mod_exp, blake3, bpf_loader,
     bpf_loader_deprecated, bpf_loader_upgradeable, clock, config, custom_heap_default,
@@ -51,10 +55,8 @@ pub use solana_program::{
     program_memory, program_option, program_pack, rent, sanitize, secp256k1_program,
     secp256k1_recover, serde_varint, serialize_utils, short_vec, slot_hashes, slot_history,
     stable_layout, stake, stake_history, syscalls, system_instruction, system_program, sysvar,
-    unchecked_div_by_const, vote, wasm_bindgen,
+    unchecked_div_by_const, vote,
 };
-#[allow(deprecated)]
-pub use solana_program::{address_lookup_table_account, sdk_ids};
 #[cfg(feature = "borsh")]
 pub use solana_program::{borsh, borsh0_10, borsh1};
 
@@ -91,7 +93,6 @@ pub mod precompiles;
 pub mod program_utils;
 pub mod pubkey;
 pub mod quic;
-pub mod recent_blockhashes_account;
 pub mod rent_collector;
 pub mod rent_debits;
 pub mod reserved_account_keys;
@@ -154,16 +155,6 @@ pub use solana_sdk_macro::pubkey;
 pub use solana_sdk_macro::pubkeys;
 #[rustversion::since(1.46.0)]
 pub use solana_sdk_macro::respan;
-
-// Unused `solana_sdk::program_stubs!()` macro retained for source backwards compatibility with older programs
-#[macro_export]
-#[deprecated(
-    since = "1.4.3",
-    note = "program_stubs macro is obsolete and can be safely removed"
-)]
-macro_rules! program_stubs {
-    () => {};
-}
 
 /// Convenience macro for `AddAssign` with saturating arithmetic.
 /// Replace by `std::num::Saturating` once stable

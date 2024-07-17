@@ -212,12 +212,6 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
                 .help("Expose RPC methods for querying chain state and transaction history"),
         )
         .arg(
-            Arg::with_name("obsolete_v1_7_rpc_api")
-                .long("enable-rpc-obsolete_v1_7")
-                .takes_value(false)
-                .help("Enable the obsolete RPC methods removed in v1.7"),
-        )
-        .arg(
             Arg::with_name("private_rpc")
                 .long("private-rpc")
                 .takes_value(false)
@@ -1522,7 +1516,6 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
         .arg(
             Arg::with_name("block_verification_method")
                 .long("block-verification-method")
-                .hidden(hidden_unless_forced())
                 .value_name("METHOD")
                 .takes_value(true)
                 .possible_values(BlockVerificationMethod::cli_names())
@@ -1539,7 +1532,6 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
         .arg(
             Arg::with_name("unified_scheduler_handler_threads")
                 .long("unified-scheduler-handler-threads")
-                .hidden(hidden_unless_forced())
                 .value_name("COUNT")
                 .takes_value(true)
                 .validator(|s| is_within_range(s, 1..))
@@ -1966,16 +1958,6 @@ fn deprecated_arguments() -> Vec<DeprecatedArg> {
         (@into-option $v:expr) => { Some($v) };
     }
 
-    add_arg!(Arg::with_name("accounts_db_caching_enabled").long("accounts-db-caching-enabled"));
-    add_arg!(
-        Arg::with_name("accounts_db_index_hashing")
-            .long("accounts-db-index-hashing")
-            .help(
-                "Enables the use of the index in hash calculation in \
-                 AccountsHashVerifier/Accounts Background Service.",
-            ),
-        usage_warning: "The accounts hash is only calculated without using the index.",
-    );
     add_arg!(
         Arg::with_name("accounts_db_skip_shrink")
             .long("accounts-db-skip-shrink")
@@ -2070,16 +2052,6 @@ fn deprecated_arguments() -> Vec<DeprecatedArg> {
         .long("minimal-rpc-api")
         .takes_value(false)
         .help("Only expose the RPC methods required to serve snapshots to other nodes"));
-    add_arg!(
-        Arg::with_name("no_accounts_db_index_hashing")
-            .long("no-accounts-db-index-hashing")
-            .help(
-                "This is obsolete. See --accounts-db-index-hashing. \
-                 Disables the use of the index in hash calculation in \
-                 AccountsHashVerifier/Accounts Background Service.",
-            ),
-        usage_warning: "The accounts hash is only calculated without using the index.",
-    );
     add_arg!(
         Arg::with_name("no_check_vote_account")
             .long("no-check-vote-account")

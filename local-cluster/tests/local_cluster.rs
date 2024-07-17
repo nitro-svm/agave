@@ -222,7 +222,7 @@ fn test_local_cluster_signature_subscribe() {
         .get_latest_blockhash_with_commitment(CommitmentConfig::processed())
         .unwrap();
 
-    let transaction = system_transaction::transfer(
+    let mut transaction = system_transaction::transfer(
         &cluster.funding_keypair,
         &solana_sdk::pubkey::new_rand(),
         10,
@@ -239,9 +239,14 @@ fn test_local_cluster_signature_subscribe() {
     )
     .unwrap();
 
-    tx_client
-        .send_transaction_to_upcoming_leaders(&transaction)
-        .unwrap();
+    LocalCluster::send_transaction_with_retries(
+        &tx_client,
+        &[&cluster.funding_keypair],
+        &mut transaction,
+        5,
+        0,
+    )
+    .unwrap();
 
     let mut got_received_notification = false;
     loop {
@@ -1788,12 +1793,9 @@ fn test_validator_saves_tower() {
 
     // Wait for the first new root
     let last_replayed_root = loop {
-        #[allow(deprecated)]
-        // This test depends on knowing the immediate root, without any delay from the commitment
-        // service, so the deprecated CommitmentConfig::root() is retained
         if let Ok(root) = validator_client
             .rpc_client()
-            .get_slot_with_commitment(CommitmentConfig::root())
+            .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!("current root: {}", root);
             if root > 0 {
@@ -1820,12 +1822,9 @@ fn test_validator_saves_tower() {
 
     // Wait for a new root, demonstrating the validator was able to make progress from the older `tower1`
     let new_root = loop {
-        #[allow(deprecated)]
-        // This test depends on knowing the immediate root, without any delay from the commitment
-        // service, so the deprecated CommitmentConfig::root() is retained
         if let Ok(root) = validator_client
             .rpc_client()
-            .get_slot_with_commitment(CommitmentConfig::root())
+            .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!(
                 "current root: {}, last_replayed_root: {}",
@@ -1856,12 +1855,9 @@ fn test_validator_saves_tower() {
 
     // Wait for another new root
     let new_root = loop {
-        #[allow(deprecated)]
-        // This test depends on knowing the immediate root, without any delay from the commitment
-        // service, so the deprecated CommitmentConfig::root() is retained
         if let Ok(root) = validator_client
             .rpc_client()
-            .get_slot_with_commitment(CommitmentConfig::root())
+            .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!("current root: {}, last tower root: {}", root, tower3_root);
             if root > tower3_root {
@@ -2669,6 +2665,7 @@ fn test_oc_bad_signatures() {
 
     // 3) Start up a spy to listen for and push votes to leader TPU
     let client = cluster.build_tpu_quic_client().unwrap();
+    let cluster_funding_keypair = cluster.funding_keypair.insecure_clone();
     let voter_thread_sleep_ms: usize = 100;
     let num_votes_simulated = Arc::new(AtomicUsize::new(0));
     let gossip_voter = cluster_tests::start_gossip_voter(
@@ -2703,7 +2700,7 @@ fn test_oc_bad_signatures() {
                 let vote_slots: Vec<Slot> = vec![vote_slot];
 
                 let bad_authorized_signer_keypair = Keypair::new();
-                let vote_tx = vote_transaction::new_vote_transaction(
+                let mut vote_tx = vote_transaction::new_vote_transaction(
                     vote_slots,
                     vote_hash,
                     leader_vote_tx.message.recent_blockhash,
@@ -2713,9 +2710,14 @@ fn test_oc_bad_signatures() {
                     &bad_authorized_signer_keypair,
                     None,
                 );
-                client
-                    .send_transaction_to_upcoming_leaders(&vote_tx)
-                    .unwrap();
+                LocalCluster::send_transaction_with_retries(
+                    &client,
+                    &[&cluster_funding_keypair],
+                    &mut vote_tx,
+                    5,
+                    0,
+                )
+                .unwrap();
 
                 num_votes_simulated.fetch_add(1, Ordering::Relaxed);
             }

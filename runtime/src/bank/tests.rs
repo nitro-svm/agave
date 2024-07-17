@@ -1,6 +1,4 @@
 #![cfg(test)]
-#[allow(deprecated)]
-use solana_sdk::sysvar::fees::Fees;
 use {
     super::{
         test_utils::{goto_end_of_slot, update_vote_account_timestamp},
@@ -73,7 +71,6 @@ use {
         incinerator,
         instruction::{AccountMeta, CompiledInstruction, Instruction, InstructionError},
         loader_upgradeable_instruction::UpgradeableLoaderInstruction,
-        loader_v4::{LoaderV4State, LoaderV4Status},
         message::{Message, MessageHeader, SanitizedMessage},
         native_loader,
         native_token::{sol_to_lamports, LAMPORTS_PER_SOL},
@@ -104,7 +101,7 @@ use {
         transaction_context::TransactionAccount,
     },
     solana_stake_program::stake_state::{self, StakeStateV2},
-    solana_svm::nonce_info::NonceFull,
+    solana_svm::nonce_info::NoncePartial,
     solana_vote_program::{
         vote_instruction,
         vote_state::{
@@ -231,18 +228,13 @@ fn test_race_register_tick_freeze() {
     }
 }
 
-fn new_execution_result(
-    status: Result<()>,
-    nonce: Option<&NonceFull>,
-    fee_details: FeeDetails,
-) -> TransactionExecutionResult {
+fn new_execution_result(status: Result<()>, fee_details: FeeDetails) -> TransactionExecutionResult {
     TransactionExecutionResult::Executed {
         details: TransactionExecutionDetails {
             status,
             log_messages: None,
             inner_instructions: None,
             fee_details,
-            is_nonce: nonce.is_some(),
             return_data: None,
             executed_units: 0,
             accounts_data_len_delta: 0,
@@ -2867,45 +2859,27 @@ fn test_bank_blockhash_compute_unit_fee_structure() {
 #[test]
 fn test_filter_program_errors_and_collect_fee() {
     let leader = solana_sdk::pubkey::new_rand();
-    let GenesisConfigInfo {
-        genesis_config,
-        mint_keypair,
-        ..
-    } = create_genesis_config_with_leader(100_000, &leader, 3);
+    let GenesisConfigInfo { genesis_config, .. } =
+        create_genesis_config_with_leader(100_000, &leader, 3);
     let mut bank = Bank::new_for_tests(&genesis_config);
     // this test is only for when `feature_set::reward_full_priority_fee` inactivated
     bank.deactivate_feature(&feature_set::reward_full_priority_fee::id());
 
-    let key = solana_sdk::pubkey::new_rand();
-    let tx1 = SanitizedTransaction::from_transaction_for_tests(system_transaction::transfer(
-        &mint_keypair,
-        &key,
-        2,
-        genesis_config.hash(),
-    ));
-    let tx2 = SanitizedTransaction::from_transaction_for_tests(system_transaction::transfer(
-        &mint_keypair,
-        &key,
-        5,
-        genesis_config.hash(),
-    ));
-
     let tx_fee = 42;
     let fee_details = FeeDetails::new_for_tests(tx_fee, 0, false);
     let results = vec![
-        new_execution_result(Ok(()), None, fee_details),
+        new_execution_result(Ok(()), fee_details),
         new_execution_result(
             Err(TransactionError::InstructionError(
                 1,
                 SystemError::ResultWithNegativeLamports.into(),
             )),
-            None,
             fee_details,
         ),
     ];
     let initial_balance = bank.get_balance(&leader);
 
-    let results = bank.filter_program_errors_and_collect_fee(&[tx1, tx2], &results);
+    let results = bank.filter_program_errors_and_collect_fee(&results);
     bank.freeze();
     assert_eq!(
         bank.get_balance(&leader),
@@ -2918,45 +2892,27 @@ fn test_filter_program_errors_and_collect_fee() {
 #[test]
 fn test_filter_program_errors_and_collect_priority_fee() {
     let leader = solana_sdk::pubkey::new_rand();
-    let GenesisConfigInfo {
-        genesis_config,
-        mint_keypair,
-        ..
-    } = create_genesis_config_with_leader(1000000, &leader, 3);
+    let GenesisConfigInfo { genesis_config, .. } =
+        create_genesis_config_with_leader(1000000, &leader, 3);
     let mut bank = Bank::new_for_tests(&genesis_config);
     // this test is only for when `feature_set::reward_full_priority_fee` inactivated
     bank.deactivate_feature(&feature_set::reward_full_priority_fee::id());
 
-    let key = solana_sdk::pubkey::new_rand();
-    let tx1 = SanitizedTransaction::from_transaction_for_tests(system_transaction::transfer(
-        &mint_keypair,
-        &key,
-        2,
-        genesis_config.hash(),
-    ));
-    let tx2 = SanitizedTransaction::from_transaction_for_tests(system_transaction::transfer(
-        &mint_keypair,
-        &key,
-        5,
-        genesis_config.hash(),
-    ));
-
     let priority_fee = 42;
     let fee_details: FeeDetails = FeeDetails::new_for_tests(0, priority_fee, false);
     let results = vec![
-        new_execution_result(Ok(()), None, fee_details),
+        new_execution_result(Ok(()), fee_details),
         new_execution_result(
             Err(TransactionError::InstructionError(
                 1,
                 SystemError::ResultWithNegativeLamports.into(),
             )),
-            None,
             fee_details,
         ),
     ];
     let initial_balance = bank.get_balance(&leader);
 
-    let results = bank.filter_program_errors_and_collect_fee(&[tx1, tx2], &results);
+    let results = bank.filter_program_errors_and_collect_fee(&results);
     bank.freeze();
     assert_eq!(
         bank.get_balance(&leader),
@@ -4295,22 +4251,6 @@ fn test_bank_cloned_stake_delegations() {
     assert!(stake_delegations.get(&stake_keypair.pubkey()).is_some());
 }
 
-#[allow(deprecated)]
-#[test]
-fn test_bank_fees_account() {
-    let (mut genesis_config, _) = create_genesis_config(500);
-    genesis_config.fee_rate_governor = FeeRateGovernor::new(12345, 0);
-    let bank = Arc::new(Bank::new_for_tests(&genesis_config));
-
-    let fees_account = bank.get_account(&sysvar::fees::id()).unwrap();
-    let fees = from_account::<Fees, _>(&fees_account).unwrap();
-    assert_eq!(
-        bank.fee_rate_governor.lamports_per_signature,
-        fees.fee_calculator.lamports_per_signature
-    );
-    assert_eq!(fees.fee_calculator.lamports_per_signature, 12345);
-}
-
 #[test]
 fn test_is_delta_with_no_committables() {
     let (genesis_config, mint_keypair) = create_genesis_config(8000);
@@ -4352,7 +4292,7 @@ fn test_bank_get_program_accounts() {
     let parent = Arc::new(Bank::new_for_tests(&genesis_config));
     parent.restore_old_behavior_for_fragile_tests();
 
-    let genesis_accounts: Vec<_> = parent.get_all_accounts().unwrap();
+    let genesis_accounts: Vec<_> = parent.get_all_accounts(false).unwrap();
     assert!(
         genesis_accounts
             .iter()
@@ -6455,26 +6395,26 @@ fn test_bank_hash_consistency() {
         if bank.slot == 0 {
             assert_eq!(
                 bank.hash().to_string(),
-                "i5hGiQ3WtEehNrvhbfPFkUdm267t18fSpujcYtkBioW",
+                "Hn2FoJuoFWXVFVnwcQ6peuT24mUPmhDtXHXVjKD7M4yP",
             );
         }
 
         if bank.slot == 32 {
             assert_eq!(
                 bank.hash().to_string(),
-                "7NmBtNvbhoqzatJv8NgBs84qWrm4ZhpuC75DCpbqwiS"
+                "7FPfwBut4b7bXtKPsobQS1cuFgF47SZHDb4teQcJRomv"
             );
         }
         if bank.slot == 64 {
             assert_eq!(
                 bank.hash().to_string(),
-                "A1jjuUaENeDcsSvwejFGaZ5zWmnJ77doSzqdKtfzpoFk"
+                "28CWiEuA3izdt5xe4LyS4Q1DTALmYgrVctSTazFiPVcW"
             );
         }
         if bank.slot == 128 {
             assert_eq!(
                 bank.hash().to_string(),
-                "ApnMkFt5Bs4yDJ8S2CCPsQRL1He6vWXw6vMzAyc5i811"
+                "AdCmEvRXWKpvXb9fG6AFQhzGgB5ciAXnDajvaNK7YUg8"
             );
             break;
         }
@@ -6697,7 +6637,7 @@ fn test_shrink_candidate_slots_cached() {
     // No more slots should be shrunk
     assert_eq!(bank2.shrink_candidate_slots(), 0);
     // alive_counts represents the count of alive accounts in the three slots 0,1,2
-    assert_eq!(alive_counts, vec![15, 1, 7]);
+    assert_eq!(alive_counts, vec![15, 1, 6]);
 }
 
 #[test]
@@ -7985,7 +7925,7 @@ fn test_reserved_account_keys() {
 
     assert_eq!(
         bank.get_reserved_account_keys().len(),
-        29,
+        30,
         "after activating the new feature, bank should have new active reserved keys"
     );
 }
@@ -9116,10 +9056,7 @@ fn test_epoch_schedule_from_genesis_config() {
         Arc::default(),
     ));
 
-    assert_eq!(
-        &bank.transaction_processor.epoch_schedule,
-        &genesis_config.epoch_schedule
-    );
+    assert_eq!(bank.epoch_schedule(), &genesis_config.epoch_schedule);
 }
 
 fn check_stake_vote_account_validity<F>(check_owner_change: bool, load_vote_and_stake_accounts: F)
@@ -9481,24 +9418,24 @@ fn test_get_largest_accounts() {
 
     // Return only one largest account
     assert_eq!(
-        bank.get_largest_accounts(1, &pubkeys_hashset, AccountAddressFilter::Include)
+        bank.get_largest_accounts(1, &pubkeys_hashset, AccountAddressFilter::Include, false)
             .unwrap(),
         vec![(pubkeys[4], sol_to_lamports(5.0))]
     );
     assert_eq!(
-        bank.get_largest_accounts(1, &HashSet::new(), AccountAddressFilter::Exclude)
+        bank.get_largest_accounts(1, &HashSet::new(), AccountAddressFilter::Exclude, false)
             .unwrap(),
         vec![(pubkeys[4], sol_to_lamports(5.0))]
     );
     assert_eq!(
-        bank.get_largest_accounts(1, &exclude4, AccountAddressFilter::Exclude)
+        bank.get_largest_accounts(1, &exclude4, AccountAddressFilter::Exclude, false)
             .unwrap(),
         vec![(pubkeys[3], sol_to_lamports(4.0))]
     );
 
     // Return all added accounts
     let results = bank
-        .get_largest_accounts(10, &pubkeys_hashset, AccountAddressFilter::Include)
+        .get_largest_accounts(10, &pubkeys_hashset, AccountAddressFilter::Include, false)
         .unwrap();
     assert_eq!(results.len(), sorted_accounts.len());
     for pubkey_balance in sorted_accounts.iter() {
@@ -9510,7 +9447,7 @@ fn test_get_largest_accounts() {
 
     let expected_accounts = sorted_accounts[1..].to_vec();
     let results = bank
-        .get_largest_accounts(10, &exclude4, AccountAddressFilter::Exclude)
+        .get_largest_accounts(10, &exclude4, AccountAddressFilter::Exclude, false)
         .unwrap();
     // results include 5 Bank builtins
     assert_eq!(results.len(), 10);
@@ -9524,7 +9461,7 @@ fn test_get_largest_accounts() {
     // Return 3 added accounts
     let expected_accounts = sorted_accounts[0..4].to_vec();
     let results = bank
-        .get_largest_accounts(4, &pubkeys_hashset, AccountAddressFilter::Include)
+        .get_largest_accounts(4, &pubkeys_hashset, AccountAddressFilter::Include, false)
         .unwrap();
     assert_eq!(results.len(), expected_accounts.len());
     for pubkey_balance in expected_accounts.iter() {
@@ -9533,7 +9470,7 @@ fn test_get_largest_accounts() {
 
     let expected_accounts = expected_accounts[1..4].to_vec();
     let results = bank
-        .get_largest_accounts(3, &exclude4, AccountAddressFilter::Exclude)
+        .get_largest_accounts(3, &exclude4, AccountAddressFilter::Exclude, false)
         .unwrap();
     assert_eq!(results.len(), expected_accounts.len());
     for pubkey_balance in expected_accounts.iter() {
@@ -9546,7 +9483,7 @@ fn test_get_largest_accounts() {
         .cloned()
         .collect();
     assert_eq!(
-        bank.get_largest_accounts(2, &exclude, AccountAddressFilter::Exclude)
+        bank.get_largest_accounts(2, &exclude, AccountAddressFilter::Exclude, false)
             .unwrap(),
         vec![pubkeys_balances[3], pubkeys_balances[1]]
     );
@@ -12938,33 +12875,23 @@ fn test_failed_simulation_compute_units() {
 
 #[test]
 fn test_filter_program_errors_and_collect_fee_details() {
-    // TX  | EXECUTION RESULT            | is nonce | COLLECT            | ADDITIONAL          | COLLECT
-    //     |                             |          | (TX_FEE, PRIO_FEE) | WITHDRAW FROM PAYER | RESULT
-    // ------------------------------------------------------------------------------------------------------
-    // tx1 | not executed                | n/a      | (0    , 0)         | 0                   | Original Err
-    // tx2 | executed and no error       | n/a      | (5_000, 1_000)     | 0                   | Ok
-    // tx3 | executed has error          | true     | (5_000, 1_000)     | 0                   | Ok
-    // tx4 | executed has error          | false    | (5_000, 1_000)     | 6_000               | Ok
-    // tx5 | executed error,
-    //         payer insufficient fund   | false    | (0    , 0)         | 0                   | InsufficientFundsForFee
+    // TX  | EXECUTION RESULT            | COLLECT            | COLLECT
+    //     |                             | (TX_FEE, PRIO_FEE) | RESULT
+    // ---------------------------------------------------------------------------------
+    // tx1 | not executed                | (0    , 0)         | Original Err
+    // tx2 | executed and no error       | (5_000, 1_000)     | Ok
+    // tx3 | executed has error          | (5_000, 1_000)     | Ok
     //
     let initial_payer_balance = 7_000;
-    let additional_payer_withdraw = 6_000;
     let tx_fee = 5000;
     let priority_fee = 1000;
     let tx_fee_details = FeeDetails::new_for_tests(tx_fee, priority_fee, false);
     let expected_collected_fee_details = CollectorFeeDetails {
-        transaction_fee: 3 * tx_fee,
-        priority_fee: 3 * priority_fee,
+        transaction_fee: 2 * tx_fee,
+        priority_fee: 2 * priority_fee,
     };
 
-    let expected_collect_results = vec![
-        Err(TransactionError::AccountNotFound),
-        Ok(()),
-        Ok(()),
-        Ok(()),
-        Err(TransactionError::InsufficientFundsForFee),
-    ];
+    let expected_collect_results = vec![Err(TransactionError::AccountNotFound), Ok(()), Ok(())];
 
     let GenesisConfigInfo {
         genesis_config,
@@ -12973,106 +12900,31 @@ fn test_filter_program_errors_and_collect_fee_details() {
     } = create_genesis_config_with_leader(initial_payer_balance, &Pubkey::new_unique(), 3);
     let bank = Bank::new_for_tests(&genesis_config);
 
-    let tx = SanitizedTransaction::from_transaction_for_tests(Transaction::new_signed_with_payer(
-        &[system_instruction::transfer(
-            &mint_keypair.pubkey(),
-            &Pubkey::new_unique(),
-            2,
-        )],
-        Some(&mint_keypair.pubkey()),
-        &[&mint_keypair],
-        genesis_config.hash(),
-    ));
-    let txs = vec![tx.clone(), tx.clone(), tx.clone(), tx.clone(), tx];
-
     let results = vec![
         TransactionExecutionResult::NotExecuted(TransactionError::AccountNotFound),
-        new_execution_result(Ok(()), None, tx_fee_details),
+        new_execution_result(Ok(()), tx_fee_details),
         new_execution_result(
             Err(TransactionError::InstructionError(
                 0,
                 SystemError::ResultWithNegativeLamports.into(),
             )),
-            Some(&NonceFull::new(
-                Pubkey::new_unique(),
-                AccountSharedData::default(),
-                None,
-            )),
             tx_fee_details,
         ),
-        new_execution_result(
-            Err(TransactionError::InstructionError(
-                0,
-                SystemError::ResultWithNegativeLamports.into(),
-            )),
-            None,
-            tx_fee_details,
-        ),
-        new_execution_result(Err(TransactionError::AccountNotFound), None, tx_fee_details),
     ];
 
-    let results = bank.filter_program_errors_and_collect_fee_details(&txs, &results);
+    let results = bank.filter_program_errors_and_collect_fee_details(&results);
 
     assert_eq!(
         expected_collected_fee_details,
         *bank.collector_fee_details.read().unwrap()
     );
     assert_eq!(
-        initial_payer_balance - additional_payer_withdraw,
+        initial_payer_balance,
         bank.get_balance(&mint_keypair.pubkey())
     );
     assert_eq!(expected_collect_results, results);
 }
 
-#[test]
-fn test_check_execution_status_and_charge_fee() {
-    let fee = 5000;
-    let initial_balance = fee - 1000;
-    let tx_error =
-        TransactionError::InstructionError(0, InstructionError::MissingRequiredSignature);
-    let GenesisConfigInfo {
-        mut genesis_config,
-        mint_keypair,
-        ..
-    } = create_genesis_config_with_leader(initial_balance, &Pubkey::new_unique(), 3);
-    genesis_config.fee_rate_governor = FeeRateGovernor::new(5000, 0);
-    let bank = Bank::new_for_tests(&genesis_config);
-    let message = new_sanitized_message(Message::new(
-        &[system_instruction::transfer(
-            &mint_keypair.pubkey(),
-            &Pubkey::new_unique(),
-            1,
-        )],
-        Some(&mint_keypair.pubkey()),
-    ));
-
-    [Ok(()), Err(tx_error)]
-        .iter()
-        .flat_map(|result| [true, false].iter().map(move |is_nonce| (result, is_nonce)))
-        .for_each(|(result, is_nonce)| {
-            if result.is_err() && !is_nonce {
-                assert_eq!(
-                    Err(TransactionError::InsufficientFundsForFee),
-                    bank.check_execution_status_and_charge_fee(&message, result, *is_nonce, fee)
-                );
-                assert_eq!(initial_balance, bank.get_balance(&mint_keypair.pubkey()));
-
-                let small_fee = 1;
-                assert!(bank
-                    .check_execution_status_and_charge_fee(&message, result, *is_nonce, small_fee)
-                    .is_ok());
-                assert_eq!(
-                    initial_balance - small_fee,
-                    bank.get_balance(&mint_keypair.pubkey())
-                );
-            } else {
-                assert!(bank
-                    .check_execution_status_and_charge_fee(&message, result, *is_nonce, fee)
-                    .is_ok());
-                assert_eq!(initial_balance, bank.get_balance(&mint_keypair.pubkey()));
-            }
-        });
-}
 #[test]
 fn test_deploy_last_epoch_slot() {
     solana_logger::setup();
@@ -13184,91 +13036,6 @@ fn test_deploy_last_epoch_slot() {
     let transaction = Transaction::new(&signers, message, bank.last_blockhash());
     let result_with_feature_enabled = bank.process_transaction(&transaction);
     assert_eq!(result_with_feature_enabled, Ok(()));
-}
-
-#[test]
-fn test_program_modification_slot_account_not_found() {
-    let genesis_config = GenesisConfig::default();
-    let bank = Bank::new_for_tests(&genesis_config);
-    let key = Pubkey::new_unique();
-
-    let result = bank.program_modification_slot(&key);
-    assert_eq!(result.err(), Some(TransactionError::ProgramAccountNotFound));
-
-    let mut account_data = AccountSharedData::new(100, 100, &bpf_loader_upgradeable::id());
-    bank.store_account(&key, &account_data);
-
-    let result = bank.program_modification_slot(&key);
-    assert_eq!(result.err(), Some(TransactionError::ProgramAccountNotFound));
-
-    let state = UpgradeableLoaderState::Program {
-        programdata_address: Pubkey::new_unique(),
-    };
-    account_data.set_data(bincode::serialize(&state).unwrap());
-    bank.store_account(&key, &account_data);
-
-    let result = bank.program_modification_slot(&key);
-    assert_eq!(result.err(), Some(TransactionError::ProgramAccountNotFound));
-
-    account_data.set_owner(loader_v4::id());
-    bank.store_account(&key, &account_data);
-
-    let result = bank.program_modification_slot(&key);
-    assert_eq!(result.err(), Some(TransactionError::ProgramAccountNotFound));
-}
-
-#[test]
-fn test_program_modification_slot_success() {
-    let genesis_config = GenesisConfig::default();
-    let bank = Bank::new_for_tests(&genesis_config);
-
-    let key1 = Pubkey::new_unique();
-    let key2 = Pubkey::new_unique();
-
-    let account_data = AccountSharedData::new_data(
-        100,
-        &UpgradeableLoaderState::Program {
-            programdata_address: key2,
-        },
-        &bpf_loader_upgradeable::id(),
-    )
-    .unwrap();
-    bank.store_account(&key1, &account_data);
-
-    let account_data = AccountSharedData::new_data(
-        100,
-        &UpgradeableLoaderState::ProgramData {
-            slot: 77,
-            upgrade_authority_address: None,
-        },
-        &bpf_loader_upgradeable::id(),
-    )
-    .unwrap();
-    bank.store_account(&key2, &account_data);
-
-    let result = bank.program_modification_slot(&key1);
-    assert_eq!(result.unwrap(), 77);
-
-    let state = LoaderV4State {
-        slot: 58,
-        authority_address: Pubkey::new_unique(),
-        status: LoaderV4Status::Deployed,
-    };
-    let encoded = unsafe {
-        std::mem::transmute::<&LoaderV4State, &[u8; LoaderV4State::program_data_offset()]>(&state)
-    };
-    let mut account_data = AccountSharedData::new(100, encoded.len(), &loader_v4::id());
-    account_data.set_data(encoded.to_vec());
-    bank.store_account(&key1, &account_data);
-
-    let result = bank.program_modification_slot(&key1);
-    assert_eq!(result.unwrap(), 58);
-
-    account_data.set_owner(Pubkey::new_unique());
-    bank.store_account(&key2, &account_data);
-
-    let result = bank.program_modification_slot(&key2);
-    assert_eq!(result.unwrap(), 0);
 }
 
 #[test]
