@@ -3,9 +3,10 @@
 use crate::native_token::sol_to_lamports;
 #[cfg(not(target_os = "solana"))]
 use solana_program::message::SanitizedMessage;
+use serde::{Serialize, Deserialize};
 
 /// A fee and its associated compute unit limit
-#[derive(Debug, Default, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq)]
 pub struct FeeBin {
     /// maximum compute units for which this fee will be charged
     pub limit: u64,
@@ -21,7 +22,7 @@ pub struct FeeBudgetLimits {
 }
 
 /// Information used to calculate fees
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct FeeStructure {
     /// lamports per signature
     pub lamports_per_signature: u64,
