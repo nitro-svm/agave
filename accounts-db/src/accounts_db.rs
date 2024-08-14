@@ -1702,6 +1702,7 @@ impl SplitAncientStorages {
                     if treat_as_ancient(storage) {
                         // even though the slot is in range of being an ancient append vec, if it isn't actually a large append vec,
                         // then we are better off treating all these slots as normally cacheable to reduce work in dedup.
+                        // then we are better off treating all these slots as normally cacheable to reduce work in dedup.
                         // Since this one is large, for the moment, this one becomes the highest slot where we want to individually cache files.
                         len_truncate = i;
                     }
@@ -5809,6 +5810,7 @@ impl AccountsDb {
     /// This should only be called after the `Bank::drop()` runs in bank.rs, See BANK_DROP_SAFETY
     /// comment below for more explanation.
     ///   * `is_serialized_with_abs` - indicates whether this call runs sequentially with all other
+    ///   * `is_serialized_with_abs` - indicates whether this call runs sequentially with all other
     ///        accounts_db relevant calls, such as shrinking, purging etc., in account background
     ///        service.
     pub fn purge_slot(&self, slot: Slot, bank_id: BankId, is_serialized_with_abs: bool) {
@@ -8960,6 +8962,7 @@ impl AccountsDb {
                 // these write directly to disk, so the more threads, the better
                 num_cpus::get()
             } else {
+                // seems to be a good heuristic given varying # cpus for in-mem disk index
                 // seems to be a good heuristic given varying # cpus for in-mem disk index
                 8
             };

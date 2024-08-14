@@ -543,7 +543,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
                 })
                 .collect();
 
-        let mut loaded_programs_for_txs = None;
+        let mut loaded_programs_for_txs: Option<ProgramCacheForTxBatch> = None;
         loop {
             let (program_to_store, task_cookie, task_waiter) = {
                 // Lock the global cache.
@@ -584,6 +584,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
             };
 
             if let Some((key, program)) = program_to_store {
+                loaded_programs_for_txs.as_mut().unwrap().loaded_missing = true;
                 let mut program_cache = self.program_cache.write().unwrap();
                 // Submit our last completed loading task.
                 if program_cache.finish_cooperative_loading_task(self.slot, key, program)
@@ -1304,8 +1305,9 @@ mod tests {
     fn test_replenish_program_cache_with_nonexistent_accounts() {
         let mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
+        let fork_graph = Arc::new(RwLock::new(TestForkGraph {}));
         batch_processor.program_cache.write().unwrap().fork_graph =
-            Some(Arc::new(RwLock::new(TestForkGraph {})));
+            Some(Arc::downgrade(&fork_graph));
         let key = Pubkey::new_unique();
 
         let mut account_maps: HashMap<Pubkey, u64> = HashMap::new();
@@ -1318,8 +1320,9 @@ mod tests {
     fn test_replenish_program_cache() {
         let mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
+        let fork_graph = Arc::new(RwLock::new(TestForkGraph {}));
         batch_processor.program_cache.write().unwrap().fork_graph =
-            Some(Arc::new(RwLock::new(TestForkGraph {})));
+            Some(Arc::downgrade(&fork_graph));
         let key = Pubkey::new_unique();
 
         let mut account_data = AccountSharedData::default();
@@ -1332,6 +1335,7 @@ mod tests {
 
         let mut account_maps: HashMap<Pubkey, u64> = HashMap::new();
         account_maps.insert(key, 4);
+        let mut loaded_missing = 0;
 
         for limit_to_load_programs in [false, true] {
             let result = batch_processor.replenish_program_cache(
@@ -1341,12 +1345,17 @@ mod tests {
                 limit_to_load_programs,
             );
             assert!(!result.hit_max_limit);
+            if result.loaded_missing {
+                loaded_missing += 1;
+            }
+
             let program = result.find(&key).unwrap();
             assert!(matches!(
                 program.program,
                 ProgramCacheEntryType::FailedVerification(_)
             ));
         }
+        assert!(loaded_missing > 0);
     }
 
     #[test]
@@ -1799,8 +1808,9 @@ mod tests {
     fn test_add_builtin() {
         let mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::default();
+        let fork_graph = Arc::new(RwLock::new(TestForkGraph {}));
         batch_processor.program_cache.write().unwrap().fork_graph =
-            Some(Arc::new(RwLock::new(TestForkGraph {})));
+            Some(Arc::downgrade(&fork_graph));
 
         let key = Pubkey::new_unique();
         let name = "a_builtin_name";
@@ -1842,8 +1852,9 @@ mod tests {
     fn fast_concur_test() {
         let mut mock_bank = MockBankCallback::default();
         let batch_processor = TransactionBatchProcessor::<TestForkGraph>::new(5, 5, HashSet::new());
+        let fork_graph = Arc::new(RwLock::new(TestForkGraph {}));
         batch_processor.program_cache.write().unwrap().fork_graph =
-            Some(Arc::new(RwLock::new(TestForkGraph {})));
+            Some(Arc::downgrade(&fork_graph));
 
         let programs = vec![
             deploy_program("hello-solana".to_string(), &mut mock_bank),
