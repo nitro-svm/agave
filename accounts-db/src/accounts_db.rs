@@ -1702,6 +1702,7 @@ impl SplitAncientStorages {
                     if treat_as_ancient(storage) {
                         // even though the slot is in range of being an ancient append vec, if it isn't actually a large append vec,
                         // then we are better off treating all these slots as normally cacheable to reduce work in dedup.
+                        // then we are better off treating all these slots as normally cacheable to reduce work in dedup.
                         // Since this one is large, for the moment, this one becomes the highest slot where we want to individually cache files.
                         len_truncate = i;
                     }
@@ -1957,6 +1958,9 @@ pub(crate) struct ShrinkAncientStats {
     pub(crate) slots_considered: AtomicU64,
     pub(crate) ancient_scanned: AtomicU64,
     pub(crate) bytes_ancient_created: AtomicU64,
+    pub(crate) bytes_from_must_shrink: AtomicU64,
+    pub(crate) bytes_from_smallest_storages: AtomicU64,
+    pub(crate) bytes_from_newest_storages: AtomicU64,
     pub(crate) bytes_from_must_shrink: AtomicU64,
     pub(crate) bytes_from_smallest_storages: AtomicU64,
     pub(crate) bytes_from_newest_storages: AtomicU64,
@@ -5809,6 +5813,7 @@ impl AccountsDb {
     /// This should only be called after the `Bank::drop()` runs in bank.rs, See BANK_DROP_SAFETY
     /// comment below for more explanation.
     ///   * `is_serialized_with_abs` - indicates whether this call runs sequentially with all other
+    ///   * `is_serialized_with_abs` - indicates whether this call runs sequentially with all other
     ///        accounts_db relevant calls, such as shrinking, purging etc., in account background
     ///        service.
     pub fn purge_slot(&self, slot: Slot, bank_id: BankId, is_serialized_with_abs: bool) {
@@ -6192,6 +6197,7 @@ impl AccountsDb {
         // allocate a buffer on the stack that's big enough
         // to hold a token account or a stake account
         const META_SIZE: usize = 8 /* lamports */ + 8 /* rent_epoch */ + 1 /* executable */ + 32 /* owner */ + 32 /* pubkey */;
+        const DATA_SIZE: usize = 200; // stake accounts are 200 B and token accounts are 165-182ish B
         const DATA_SIZE: usize = 200; // stake accounts are 200 B and token accounts are 165-182ish B
         const BUFFER_SIZE: usize = META_SIZE + DATA_SIZE;
         let mut buffer = SmallVec::<[u8; BUFFER_SIZE]>::new();
@@ -8960,6 +8966,7 @@ impl AccountsDb {
                 // these write directly to disk, so the more threads, the better
                 num_cpus::get()
             } else {
+                // seems to be a good heuristic given varying # cpus for in-mem disk index
                 // seems to be a good heuristic given varying # cpus for in-mem disk index
                 8
             };

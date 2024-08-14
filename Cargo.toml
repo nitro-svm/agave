@@ -32,6 +32,7 @@ members = [
     "core",
     "cost-model",
     "curves/*",
+    "curves/*",
     "dos",
     "download-utils",
     "entry",
@@ -75,6 +76,7 @@ members = [
     "programs/ed25519-tests",
     "programs/loader-v4",
     "programs/stake",
+    "programs/stake-tests",
     "programs/system",
     "programs/vote",
     "programs/zk-elgamal-proof",
@@ -117,6 +119,7 @@ members = [
     "transaction-metrics-tracker",
     "transaction-status",
     "turbine",
+    "type-overrides",
     "type-overrides",
     "udp-client",
     "unified-scheduler-logic",
@@ -173,6 +176,8 @@ bs58 = "0.5.1"
 bv = "0.11.1"
 byte-unit = "4.0.19"
 bytecount = "0.6.8"
+bytemuck = "1.16.1"
+bytemuck_derive = "1.7.0"
 bytemuck = "1.16.1"
 bytemuck_derive = "1.7.0"
 byteorder = "1.5.0"
@@ -313,6 +318,7 @@ serial_test = "2.0.0"
 sha2 = "0.10.8"
 sha3 = "0.10.8"
 shuttle = "0.7.1"
+shuttle = "0.7.1"
 signal-hook = "0.3.17"
 siphasher = "0.3.11"
 smallvec = "1.13.2"
@@ -448,6 +454,7 @@ trees = "0.4.2"
 tungstenite = "0.20.1"
 uriparse = "0.6.4"
 url = "2.5.2"
+url = "2.5.2"
 vec_extract_if_polyfill = "0.1.0"
 wasm-bindgen = "0.2"
 winapi = "0.3.8"
@@ -493,6 +500,7 @@ crossbeam-epoch = { git = "https://github.com/anza-xyz/crossbeam", rev = "fd279d
 #
 # There is a similar override in `programs/sbf/Cargo.toml`.  Please keep both
 # comments and the overrides in sync.
+solana-curve25519 = { path = "curves/curve25519" }
 solana-curve25519 = { path = "curves/curve25519" }
 solana-program = { path = "sdk/program" }
 solana-zk-sdk = { path = "zk-sdk" }

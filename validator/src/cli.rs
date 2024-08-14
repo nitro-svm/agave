@@ -72,8 +72,10 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
     return App::new(crate_name!())
         .about(crate_description!())
         .version(version)
-        .setting(AppSettings::VersionlessSubcommands)
-        .setting(AppSettings::InferSubcommands)
+        .global_setting(AppSettings::ColoredHelp)
+        .global_setting(AppSettings::InferSubcommands)
+        .global_setting(AppSettings::UnifiedHelpMessage)
+        .global_setting(AppSettings::VersionlessSubcommands)
         .arg(
             Arg::with_name(SKIP_SEED_PHRASE_VALIDATION_ARG.name)
                 .long(SKIP_SEED_PHRASE_VALIDATION_ARG.long)
@@ -499,20 +501,21 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
                 .long("no-incremental-snapshots")
                 .takes_value(false)
                 .help("Disable incremental snapshots")
-                .long_help(
-                    "Disable incremental snapshots by setting this flag. When enabled, \
-                     --snapshot-interval-slots will set the incremental snapshot interval. To set \
-                     the full snapshot interval, use --full-snapshot-interval-slots.",
-                ),
         )
         .arg(
-            Arg::with_name("incremental_snapshot_interval_slots")
-                .long("incremental-snapshot-interval-slots")
-                .alias("snapshot-interval-slots")
+            Arg::with_name("snapshot_interval_slots")
+                .long("snapshot-interval-slots")
+                .alias("incremental-snapshot-interval-slots")
                 .value_name("NUMBER")
                 .takes_value(true)
                 .default_value(&default_args.incremental_snapshot_archive_interval_slots)
-                .help("Number of slots between generating snapshots, 0 to disable snapshots"),
+                .help("Number of slots between generating snapshots")
+                .long_help(
+                    "Number of slots between generating snapshots. \
+                     If incremental snapshots are enabled, this sets the incremental snapshot interval. \
+                     If incremental snapshots are disabled, this sets the full snapshot interval. \
+                     Setting this to 0 disables all snapshots.",
+                ),
         )
         .arg(
             Arg::with_name("full_snapshot_interval_slots")
@@ -520,9 +523,10 @@ pub fn app<'a>(version: &'a str, default_args: &'a DefaultArgs) -> App<'a, 'a> {
                 .value_name("NUMBER")
                 .takes_value(true)
                 .default_value(&default_args.full_snapshot_archive_interval_slots)
-                .help(
+                .help("Number of slots between generating full snapshots")
+                .long_help(
                     "Number of slots between generating full snapshots. Must be a multiple of the \
-                     incremental snapshot interval.",
+                     incremental snapshot interval. Only used when incremental snapshots are enabled.",
                 ),
         )
         .arg(
@@ -2027,27 +2031,6 @@ fn deprecated_arguments() -> Vec<DeprecatedArg> {
             .long("enable-quic-servers"),
         usage_warning: "The quic server is now enabled by default.",
     );
-    add_arg!(
-        Arg::with_name("halt_on_known_validators_accounts_hash_mismatch")
-            .alias("halt-on-trusted-validators-accounts-hash-mismatch")
-            .long("halt-on-known-validators-accounts-hash-mismatch")
-            .requires("known_validators")
-            .takes_value(false)
-            .help(
-                "Abort the validator if a bank hash mismatch is detected within known validator \
-                 set"
-            ),
-    );
-    add_arg!(Arg::with_name("incremental_snapshots")
-        .long("incremental-snapshots")
-        .takes_value(false)
-        .conflicts_with("no_incremental_snapshots")
-        .help("Enable incremental snapshots")
-        .long_help(
-            "Enable incremental snapshots by setting this flag.  When enabled, \
-             --snapshot-interval-slots will set the incremental snapshot interval. To set the \
-             full snapshot interval, use --full-snapshot-interval-slots.",
-        ));
     add_arg!(Arg::with_name("minimal_rpc_api")
         .long("minimal-rpc-api")
         .takes_value(false)
