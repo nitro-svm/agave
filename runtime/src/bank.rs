@@ -358,6 +358,7 @@ pub struct LoadAndExecuteTransactionsOutput {
     pub error_counters: TransactionErrorMetrics,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct TransactionSimulationResult {
     pub result: Result<()>,
     pub logs: TransactionLogMessages,
