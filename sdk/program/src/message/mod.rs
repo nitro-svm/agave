@@ -51,7 +51,9 @@ mod non_bpf_modules {
     pub use {account_keys::*, address_loader::*, sanitized::*, versions::*};
 }
 
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh0_10::BorshDeserialize;
+use borsh0_10::BorshSerialize;
+use borsh0_10::maybestd::io;
 #[cfg(not(target_os = "solana"))]
 pub use non_bpf_modules::*;
 pub use {compiled_keys::CompileError, legacy::Message};

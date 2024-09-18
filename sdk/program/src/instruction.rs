@@ -16,7 +16,9 @@
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 #[cfg(feature = "borsh")]
-use borsh::{BorshSerialize, BorshDeserialize};
+use borsh0_10::BorshDeserialize;
+use borsh0_10::BorshSerialize;
+use borsh0_10::maybestd::io;
 use {
     crate::{pubkey::Pubkey, sanitize::Sanitize, short_vec},
     bincode::serialize,
