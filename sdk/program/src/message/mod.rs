@@ -51,6 +51,7 @@ mod non_bpf_modules {
     pub use {account_keys::*, address_loader::*, sanitized::*, versions::*};
 }
 
+use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg(not(target_os = "solana"))]
 pub use non_bpf_modules::*;
 pub use {compiled_keys::CompileError, legacy::Message};
@@ -92,7 +93,7 @@ pub const MESSAGE_HEADER_LENGTH: usize = 3;
 ///
 /// [PoH]: https://docs.solanalabs.com/consensus/synchronization
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct MessageHeader {
     /// The number of signatures required for this message to be considered
