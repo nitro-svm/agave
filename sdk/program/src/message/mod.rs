@@ -50,9 +50,7 @@ mod non_bpf_modules {
 
     pub use {account_keys::*, address_loader::*, sanitized::*, versions::*};
 }
-use std::io;
-use borsh0_10::BorshDeserialize;
-use borsh0_10::BorshSerialize;
+use borsh::{BorshSerialize, BorshDeserialize};
 #[cfg(not(target_os = "solana"))]
 pub use non_bpf_modules::*;
 pub use {compiled_keys::CompileError, legacy::Message};
@@ -96,6 +94,7 @@ pub const MESSAGE_HEADER_LENGTH: usize = 3;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
+#[borsh(crate = "borsh")]
 pub struct MessageHeader {
     /// The number of signatures required for this message to be considered
     /// valid. The signers of those signatures must match the first

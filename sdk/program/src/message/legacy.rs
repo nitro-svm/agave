@@ -14,9 +14,6 @@
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 #[allow(deprecated)]
-use std::io;
-use borsh0_10::BorshDeserialize;
-use borsh0_10::BorshSerialize;
 pub use builtins::{BUILTIN_PROGRAMS_KEYS, MAYBE_BUILTIN_KEY_OR_SYSVAR};
 use {
     crate::{
@@ -30,6 +27,7 @@ use {
     },
     std::{collections::HashSet, convert::TryFrom, str::FromStr},
 };
+use borsh::{BorshDeserialize, BorshSerialize};
 
 #[deprecated(
     since = "2.0.0",
@@ -130,6 +128,7 @@ fn compile_instructions(ixs: &[Instruction], keys: &[Pubkey]) -> Vec<CompiledIns
 )]
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
+#[borsh(crate = "borsh")]
 pub struct Message {
     /// The message header, identifying signed and read-only `account_keys`.
     // NOTE: Serialization-related changes must be paired with the direct read at sigverify.

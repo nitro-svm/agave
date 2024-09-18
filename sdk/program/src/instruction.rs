@@ -16,9 +16,7 @@
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 #[cfg(feature = "borsh")]
-use std::io;
-use borsh0_10::BorshDeserialize;
-use borsh0_10::BorshSerialize;
+use borsh::{BorshDeserialize, BorshSerialize};
 use {
     crate::{pubkey::Pubkey, sanitize::Sanitize, short_vec},
     bincode::serialize,
@@ -640,6 +638,7 @@ impl AccountMeta {
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
+#[borsh(crate = "borsh")]
 pub struct CompiledInstruction {
     /// Index into the transaction keys array indicating the program account that executes this instruction.
     pub program_id_index: u8,

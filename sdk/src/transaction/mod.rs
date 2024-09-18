@@ -111,7 +111,6 @@
 
 #![cfg(feature = "full")]
 
-use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 use {
@@ -133,7 +132,7 @@ use {
     solana_sdk::feature_set,
     std::result,
 };
-
+use borsh::{BorshDeserialize, BorshSerialize};
 mod error;
 mod sanitized;
 mod versioned;

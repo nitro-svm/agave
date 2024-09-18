@@ -1,7 +1,6 @@
 //! Functionality for public and private keys.
 #![cfg(feature = "full")]
 
-use borsh::{BorshDeserialize, BorshSerialize};
 // legacy module paths
 pub use crate::signer::{keypair::*, null_signer::*, presigner::*, *};
 use {
@@ -15,7 +14,7 @@ use {
     },
     thiserror::Error,
 };
-
+use borsh::{BorshDeserialize, BorshSerialize};
 /// Number of bytes in a signature
 pub const SIGNATURE_BYTES: usize = 64;
 /// Maximum string length of a base58 encoded signature
@@ -24,6 +23,7 @@ const MAX_BASE58_SIGNATURE_LEN: usize = 88;
 #[repr(transparent)]
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[borsh(crate = "borsh")]
 pub struct Signature(GenericArray<u8, U64>);
 
 impl crate::sanitize::Sanitize for Signature {}
