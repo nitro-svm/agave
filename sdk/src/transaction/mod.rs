@@ -174,7 +174,7 @@ pub type Result<T> = result::Result<T, TransactionError>;
     derive(AbiExample),
     frozen_abi(digest = "FZtncnS1Xk8ghHfKiXE5oGiUbw2wJhmfXQuNgQR3K6Mc")
 )]
-#[derive(BorshDeserialize, BorshSerialize, Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, schemars::JsonSchema, Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     /// A set of signatures of a serialized [`Message`], signed by the first
     /// keys of the `Message`'s [`account_keys`], where the number of signatures
@@ -186,6 +186,7 @@ pub struct Transaction {
     /// [`num_required_signatures`]: crate::message::MessageHeader::num_required_signatures
     // NOTE: Serialization-related changes must be paired with the direct read at sigverify.
     #[serde(with = "short_vec")]
+    #[schemars(skip)]
     pub signatures: Vec<Signature>,
 
     /// The message to sign.

@@ -30,6 +30,7 @@ rustversion = { workspace = true }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
 serde_derive = { workspace = true }
+schemars = { workspace = true }
 sha2 = { workspace = true }
 sha3 = { workspace = true }
 solana-frozen-abi = { workspace = true, optional = true }

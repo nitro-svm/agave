@@ -636,7 +636,7 @@ impl AccountMeta {
 ///
 /// [`Message`]: crate::message::Message
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(schemars::JsonSchema, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct CompiledInstruction {
@@ -644,9 +644,11 @@ pub struct CompiledInstruction {
     pub program_id_index: u8,
     /// Ordered indices into the transaction keys array indicating which accounts to pass to the program.
     #[serde(with = "short_vec")]
+    #[schemars(skip)]
     pub accounts: Vec<u8>,
     /// The program input data.
     #[serde(with = "short_vec")]
+    #[schemars(skip)]
     pub data: Vec<u8>,
 }
 

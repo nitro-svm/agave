@@ -92,7 +92,7 @@ pub const MESSAGE_HEADER_LENGTH: usize = 3;
 ///
 /// [PoH]: https://docs.solanalabs.com/consensus/synchronization
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(BorshSerialize, BorshDeserialize, schemars::JsonSchema, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct MessageHeader {

@@ -126,7 +126,7 @@ fn compile_instructions(ixs: &[Instruction], keys: &[Pubkey]) -> Vec<CompiledIns
     frozen_abi(digest = "2KnLEqfLcTBQqitE22Pp8JYkaqVVbAkGbCfdeHoyxcAU"),
     derive(AbiExample)
 )]
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
+#[derive(BorshDeserialize, BorshSerialize, schemars::JsonSchema, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct Message {
@@ -136,6 +136,7 @@ pub struct Message {
 
     /// All the account keys used by this transaction.
     #[serde(with = "short_vec")]
+    #[schemars(skip)]
     pub account_keys: Vec<Pubkey>,
 
     /// The id of a recent ledger entry.
@@ -144,6 +145,7 @@ pub struct Message {
     /// Programs that will be executed in sequence and committed in one atomic transaction if all
     /// succeed.
     #[serde(with = "short_vec")]
+    #[schemars(skip)]
     pub instructions: Vec<CompiledInstruction>,
 }
 
