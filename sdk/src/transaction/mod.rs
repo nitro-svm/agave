@@ -111,6 +111,7 @@
 
 #![cfg(feature = "full")]
 
+use borsh::{BorshDeserialize, BorshSerialize};
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 use {
@@ -174,7 +175,7 @@ pub type Result<T> = result::Result<T, TransactionError>;
     derive(AbiExample),
     frozen_abi(digest = "FZtncnS1Xk8ghHfKiXE5oGiUbw2wJhmfXQuNgQR3K6Mc")
 )]
-#[derive(Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     /// A set of signatures of a serialized [`Message`], signed by the first
     /// keys of the `Message`'s [`account_keys`], where the number of signatures
