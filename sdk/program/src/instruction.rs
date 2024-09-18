@@ -16,6 +16,7 @@
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 #[cfg(feature = "borsh")]
+use std::io;
 use borsh0_10::BorshDeserialize;
 use borsh0_10::BorshSerialize;
 use {

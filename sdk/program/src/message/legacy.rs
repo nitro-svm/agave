@@ -14,6 +14,7 @@
 #[cfg(target_arch = "wasm32")]
 use crate::wasm_bindgen;
 #[allow(deprecated)]
+use std::io;
 use borsh0_10::BorshDeserialize;
 use borsh0_10::BorshSerialize;
 pub use builtins::{BUILTIN_PROGRAMS_KEYS, MAYBE_BUILTIN_KEY_OR_SYSVAR};

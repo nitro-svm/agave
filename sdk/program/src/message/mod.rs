@@ -50,7 +50,7 @@ mod non_bpf_modules {
 
     pub use {account_keys::*, address_loader::*, sanitized::*, versions::*};
 }
-
+use std::io;
 use borsh0_10::BorshDeserialize;
 use borsh0_10::BorshSerialize;
 #[cfg(not(target_os = "solana"))]
