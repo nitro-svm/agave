@@ -126,7 +126,7 @@ fn compile_instructions(ixs: &[Instruction], keys: &[Pubkey]) -> Vec<CompiledIns
     frozen_abi(digest = "2KnLEqfLcTBQqitE22Pp8JYkaqVVbAkGbCfdeHoyxcAU"),
     derive(AbiExample)
 )]
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone, arbitrary::Arbitrary, proptest_derive::Arbitrary)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct Message {

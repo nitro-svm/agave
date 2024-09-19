@@ -636,7 +636,7 @@ impl AccountMeta {
 ///
 /// [`Message`]: crate::message::Message
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Debug, PartialEq, Eq, Clone, arbitrary::Arbitrary, proptest_derive::Arbitrary)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct CompiledInstruction {

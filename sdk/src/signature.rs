@@ -16,6 +16,8 @@ use {
     thiserror::Error,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
+use proptest::prelude::{any, Strategy};
+
 /// Number of bytes in a signature
 pub const SIGNATURE_BYTES: usize = 64;
 /// Maximum string length of a base58 encoded signature
@@ -25,6 +27,28 @@ const MAX_BASE58_SIGNATURE_LEN: usize = 88;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(Serialize, Deserialize, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Signature(GenericArray<u8, U64>);
+
+impl proptest::prelude::Arbitrary for Signature {
+    type Parameters = ();
+    fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+        // Create a strategy that generates 64 random bytes and turns them into a Signature
+        any::<[u8; 64]>()
+            .prop_map(|bytes| Signature(GenericArray::clone_from_slice(&bytes)))
+            .boxed()
+    }
+
+    type Strategy = proptest::prelude::BoxedStrategy<Signature>;
+}
+
+// Implement Arbitrary for Signature
+impl<'a> arbitrary::Arbitrary<'a> for Signature {
+    fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
+        // Generate 64 random bytes and create a GenericArray<u8, U64>
+        let bytes: [u8; 64] = arbitrary::Arbitrary::arbitrary(u)?;
+        let array = GenericArray::clone_from_slice(&bytes);
+        Ok(Signature(array))
+    }
+}
 
 // Implement BorshSerialize for Signature
 impl BorshSerialize for Signature {
