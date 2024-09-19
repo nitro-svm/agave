@@ -16,7 +16,6 @@ use {
 /// byte, if needed, uses all 8 bits to store the last byte of the original
 /// value.
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
-#[derive(schemars::JsonSchema)]
 pub struct ShortU16(pub u16);
 
 impl Serialize for ShortU16 {
@@ -231,7 +230,6 @@ where
     deserializer.deserialize_tuple(usize::MAX, visitor)
 }
 
-#[derive(schemars::JsonSchema)]
 pub struct ShortVec<T>(pub Vec<T>);
 
 impl<T: Serialize> Serialize for ShortVec<T> {
