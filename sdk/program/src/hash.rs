@@ -52,7 +52,6 @@ const MAX_BASE58_LEN: usize = 44;
     Zeroable,
 )]
 #[repr(transparent)]
-#[derive(schemars::JsonSchema)]
 pub struct Hash(pub(crate) [u8; HASH_BYTES]);
 
 #[derive(Clone, Default)]

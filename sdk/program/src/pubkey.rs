@@ -91,7 +91,6 @@ impl From<u64> for PubkeyError {
     Pod,
     Serialize,
     Zeroable,
-    schemars::JsonSchema,
 )]
 #[cfg_attr(test, derive(Arbitrary))]
 pub struct Pubkey(pub(crate) [u8; 32]);
