@@ -16,6 +16,7 @@ use {
     thiserror::Error,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
+#[cfg(feature = "arbitrary")]
 use proptest::prelude::{any, Strategy};
 
 /// Number of bytes in a signature
@@ -28,6 +29,7 @@ const MAX_BASE58_SIGNATURE_LEN: usize = 88;
 #[derive(Serialize, Deserialize, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Signature(GenericArray<u8, U64>);
 
+#[cfg(feature = "arbitrary")]
 impl proptest::prelude::Arbitrary for Signature {
     type Parameters = ();
     fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
@@ -39,7 +41,7 @@ impl proptest::prelude::Arbitrary for Signature {
 
     type Strategy = proptest::prelude::BoxedStrategy<Signature>;
 }
-
+#[cfg(feature = "arbitrary")]
 // Implement Arbitrary for Signature
 impl<'a> arbitrary::Arbitrary<'a> for Signature {
     fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {

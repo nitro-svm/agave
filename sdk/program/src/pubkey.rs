@@ -93,7 +93,10 @@ impl From<u64> for PubkeyError {
     Zeroable,
 )]
 #[cfg_attr(test, derive(Arbitrary))]
-#[derive(arbitrary::Arbitrary, proptest_derive::Arbitrary)]
+#[cfg_attr(
+    feature = "arbitrary",
+    derive(arbitrary::Arbitrary, proptest_derive::Arbitrary)
+)]
 pub struct Pubkey(pub(crate) [u8; 32]);
 
 impl crate::sanitize::Sanitize for Pubkey {}
