@@ -174,10 +174,6 @@ pub type Result<T> = result::Result<T, TransactionError>;
     derive(AbiExample),
     frozen_abi(digest = "FZtncnS1Xk8ghHfKiXE5oGiUbw2wJhmfXQuNgQR3K6Mc")
 )]
-#[cfg_attr(
-    feature = "arbitrary",
-    derive(arbitrary::Arbitrary, proptest_derive::Arbitrary)
-)]
 #[derive(BorshDeserialize, BorshSerialize, Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     /// A set of signatures of a serialized [`Message`], signed by the first

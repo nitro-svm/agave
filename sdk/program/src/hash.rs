@@ -52,10 +52,6 @@ const MAX_BASE58_LEN: usize = 44;
     Zeroable,
 )]
 #[repr(transparent)]
-#[cfg_attr(
-    any(test, feature = "arbitrary"),
-    derive(arbitrary::Arbitrary, proptest_derive::Arbitrary)
-)]
 pub struct Hash(pub(crate) [u8; HASH_BYTES]);
 
 #[derive(Clone, Default)]

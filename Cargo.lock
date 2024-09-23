@@ -4242,17 +4242,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "proptest-derive"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf16337405ca084e9c78985114633b6827711d22b9e6ef6c6c0d665eb3f0b6e"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "prost"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6818,8 +6807,6 @@ dependencies = [
  "num-derive",
  "num-traits",
  "parking_lot 0.12.3",
- "proptest",
- "proptest-derive",
  "qualifier_attr",
  "rand 0.8.5",
  "rustc_version 0.4.0",
@@ -7238,7 +7225,6 @@ name = "solana-sdk"
 version = "2.0.5"
 dependencies = [
  "anyhow",
- "arbitrary",
  "assert_matches",
  "bincode",
  "bitflags 2.5.0",
@@ -7265,8 +7251,6 @@ dependencies = [
  "memmap2",
  "num_enum",
  "pbkdf2 0.11.0",
- "proptest",
- "proptest-derive",
  "qstring",
  "qualifier_attr",
  "rand 0.7.3",
