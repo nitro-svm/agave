@@ -1,6 +1,7 @@
 //! Functionality for public and private keys.
 #![cfg(feature = "full")]
 
+use std::io::{Write, Read, Error as IoError};
 // legacy module paths
 pub use crate::signer::{keypair::*, null_signer::*, presigner::*, *};
 use {
@@ -14,6 +15,7 @@ use {
     },
     thiserror::Error,
 };
+use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Number of bytes in a signature
 pub const SIGNATURE_BYTES: usize = 64;
@@ -24,6 +26,29 @@ const MAX_BASE58_SIGNATURE_LEN: usize = 88;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(Serialize, Deserialize, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Signature(GenericArray<u8, U64>);
+
+
+
+// Implement BorshSerialize for Signature
+impl BorshSerialize for Signature {
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<(), IoError> {
+        // Serialize the inner GenericArray as bytes
+        writer.write_all(self.0.as_slice())?;
+        Ok(())
+    }
+}
+
+// Implement BorshDeserialize for Signature
+impl BorshDeserialize for Signature {
+    fn deserialize_reader<R: Read>(reader: &mut R) -> Result<Self, IoError> {
+        // Create an empty GenericArray
+        let mut array = GenericArray::<u8, U64>::default();
+        // Read bytes into the array
+        reader.read_exact(array.as_mut_slice())?;
+        // Return Signature with the array
+        Ok(Signature(array))
+    }
+}
 
 impl crate::sanitize::Sanitize for Signature {}
 

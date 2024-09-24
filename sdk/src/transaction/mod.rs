@@ -132,7 +132,7 @@ use {
     solana_sdk::feature_set,
     std::result,
 };
-
+use borsh::{BorshDeserialize, BorshSerialize};
 mod error;
 mod sanitized;
 mod versioned;
@@ -174,7 +174,7 @@ pub type Result<T> = result::Result<T, TransactionError>;
     derive(AbiExample),
     frozen_abi(digest = "FZtncnS1Xk8ghHfKiXE5oGiUbw2wJhmfXQuNgQR3K6Mc")
 )]
-#[derive(Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
+#[derive(BorshDeserialize, BorshSerialize, Debug, PartialEq, Default, Eq, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     /// A set of signatures of a serialized [`Message`], signed by the first
     /// keys of the `Message`'s [`account_keys`], where the number of signatures
