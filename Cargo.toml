@@ -131,6 +131,8 @@ members = [
     "zk-keygen",
     "zk-sdk",
     "zk-token-sdk",
+    # Patches to make this code run under the SP1 prover (time support)
+    "patches",
 ]
 
 exclude = ["programs/sbf", "svm/tests/example-programs"]

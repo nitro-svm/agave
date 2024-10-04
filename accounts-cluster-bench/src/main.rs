@@ -33,8 +33,9 @@ use {
             Arc,
         },
         thread::{sleep, Builder, JoinHandle},
-        time::{Duration, Instant},
+        //time::{Duration, Instant},
     },
+    patches::utils::{Duration, Instant},
 };
 
 pub const MAX_RPC_CALL_RETRIES: usize = 5;
