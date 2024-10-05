@@ -1,7 +1,6 @@
 use {
     crate::{cluster_info_vote_listener::VerifiedLabelVotePacketsReceiver, result::Result},
     itertools::Itertools,
-    solana_patches::time::Duration,
     solana_perf::packet::PacketBatch,
     solana_runtime::bank::Bank,
     solana_sdk::{
@@ -17,6 +16,7 @@ use {
     std::{
         collections::{BTreeMap, HashMap, HashSet},
         sync::Arc,
+        time::Duration,
     },
 };
 

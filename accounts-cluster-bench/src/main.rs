@@ -12,7 +12,6 @@ use {
     solana_gossip::gossip_service::discover,
     solana_inline_spl::token,
     solana_measure::measure::Measure,
-    solana_patches::time::{Duration, Instant},
     solana_rpc_client::rpc_client::RpcClient,
     solana_sdk::{
         commitment_config::CommitmentConfig,
@@ -34,7 +33,7 @@ use {
             Arc,
         },
         thread::{sleep, Builder, JoinHandle},
-        //time::{Duration, Instant},
+        time::{Duration, Instant},
     },
 };
 

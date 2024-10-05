@@ -754,7 +754,7 @@ fn build_solana_package(
             });
 
             if let Ok(target_metadata) = fs::metadata(target_file) {
-                use solana_patches::time::UNIX_EPOCH;
+                use std::time::UNIX_EPOCH;
                 prerequisite_metadata.modified().unwrap_or(UNIX_EPOCH)
                     > target_metadata.modified().unwrap_or(UNIX_EPOCH)
             } else {

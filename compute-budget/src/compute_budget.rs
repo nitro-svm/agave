@@ -1,7 +1,5 @@
-use {
-    crate::compute_budget_processor::{self, ComputeBudgetLimits, DEFAULT_HEAP_COST},
-    serde::{Deserialize, Serialize},
-};
+use crate::compute_budget_processor::{self, ComputeBudgetLimits, DEFAULT_HEAP_COST};
+use serde::{Serialize, Deserialize};
 
 #[cfg(all(RUSTC_WITH_SPECIALIZATION, feature = "frozen-abi"))]
 impl ::solana_frozen_abi::abi_example::AbiExample for ComputeBudget {

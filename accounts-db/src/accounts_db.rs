@@ -110,9 +110,9 @@ use {
             Arc, Condvar, Mutex,
         },
         thread::{sleep, Builder},
-        time::{Duration, Instant},
     },
     tempfile::TempDir,
+    solana_patches::time::{Duration, Instant},
 };
 
 const PAGE_SIZE: u64 = 4 * 1024;
@@ -5330,6 +5330,7 @@ impl AccountsDb {
 
         #[cfg(test)]
         {
+            use std::time::Duration;
             // Give some time for cache flushing to occur here for unit tests
             sleep(Duration::from_millis(self.load_delay));
         }
@@ -6597,6 +6598,7 @@ impl AccountsDb {
             let flush_stats = self.accounts_cache.slot_cache(slot).map(|slot_cache| {
                 #[cfg(test)]
                 {
+                    use std::time::Duration;
                     // Give some time for cache flushing to occur here for unit tests
                     sleep(Duration::from_millis(self.load_delay));
                 }
@@ -9756,6 +9758,7 @@ pub mod tests {
             str::FromStr,
             sync::{atomic::AtomicBool, RwLock},
             thread::{self, Builder, JoinHandle},
+            time::Duration,
         },
         test_case::test_case,
     };
