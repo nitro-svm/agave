@@ -2,7 +2,7 @@
 
 use {
     // solana_metrics::datapoint_info,
-    std::time::{Duration, Instant},
+    solana_patches::time::{Duration, Instant},
 };
 
 const SUBMIT_INTERVAL: Duration = Duration::from_secs(60);

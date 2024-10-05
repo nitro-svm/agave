@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Default, Debug)]
+use std::ops::{AddAssign, Div, Sub};
+
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Instant {}
 
 impl Instant {
@@ -15,8 +17,16 @@ impl Instant {
     }
 }
 
+impl Sub for Instant {
+    type Output = Duration;
+
+    fn sub(self, _other: Self) -> Duration {
+        Duration::default()
+    }
+}
+
 #[derive(
-    Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+    Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
 )]
 pub struct Duration {}
 
@@ -49,12 +59,28 @@ impl Duration {
         0
     }
 
+    pub const fn as_micros(&self) -> u128 {
+        0
+    }
+
     pub const fn subsec_nanos(&self) -> u32 {
         0
     }
 
     pub const ZERO: Duration = Duration::from_nanos(0);
     pub const MAX: Duration = Duration::new(u64::MAX, 1);
+}
+
+impl AddAssign for Duration {
+    fn add_assign(&mut self, _other: Self) {
+    }
+}
+
+impl Div<u32> for Duration {
+    type Output = Self;
+    fn div(self, _other: u32) -> Self {
+        self
+    }
 }
 
 #[derive(Default)]

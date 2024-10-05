@@ -22,6 +22,7 @@ use {
         accounts_db::CalcAccountsHashDataSource, accounts_hash::CalcAccountsHashConfig,
     },
     solana_measure::{measure::Measure, measure_us},
+    solana_patches::time::Instant,
     solana_sdk::clock::{BankId, Slot},
     stats::StatsManager,
     std::{
@@ -32,7 +33,6 @@ use {
             Arc, RwLock,
         },
         thread::{self, sleep, Builder, JoinHandle},
-        time::{Duration, Instant},
     },
 };
 
@@ -694,7 +694,7 @@ impl AccountsBackgroundService {
                         }
                     }
                     stats.record_and_maybe_submit(start_time.elapsed());
-                    sleep(Duration::from_millis(INTERVAL_MS));
+                    // sleep(Duration::from_millis(INTERVAL_MS));
                 }
                 info!("AccountsBackgroundService has stopped");
             })
