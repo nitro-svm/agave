@@ -23,6 +23,7 @@ solana-frozen-abi-macro = { workspace = true, optional = true }
 solana-loader-v4-program = { workspace = true }
 solana-measure = { workspace = true }
 # solana-metrics = { workspace = true }
+solana-patches = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-sdk = { workspace = true }
 solana-system-program = { workspace = true }

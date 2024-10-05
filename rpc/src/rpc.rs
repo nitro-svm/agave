@@ -35,6 +35,7 @@ use {
         leader_schedule_cache::LeaderScheduleCache,
     },
     solana_metrics::inc_new_counter_info,
+    solana_patches::time::Duration,
     solana_perf::packet::PACKET_DATA_SIZE,
     solana_rpc_client_api::{
         config::*,
@@ -112,7 +113,6 @@ use {
             atomic::{AtomicBool, AtomicU64, Ordering},
             Arc, Mutex, RwLock,
         },
-        time::Duration,
     },
 };
 

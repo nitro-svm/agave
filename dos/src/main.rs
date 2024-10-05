@@ -55,6 +55,7 @@ use {
         gossip_service::{discover, get_client},
     },
     solana_measure::measure::Measure,
+    solana_patches::time::{Duration, Instant},
     solana_rpc_client::rpc_client::RpcClient,
     solana_sdk::{
         hash::Hash,
@@ -76,7 +77,6 @@ use {
         process::exit,
         sync::Arc,
         thread,
-        time::{Duration, Instant},
     },
 };
 

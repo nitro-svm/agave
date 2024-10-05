@@ -7,6 +7,7 @@ use {
         SyscallMemset, SyscallSetReturnData,
     },
     solana_compute_budget::compute_budget::ComputeBudget,
+    solana_patches::time::{SystemTime, UNIX_EPOCH},
     solana_program_runtime::{
         invoke_context::InvokeContext,
         loaded_programs::{
@@ -44,7 +45,6 @@ use {
         fs::{self, File},
         io::Read,
         sync::{Arc, RwLock},
-        time::{SystemTime, UNIX_EPOCH},
     },
 };
 

@@ -1,3 +1,3 @@
-use std::time::Duration;
+use solana_patches::time::Duration;
 
 pub const DEFAULT_TPU_COALESCE: Duration = Duration::from_millis(5);

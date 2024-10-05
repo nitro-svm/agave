@@ -6,6 +6,7 @@ use {
         blockstore::Blockstore,
         blockstore_processor::{TransactionStatusBatch, TransactionStatusMessage},
     },
+    solana_patches::time::Duration,
     solana_svm::transaction_results::TransactionExecutionDetails,
     solana_transaction_status::{
         extract_and_fmt_memos, map_inner_instructions, Reward, TransactionStatusMeta,
@@ -16,7 +17,6 @@ use {
             Arc,
         },
         thread::{self, Builder, JoinHandle},
-        time::Duration,
     },
 };
 
@@ -202,6 +202,7 @@ pub(crate) mod tests {
             parse_account_data::SplTokenAdditionalData, parse_token::token_amount_to_ui_amount_v2,
         },
         solana_ledger::{genesis_utils::create_genesis_config, get_tmp_ledger_path_auto_delete},
+        solana_patches::time::{Duration, Instant},
         solana_runtime::bank::{Bank, TransactionBalancesSet},
         solana_sdk::{
             account_utils::StateMut,
@@ -230,7 +231,6 @@ pub(crate) mod tests {
                 Arc,
             },
             thread::sleep,
-            time::Duration,
         },
     };
 

@@ -1,10 +1,11 @@
 use {
+    solana_patches::time::Instant,
     solana_rpc_client::rpc_client::RpcClient,
     solana_sdk::{
         clock::{Epoch, DEFAULT_MS_PER_SLOT},
         commitment_config::CommitmentConfig,
     },
-    std::{thread::sleep, time::Duration},
+    std::thread::sleep,
 };
 
 #[macro_export]
@@ -21,7 +22,7 @@ macro_rules! check_balance {
             if tries == 4 {
                 assert_eq!(balance, $expected_balance);
             }
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            std::thread::sleep(solana_patches::time::Duration::from_millis(500));
         });
     };
     ($expected_balance:expr, $client:expr, $pubkey:expr,) => {
