@@ -292,19 +292,16 @@ pub struct TestBroadcastReceiver {
 #[cfg(test)]
 impl TestBroadcastReceiver {
     pub fn recv(&mut self) -> String {
-        match self.recv_timeout(solana_patches::time::Duration::from_secs(10)) {
+        match self.recv_timeout(std::time::Duration::from_secs(10)) {
             Err(err) => panic!("broadcast receiver error: {err}"),
             Ok(str) => str,
         }
     }
 
-    pub fn recv_timeout(
-        &mut self,
-        timeout: solana_patches::time::Duration,
-    ) -> Result<String, String> {
+    pub fn recv_timeout(&mut self, timeout: std::time::Duration) -> Result<String, String> {
         use {std::thread::sleep, tokio::sync::broadcast::error::TryRecvError};
 
-        let started = solana_patches::time::Instant::now();
+        let started = std::time::Instant::now();
 
         loop {
             match self.inner.try_recv() {
@@ -321,7 +318,7 @@ impl TestBroadcastReceiver {
                     if started.elapsed() > timeout {
                         return Err("TestBroadcastReceiver: no data, timeout reached".into());
                     }
-                    sleep(solana_patches::time::Duration::from_millis(50));
+                    sleep(std::time::Duration::from_millis(50));
                 }
                 Err(e) => return Err(e.to_string()),
             }

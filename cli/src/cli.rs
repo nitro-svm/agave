@@ -13,7 +13,6 @@ use {
         display::println_name_value, CliSignature, CliValidatorsSortOrder, OutputFormat,
     },
     solana_client::connection_cache::ConnectionCache,
-    solana_patches::utils::Duration,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
     solana_rpc_client::rpc_client::RpcClient,
     solana_rpc_client_api::{
@@ -41,6 +40,7 @@ use {
     solana_vote_program::vote_state::VoteAuthorize,
     std::{
         collections::HashMap, error, io::stdout, process::exit, rc::Rc, str::FromStr, sync::Arc,
+        time::Duration,
     },
     thiserror::Error,
 };

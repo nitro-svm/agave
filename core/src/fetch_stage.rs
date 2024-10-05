@@ -4,7 +4,6 @@ use {
     crate::result::{Error, Result},
     crossbeam_channel::{unbounded, RecvTimeoutError},
     solana_metrics::{inc_new_counter_debug, inc_new_counter_info},
-    solana_patches::time::Duration,
     solana_perf::{packet::PacketBatchRecycler, recycler::Recycler},
     solana_poh::poh_recorder::PohRecorder,
     solana_sdk::{
@@ -22,6 +21,7 @@ use {
             Arc, RwLock,
         },
         thread::{self, sleep, Builder, JoinHandle},
+        time::Duration,
     },
 };
 

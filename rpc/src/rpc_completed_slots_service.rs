@@ -2,7 +2,6 @@ use {
     crate::rpc_subscriptions::RpcSubscriptions,
     crossbeam_channel::RecvTimeoutError,
     solana_ledger::blockstore::CompletedSlotsReceiver,
-    solana_patches::time::Duration,
     solana_rpc_client_api::response::SlotUpdate,
     solana_sdk::timing::timestamp,
     std::{
@@ -11,6 +10,7 @@ use {
             Arc,
         },
         thread::{Builder, JoinHandle},
+        time::Duration,
     },
 };
 

@@ -25,9 +25,9 @@ use {
         sanitize::{Sanitize, SanitizeError},
         short_vec, system_instruction, system_program, sysvar,
     },
-    borsh::{BorshDeserialize, BorshSerialize},
     std::{collections::HashSet, convert::TryFrom, str::FromStr},
 };
+use borsh::{BorshDeserialize, BorshSerialize};
 
 #[deprecated(
     since = "2.0.0",
@@ -126,9 +126,7 @@ fn compile_instructions(ixs: &[Instruction], keys: &[Pubkey]) -> Vec<CompiledIns
     frozen_abi(digest = "2KnLEqfLcTBQqitE22Pp8JYkaqVVbAkGbCfdeHoyxcAU"),
     derive(AbiExample)
 )]
-#[derive(
-    BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone,
-)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[borsh(crate = "borsh")]
 pub struct Message {

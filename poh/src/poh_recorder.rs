@@ -23,7 +23,6 @@ use {
     solana_ledger::{blockstore::Blockstore, leader_schedule_cache::LeaderScheduleCache},
     solana_measure::{measure, measure_us},
     solana_metrics::poh_timing_point::{send_poh_timing_point, PohTimingSender, SlotPohTimingInfo},
-    solana_patches::time::{Duration, Instant},
     solana_runtime::{bank::Bank, installed_scheduler_pool::BankWithScheduler},
     solana_sdk::{
         clock::{Slot, NUM_CONSECUTIVE_LEADER_SLOTS},
@@ -39,6 +38,7 @@ use {
             atomic::{AtomicBool, Ordering},
             Arc, Mutex, RwLock,
         },
+        time::{Duration, Instant},
     },
     thiserror::Error,
 };

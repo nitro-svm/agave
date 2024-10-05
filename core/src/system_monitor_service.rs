@@ -7,7 +7,6 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 #[cfg(target_os = "linux")]
 use std::{fs::File, io::BufReader};
 use {
-    solana_patches::time::Duration,
     solana_sdk::timing::AtomicInterval,
     std::{
         collections::HashMap,
@@ -17,6 +16,7 @@ use {
             Arc,
         },
         thread::{self, sleep, Builder, JoinHandle},
+        time::Duration,
     },
     sys_info::{Error, LoadAvg},
 };

@@ -5452,7 +5452,6 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-net-utils",
- "solana-patches",
  "solana-rpc-client",
  "solana-runtime",
  "solana-sdk",
@@ -5753,7 +5752,6 @@ version = "2.0.5"
 dependencies = [
  "log",
  "solana-logger",
- "solana-patches",
 ]
 
 [[package]]
@@ -5862,7 +5860,6 @@ dependencies = [
  "solana-faucet",
  "solana-loader-v4-program",
  "solana-logger",
- "solana-patches",
  "solana-program-runtime",
  "solana-pubsub-client",
  "solana-quic-client",
@@ -6100,7 +6097,6 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-net-utils",
- "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-program-runtime",
@@ -6193,7 +6189,6 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-net-utils",
- "solana-patches",
  "solana-perf",
  "solana-quic-client",
  "solana-rpc",
@@ -6753,7 +6748,6 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-metrics",
- "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-runtime",
@@ -7017,7 +7011,6 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-net-utils",
- "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-rayon-threadlimit",
@@ -7484,7 +7477,6 @@ dependencies = [
  "solana-loader-v4-program",
  "solana-logger",
  "solana-measure",
- "solana-patches",
  "solana-program-runtime",
  "solana-sdk",
  "solana-svm",

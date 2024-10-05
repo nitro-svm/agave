@@ -1,4 +1,4 @@
-#[derive(Default, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Instant {}
 
 impl Instant {
@@ -7,6 +7,10 @@ impl Instant {
     }
 
     pub fn elapsed(&self) -> Duration {
+        Duration::default()
+    }
+
+    pub fn duration_since(&self, _time: Instant) -> Duration {
         Duration::default()
     }
 }

@@ -90,7 +90,7 @@ impl TransactionErrorMetrics {
         );
     }
 
-    pub fn report(&self, id: &str, slot: Slot) {
+    pub fn report(&self, _id: &str, _slot: Slot) {
         // datapoint_info!(
         //     "banking_stage-leader_slot_transaction_errors",
         //     "id" => id,

@@ -1,21 +1,21 @@
 //! Functionality for public and private keys.
 #![cfg(feature = "full")]
 
+use std::io::{Write, Read, Error as IoError};
 // legacy module paths
 pub use crate::signer::{keypair::*, null_signer::*, presigner::*, *};
 use {
     crate::pubkey::Pubkey,
-    borsh::{BorshDeserialize, BorshSerialize},
     generic_array::{typenum::U64, GenericArray},
     std::{
         borrow::{Borrow, Cow},
         convert::TryInto,
         fmt,
-        io::{Error as IoError, Read, Write},
         str::FromStr,
     },
     thiserror::Error,
 };
+use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Number of bytes in a signature
 pub const SIGNATURE_BYTES: usize = 64;
@@ -26,6 +26,8 @@ const MAX_BASE58_SIGNATURE_LEN: usize = 88;
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]
 #[derive(Serialize, Deserialize, Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Signature(GenericArray<u8, U64>);
+
+
 
 // Implement BorshSerialize for Signature
 impl BorshSerialize for Signature {
