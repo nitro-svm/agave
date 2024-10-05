@@ -24,6 +24,7 @@ use {
         },
         *,
     },
+    solana_patches::time::{Duration, Instant, SystemTime, UNIX_EPOCH},
     solana_pubsub_client::pubsub_client::PubsubClient,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
     solana_rpc_client::rpc_client::{GetConfirmedSignaturesForAddress2Config, RpcClient},
@@ -75,7 +76,6 @@ use {
             Arc,
         },
         thread::sleep,
-        time::{Duration, Instant, SystemTime, UNIX_EPOCH},
     },
     thiserror::Error,
 };
@@ -1932,7 +1932,7 @@ pub fn process_wait_for_max_stake(
     config: &CliConfig,
     max_stake_percent: f32,
 ) -> ProcessResult {
-    let now = std::time::Instant::now();
+    let now = solana_patches::time::Instant::now();
     rpc_client.wait_for_max_stake(config.commitment, max_stake_percent)?;
     Ok(format!("Done waiting, took: {}s", now.elapsed().as_secs()))
 }

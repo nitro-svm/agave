@@ -6,6 +6,7 @@ use {
     log::*,
     solana_entry::poh::Poh,
     solana_measure::{measure, measure::Measure},
+    solana_patches::time::{Duration, Instant},
     solana_sdk::poh_config::PohConfig,
     std::{
         sync::{
@@ -13,7 +14,6 @@ use {
             Arc, Mutex, RwLock,
         },
         thread::{self, Builder, JoinHandle},
-        time::{Duration, Instant},
     },
 };
 
@@ -389,10 +389,11 @@ mod tests {
             leader_schedule_cache::LeaderScheduleCache,
         },
         solana_measure::measure::Measure,
+        solana_patches::time::Duration,
         solana_perf::test_tx::test_tx,
         solana_runtime::bank::Bank,
         solana_sdk::{clock, hash::hash, timing, transaction::VersionedTransaction},
-        std::{thread::sleep, time::Duration},
+        std::thread::sleep,
     };
 
     #[test]

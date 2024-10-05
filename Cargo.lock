@@ -3912,10 +3912,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1de2e551fb905ac83f73f7aedf2f0cb4a0da7e35efa24a202a936269f1f18e1"
 
 [[package]]
-name = "patches"
-version = "2.0.5"
-
-[[package]]
 name = "pbkdf2"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5456,6 +5452,7 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-net-utils",
+ "solana-patches",
  "solana-rpc-client",
  "solana-runtime",
  "solana-sdk",
@@ -5510,6 +5507,7 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-nohash-hasher",
+ "solana-patches",
  "solana-rayon-threadlimit",
  "solana-sdk",
  "solana-stake-program",
@@ -5755,6 +5753,7 @@ version = "2.0.5"
 dependencies = [
  "log",
  "solana-logger",
+ "solana-patches",
 ]
 
 [[package]]
@@ -5863,6 +5862,7 @@ dependencies = [
  "solana-faucet",
  "solana-loader-v4-program",
  "solana-logger",
+ "solana-patches",
  "solana-program-runtime",
  "solana-pubsub-client",
  "solana-quic-client",
@@ -6100,6 +6100,7 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-net-utils",
+ "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-program-runtime",
@@ -6192,6 +6193,7 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-net-utils",
+ "solana-patches",
  "solana-perf",
  "solana-quic-client",
  "solana-rpc",
@@ -6594,6 +6596,7 @@ name = "solana-measure"
 version = "2.0.5"
 dependencies = [
  "log",
+ "solana-patches",
  "solana-sdk",
 ]
 
@@ -6699,6 +6702,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-patches"
+version = "2.0.5"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "solana-perf"
 version = "2.0.5"
 dependencies = [
@@ -6743,6 +6753,7 @@ dependencies = [
  "solana-logger",
  "solana-measure",
  "solana-metrics",
+ "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-runtime",
@@ -7006,6 +7017,7 @@ dependencies = [
  "solana-measure",
  "solana-metrics",
  "solana-net-utils",
+ "solana-patches",
  "solana-perf",
  "solana-poh",
  "solana-rayon-threadlimit",
@@ -7272,6 +7284,7 @@ dependencies = [
  "solana-frozen-abi",
  "solana-frozen-abi-macro",
  "solana-logger",
+ "solana-patches",
  "solana-program",
  "solana-sdk",
  "solana-sdk-macro",
@@ -7471,6 +7484,7 @@ dependencies = [
  "solana-loader-v4-program",
  "solana-logger",
  "solana-measure",
+ "solana-patches",
  "solana-program-runtime",
  "solana-sdk",
  "solana-svm",

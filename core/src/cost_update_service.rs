@@ -3,11 +3,11 @@
 use {
     crossbeam_channel::Receiver,
     solana_ledger::blockstore::Blockstore,
+    solana_patches::time::Duration,
     solana_runtime::bank::Bank,
     std::{
         sync::Arc,
         thread::{self, Builder, JoinHandle},
-        time::Duration,
     },
 };
 pub enum CostUpdate {

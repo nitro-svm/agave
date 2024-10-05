@@ -1,9 +1,7 @@
 use {
+    solana_patches::time::{Duration, SystemTime},
     solana_rpc_client_api::{config::RpcLargestAccountsFilter, response::RpcAccountBalance},
-    std::{
-        collections::HashMap,
-        time::{Duration, SystemTime},
-    },
+    std::collections::HashMap,
 };
 
 #[derive(Debug, Clone)]

@@ -404,13 +404,9 @@ mod tests {
             Rng, SeedableRng,
         },
         rand_chacha::ChaChaRng,
+        solana_patches::time::{Duration, Instant},
         solana_sdk::account::{accounts_equal, Account, WritableAccount},
-        std::{
-            collections::HashMap,
-            iter::repeat_with,
-            sync::Arc,
-            time::{Duration, Instant},
-        },
+        std::{collections::HashMap, iter::repeat_with, sync::Arc},
     };
 
     impl ReadOnlyAccountsCache {

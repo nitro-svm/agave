@@ -11,6 +11,7 @@
 use {
     crate::rpc_subscriptions::RpcSubscriptions,
     crossbeam_channel::{Receiver, RecvTimeoutError, Sender},
+    solana_patches::time::Duration,
     solana_rpc_client_api::response::{SlotTransactionStats, SlotUpdate},
     solana_runtime::{
         bank::Bank, bank_forks::BankForks, prioritization_fee_cache::PrioritizationFeeCache,
@@ -23,7 +24,6 @@ use {
             Arc, RwLock,
         },
         thread::{self, Builder, JoinHandle},
-        time::Duration,
     },
 };
 

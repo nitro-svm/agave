@@ -1,9 +1,11 @@
 //! Fee structures.
 
-use crate::native_token::sol_to_lamports;
 #[cfg(not(target_os = "solana"))]
 use solana_program::message::SanitizedMessage;
-use serde::{Serialize, Deserialize};
+use {
+    crate::native_token::sol_to_lamports,
+    serde::{Deserialize, Serialize},
+};
 
 /// A fee and its associated compute unit limit
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq)]

@@ -19,6 +19,7 @@ use {
     solana_ledger::blockstore::Blockstore,
     solana_measure::measure::Measure,
     solana_metrics::inc_new_counter_debug,
+    solana_patches::time::{Duration, Instant},
     solana_perf::packet,
     solana_poh::poh_recorder::PohRecorder,
     solana_rpc::{
@@ -51,7 +52,6 @@ use {
             Arc, RwLock,
         },
         thread::{self, sleep, Builder, JoinHandle},
-        time::{Duration, Instant},
     },
 };
 

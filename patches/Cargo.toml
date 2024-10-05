@@ -1,5 +1,5 @@
 [package]
-name = "patches"
+name = "solana-patches"
 description = "Patches to work around SP1 time and other util restrictions"
 documentation = ""
 version = { workspace = true }
@@ -9,5 +9,8 @@ homepage = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
 
-#[lib]
-#name = "patches"
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
+[lib]
+name = "solana_patches"

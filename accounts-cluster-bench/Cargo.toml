@@ -23,6 +23,7 @@ solana-inline-spl = { workspace = true }
 solana-logger = { workspace = true }
 solana-measure = { workspace = true }
 solana-net-utils = { workspace = true }
+solana-patches = { workspace = true }
 solana-rpc-client = { workspace = true, features = ["default"] }
 solana-runtime = { workspace = true }
 solana-sdk = { workspace = true }

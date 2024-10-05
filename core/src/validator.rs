@@ -70,6 +70,7 @@ use {
     solana_metrics::{
         datapoint_info, metrics::metrics_config_sanity_check, poh_timing_point::PohTimingSender,
     },
+    solana_patches::time::{Duration, Instant},
     solana_poh::{
         poh_recorder::PohRecorder,
         poh_service::{self, PohService},
@@ -132,7 +133,6 @@ use {
             Arc, RwLock,
         },
         thread::{sleep, Builder, JoinHandle},
-        time::{Duration, Instant},
     },
     strum::VariantNames,
     strum_macros::{Display, EnumString, EnumVariantNames, IntoStaticStr},

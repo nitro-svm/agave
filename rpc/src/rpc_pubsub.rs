@@ -611,6 +611,7 @@ mod tests {
         jsonrpc_core::{IoHandler, Response},
         serial_test::serial,
         solana_account_decoder::{parse_account_data::parse_account_data_v2, UiAccountEncoding},
+        solana_patches::time::Duration,
         solana_rpc_client_api::response::{
             ProcessedSignatureResult, ReceivedSignatureResult, RpcSignatureResult, SlotInfo,
         },
@@ -648,7 +649,6 @@ mod tests {
                 RwLock,
             },
             thread::sleep,
-            time::Duration,
         },
     };
 

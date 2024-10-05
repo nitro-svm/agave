@@ -2,7 +2,7 @@
 
 use {
     crate::{clock::DEFAULT_TICKS_PER_SECOND, unchecked_div_by_const},
-    std::time::Duration,
+    solana_patches::time::Duration,
 };
 
 #[cfg_attr(feature = "frozen-abi", derive(AbiExample))]

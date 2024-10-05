@@ -17,6 +17,7 @@ solana-entry = { workspace = true }
 solana-ledger = { workspace = true }
 solana-measure = { workspace = true }
 solana-metrics = { workspace = true }
+solana-patches = { workspace = true }
 solana-runtime = { workspace = true }
 solana-sdk = { workspace = true }
 thiserror = { workspace = true }
