@@ -7192,6 +7192,7 @@ dependencies = [
  "solana-loader-v4-program",
  "solana-logger",
  "solana-measure",
+ "solana-patches",
  "solana-program-runtime",
  "solana-rayon-threadlimit",
  "solana-runtime",

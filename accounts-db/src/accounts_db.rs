@@ -9247,7 +9247,7 @@ impl AccountsDb {
         {
             // 10 ms is long enough to allow some flushing to occur before insertion is resumed.
             // callers of this are typically run in parallel, so many threads will be sleeping at different starting intervals, waiting to resume insertion.
-            sleep(Duration::from_millis(10));
+            // sleep(Duration::from_millis(10));
         }
     }
 
