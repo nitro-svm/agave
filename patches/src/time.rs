@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, Div, Sub};
+use std::ops::{Add, AddAssign, Div, Sub};
 
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Instant {}
@@ -69,6 +69,13 @@ impl Duration {
 
     pub const ZERO: Duration = Duration::from_nanos(0);
     pub const MAX: Duration = Duration::new(u64::MAX, 1);
+}
+
+impl Add for Duration {
+    type Output = Self;
+    fn add(self, _other: Self) -> Self {
+        self
+    }
 }
 
 impl AddAssign for Duration {
