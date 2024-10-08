@@ -5330,7 +5330,6 @@ impl AccountsDb {
 
         #[cfg(test)]
         {
-            use std::time::Duration;
             // Give some time for cache flushing to occur here for unit tests
             sleep(Duration::from_millis(self.load_delay));
         }
@@ -6598,7 +6597,6 @@ impl AccountsDb {
             let flush_stats = self.accounts_cache.slot_cache(slot).map(|slot_cache| {
                 #[cfg(test)]
                 {
-                    use std::time::Duration;
                     // Give some time for cache flushing to occur here for unit tests
                     sleep(Duration::from_millis(self.load_delay));
                 }
@@ -9247,7 +9245,7 @@ impl AccountsDb {
         {
             // 10 ms is long enough to allow some flushing to occur before insertion is resumed.
             // callers of this are typically run in parallel, so many threads will be sleeping at different starting intervals, waiting to resume insertion.
-            // sleep(Duration::from_millis(10));
+            sleep(Duration::from_millis(10));
         }
     }
 
@@ -9758,7 +9756,6 @@ pub mod tests {
             str::FromStr,
             sync::{atomic::AtomicBool, RwLock},
             thread::{self, Builder, JoinHandle},
-            time::Duration,
         },
         test_case::test_case,
     };
