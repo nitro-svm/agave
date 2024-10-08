@@ -82,6 +82,7 @@ sha3 = { workspace = true, optional = true }
 siphasher = { workspace = true }
 solana-frozen-abi = { workspace = true, optional = true }
 solana-frozen-abi-macro = { workspace = true, optional = true }
+solana-patches = { workspace = true }
 solana-program = { workspace = true }
 solana-sdk-macro = { workspace = true }
 thiserror = { workspace = true }

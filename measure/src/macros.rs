@@ -83,7 +83,7 @@ macro_rules! measure {
 #[macro_export]
 macro_rules! measure_us {
     ($val:expr) => {{
-        let start = std::time::Instant::now();
+        let start = solana_patches::time::Instant::now();
         let result = $val;
         (result, solana_sdk::timing::duration_as_us(&start.elapsed()))
     }};

@@ -22,6 +22,7 @@ use {
     bincode::{deserialize, serialize},
     chrono::{TimeZone, Utc},
     memmap2::Mmap,
+    solana_patches::time::{SystemTime, UNIX_EPOCH},
     std::{
         collections::BTreeMap,
         fmt,
@@ -29,7 +30,6 @@ use {
         io::Write,
         path::{Path, PathBuf},
         str::FromStr,
-        time::{SystemTime, UNIX_EPOCH},
     },
 };
 
