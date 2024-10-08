@@ -12,7 +12,6 @@ use {
     crossbeam_channel::SendError,
     log::*,
     solana_measure::measure::Measure,
-    solana_patches::time::Instant,
     solana_program_runtime::loaded_programs::{BlockRelation, ForkGraph},
     solana_sdk::{
         clock::{Epoch, Slot},
@@ -26,6 +25,7 @@ use {
             atomic::{AtomicBool, AtomicU64, Ordering},
             Arc, RwLock,
         },
+        time::Instant,
     },
     thiserror::Error,
 };
