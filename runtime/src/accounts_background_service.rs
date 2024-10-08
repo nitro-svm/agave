@@ -22,7 +22,6 @@ use {
         accounts_db::CalcAccountsHashDataSource, accounts_hash::CalcAccountsHashConfig,
     },
     solana_measure::{measure::Measure, measure_us},
-    solana_patches::time::Instant,
     solana_sdk::clock::{BankId, Slot},
     stats::StatsManager,
     std::{
@@ -33,6 +32,7 @@ use {
             Arc, RwLock,
         },
         thread::{self, sleep, Builder, JoinHandle},
+        time::Instant,
     },
 };
 

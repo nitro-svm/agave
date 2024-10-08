@@ -110,9 +110,9 @@ use {
             Arc, Condvar, Mutex,
         },
         thread::{sleep, Builder},
+        time::{Duration, Instant},
     },
     tempfile::TempDir,
-    solana_patches::time::{Duration, Instant},
 };
 
 const PAGE_SIZE: u64 = 4 * 1024;
