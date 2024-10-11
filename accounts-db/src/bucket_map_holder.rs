@@ -74,7 +74,7 @@ pub struct BucketMapHolder<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>>
     _phantom: PhantomData<T>,
 
     // Used by the foreground function, maybe not needed at all
-    can_advance_age: bool;
+    can_advance_age: bool,
 
     pub(crate) startup_stats: Arc<StartupStats>,
 }
