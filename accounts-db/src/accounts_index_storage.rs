@@ -64,30 +64,17 @@ impl BgThreads {
     ) -> Self {
         // stop signal used for THIS batch of bg threads
         let local_exit = Arc::new(AtomicBool::default());
-        let handles = Some(
-            (0..threads)
-                .map(|idx| {
-                    // the first thread we start is special
-                    let can_advance_age = can_advance_age && idx == 0;
-                    let storage_ = Arc::clone(storage);
-                    let local_exit = local_exit.clone();
-                    let system_exit = exit.clone();
-                    let in_mem_ = in_mem.to_vec();
 
-                    // note that using rayon here causes us to exhaust # rayon threads and many tests running in parallel deadlock
-                    Builder::new()
-                        .name(format!("solIdxFlusher{idx:02}"))
-                        .spawn(move || {
-                            storage_.background(
-                                vec![local_exit, system_exit],
-                                in_mem_,
-                                can_advance_age,
-                            );
-                        })
-                        .unwrap()
-                })
-                .collect(),
-        );
+        (0..threads)
+            .map(|idx| {
+                // the first thread we start is special
+                //                let can_advance_age = can_advance_age && idx == 0;
+                let storage_ = Arc::clone(storage);
+                //                let local_exit = local_exit.clone();
+                //                let system_exit = exit.clone();
+                let in_mem_ = in_mem.to_vec();
+                storage_.foreground(in_mem_);
+            });
 
         BgThreads {
             exit: local_exit,

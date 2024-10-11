@@ -73,6 +73,9 @@ pub struct BucketMapHolder<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>>
     startup: AtomicBool,
     _phantom: PhantomData<T>,
 
+    // Used by the foreground function, maybe not needed at all
+    can_advance_age: bool;
+
     pub(crate) startup_stats: Arc<StartupStats>,
 }
 
@@ -273,6 +276,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> BucketMapHolder<T, U>
             mem_budget_mb,
             threads,
             _phantom: PhantomData,
+            can_advance_age: false,
             startup_stats: Arc::default(),
         }
     }
@@ -412,6 +416,25 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> BucketMapHolder<T, U>
     }
 }
 
+    pub fn foreground(
+        &self,
+        in_mem: Vec<Arc<InMemAccountsIndex<T, U>>>,
+    ) {
+        let bins = in_mem.len();
+        let flush = self.disk.is_some();
+
+        if !flush { return; }
+
+        for _ in 0..bins {
+            let index = self.next_bucket_to_flush();
+            in_mem[index].flush(self.can_advance_age);
+
+            if self.all_buckets_flushed_at_current_age() {
+                break;
+            }
+        }
+    }
+}
 #[cfg(test)]
 pub mod tests {
     use {super::*, rayon::prelude::*, std::time::Instant};
