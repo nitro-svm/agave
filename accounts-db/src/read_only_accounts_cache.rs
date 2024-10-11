@@ -86,10 +86,10 @@ pub(crate) struct ReadOnlyAccountsCache {
     ///
     /// NOTE: This field must be above `evictor` to ensure it is dropped before `evictor`.
     evict_sender: crossbeam_channel::Sender<()>,
-    /// To the evictor goes the spoiled [sic]
-    ///
-    /// Evict from the cache in the background.
-    _evictor: thread::JoinHandle<()>,
+    // To the evictor goes the spoiled [sic]
+    //
+    // Evict from the cache in the background.
+    //_evictor: thread::JoinHandle<()>,
 }
 
 impl ReadOnlyAccountsCache {
@@ -104,15 +104,15 @@ impl ReadOnlyAccountsCache {
         let data_size = Arc::new(AtomicUsize::default());
         let stats = Arc::new(AtomicReadOnlyCacheStats::default());
         let (evict_sender, evict_receiver) = crossbeam_channel::bounded::<()>(1);
-        let evictor = Self::spawn_evictor(
-            evict_receiver,
-            max_data_size_lo,
-            max_data_size_hi,
-            data_size.clone(),
-            cache.clone(),
-            queue.clone(),
-            stats.clone(),
-        );
+        // let evictor = Self::spawn_evictor(
+        //     evict_receiver,
+        //     max_data_size_lo,
+        //     max_data_size_hi,
+        //     data_size.clone(),
+        //     cache.clone(),
+        //     queue.clone(),
+        //     stats.clone(),
+        // );
 
         Self {
             highest_slot_stored: AtomicU64::default(),
@@ -124,7 +124,7 @@ impl ReadOnlyAccountsCache {
             ms_to_skip_lru_update,
             stats,
             evict_sender,
-            _evictor: evictor,
+//            _evictor: evictor,
         }
     }
 
@@ -202,9 +202,9 @@ impl ReadOnlyAccountsCache {
             }
         };
 
-        if self.data_size() > self.max_data_size_hi {
-            self.send_evict();
-        }
+        // if self.data_size() > self.max_data_size_hi {
+        //     self.send_evict();
+        // }
         let store_us = measure_store.end_as_us();
         self.stats.store_us.fetch_add(store_us, Ordering::Relaxed);
     }
