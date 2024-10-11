@@ -78,7 +78,7 @@ impl BgThreads {
 
         BgThreads {
             exit: local_exit,
-            handles,
+            handles: None,
             wait: Arc::clone(&storage.wait_dirty_or_aged),
         }
     }
