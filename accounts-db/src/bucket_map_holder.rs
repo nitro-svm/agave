@@ -434,6 +434,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> BucketMapHolder<T, U>
         }
     }
 }
+
 #[cfg(test)]
 pub mod tests {
     use {super::*, rayon::prelude::*, std::time::Instant};
