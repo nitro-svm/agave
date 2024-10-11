@@ -414,7 +414,6 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> BucketMapHolder<T, U>
             self.stats.active_threads.fetch_sub(1, Ordering::Relaxed);
         }
     }
-}
 
     pub fn foreground(
         &self,
