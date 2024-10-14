@@ -86,9 +86,10 @@ pub(crate) struct ReadOnlyAccountsCache {
     ///
     /// NOTE: This field must be above `evictor` to ensure it is dropped before `evictor`.
     evict_sender: crossbeam_channel::Sender<()>,
-    /// To the evictor goes the spoiled [sic]
-    ///
-    /// Evict from the cache in the background.
+    // To the evictor goes the spoiled [sic]
+    //
+    // Evict from the cache in the background.
+    #[cfg(not(target_os = "zkvm"))]
     _evictor: thread::JoinHandle<()>,
 }
 
@@ -104,6 +105,7 @@ impl ReadOnlyAccountsCache {
         let data_size = Arc::new(AtomicUsize::default());
         let stats = Arc::new(AtomicReadOnlyCacheStats::default());
         let (evict_sender, evict_receiver) = crossbeam_channel::bounded::<()>(1);
+        #[cfg(not(target_os = "zkvm"))]
         let evictor = Self::spawn_evictor(
             evict_receiver,
             max_data_size_lo,
@@ -124,6 +126,7 @@ impl ReadOnlyAccountsCache {
             ms_to_skip_lru_update,
             stats,
             evict_sender,
+            #[cfg(not(target_os = "zkvm"))]
             _evictor: evictor,
         }
     }
@@ -202,6 +205,7 @@ impl ReadOnlyAccountsCache {
             }
         };
 
+        #[cfg(not(target_os = "zkvm"))]
         if self.data_size() > self.max_data_size_hi {
             self.send_evict();
         }

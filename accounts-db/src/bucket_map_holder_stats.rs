@@ -228,7 +228,7 @@ impl BucketMapHolderStats {
         let mut thread_time_elapsed_ms = elapsed_ms * storage.threads as u64;
         if disk.is_some() {
             // if was_startup {
-                // these stats only apply at startup
+            // these stats only apply at startup
             //     datapoint_info!(
             //         "accounts_index_startup",
             //         (
@@ -546,7 +546,7 @@ impl BucketMapHolderStats {
             //         i64
             //     ),
             // );
-        // } else {
+            // } else {
             // datapoint_info!(
             //     if startup || was_startup {
             //         thread_time_elapsed_ms *= 2; // more threads are allocated during startup

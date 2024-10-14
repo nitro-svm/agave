@@ -1,10 +1,8 @@
 //! The `timing` module provides std::time utility functions.
 use {
     crate::unchecked_div_by_const,
-    std::{
-        sync::atomic::{AtomicU64, Ordering},
-        time::{Duration, SystemTime, UNIX_EPOCH},
-    },
+    solana_patches::time::{Duration, SystemTime, UNIX_EPOCH},
+    std::sync::atomic::{AtomicU64, Ordering},
 };
 
 pub fn duration_as_ns(d: &Duration) -> u64 {

@@ -60,6 +60,7 @@ solana-inline-spl = { workspace = true }
 solana-loader-v4-program = { workspace = true }
 solana-measure = { workspace = true }
 # solana-perf = { workspace = true }
+solana-patches = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-rayon-threadlimit = { workspace = true }
 solana-sdk = { workspace = true }
