@@ -415,14 +415,13 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> BucketMapHolder<T, U>
         }
     }
 
-    pub fn foreground(
-        &self,
-        in_mem: Vec<Arc<InMemAccountsIndex<T, U>>>,
-    ) {
+    pub fn foreground(&self, in_mem: Vec<Arc<InMemAccountsIndex<T, U>>>) {
         let bins = in_mem.len();
         let flush = self.disk.is_some();
 
-        if !flush { return; }
+        if !flush {
+            return;
+        }
 
         for _ in 0..bins {
             let index = self.next_bucket_to_flush();
