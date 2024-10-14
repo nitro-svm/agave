@@ -89,7 +89,7 @@ pub(crate) struct ReadOnlyAccountsCache {
     // To the evictor goes the spoiled [sic]
     //
     // Evict from the cache in the background.
-    #[cfg(feature = "multithreaded")]
+    #[cfg(not(target_os = "zkvm"))]
     _evictor: thread::JoinHandle<()>,
 }
 
@@ -105,7 +105,7 @@ impl ReadOnlyAccountsCache {
         let data_size = Arc::new(AtomicUsize::default());
         let stats = Arc::new(AtomicReadOnlyCacheStats::default());
         let (evict_sender, evict_receiver) = crossbeam_channel::bounded::<()>(1);
-        #[cfg(feature = "multithreaded")]
+        #[cfg(not(target_os = "zkvm"))]
         let evictor = Self::spawn_evictor(
             evict_receiver,
             max_data_size_lo,
@@ -126,7 +126,7 @@ impl ReadOnlyAccountsCache {
             ms_to_skip_lru_update,
             stats,
             evict_sender,
-            #[cfg(feature = "multithreaded")]
+            #[cfg(not(target_os = "zkvm"))]
             _evictor: evictor,
         }
     }
@@ -205,7 +205,7 @@ impl ReadOnlyAccountsCache {
             }
         };
 
-        #[cfg(feature = "multithreaded")]
+        #[cfg(not(target_os = "zkvm"))]
         if self.data_size() > self.max_data_size_hi {
             self.send_evict();
         }
