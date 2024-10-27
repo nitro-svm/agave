@@ -28,6 +28,7 @@ use {
 #[derive(Debug)]
 pub struct Keypair(ed25519_dalek::Keypair);
 
+// Implement Clone for Keypair
 impl Clone for Keypair {
     fn clone(&self) -> Self {
         let bytes = self.0.to_bytes();
@@ -54,7 +55,7 @@ impl BorshDeserialize for Keypair {
     }
 }
 
-// Implement Serde Serialization and Deserialization
+// Implement Serde Serialization and Deserialization for Keypair
 impl Serialize for Keypair {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_bytes(self.0.to_bytes().as_ref())
