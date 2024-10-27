@@ -1,5 +1,8 @@
 #![cfg(feature = "full")]
 
+use std::io;
+use borsh::{BorshDeserialize, BorshSerialize};
+use serde::{Deserialize, Serialize};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 use {
@@ -24,6 +27,48 @@ use {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 #[derive(Debug)]
 pub struct Keypair(ed25519_dalek::Keypair);
+
+impl Clone for Keypair {
+    fn clone(&self) -> Self {
+        let bytes = self.0.to_bytes();
+        let cloned_keypair = ed25519_dalek::Keypair::from_bytes(&bytes)
+            .expect("Failed to clone Keypair");
+        Keypair(cloned_keypair)
+    }
+}
+
+// Implement BorshSerialize and BorshDeserialize for Keypair
+impl BorshSerialize for Keypair {
+    fn serialize<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(self.0.to_bytes().as_ref())
+    }
+}
+
+impl BorshDeserialize for Keypair {
+    fn deserialize_reader<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut keypair_bytes = [0u8; 64];
+        reader.read_exact(&mut keypair_bytes)?;
+        let keypair = ed25519_dalek::Keypair::from_bytes(&keypair_bytes)
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Invalid Keypair"))?;
+        Ok(Keypair(keypair))
+    }
+}
+
+// Implement Serde Serialization and Deserialization
+impl Serialize for Keypair {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_bytes(self.0.to_bytes().as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for Keypair {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let bytes: &[u8] = serde::Deserialize::deserialize(deserializer)?;
+        ed25519_dalek::Keypair::from_bytes(bytes)
+            .map(Keypair)
+            .map_err(serde::de::Error::custom)
+    }
+}
 
 impl Keypair {
     /// Can be used for generating a Keypair without a dependency on `rand` types
