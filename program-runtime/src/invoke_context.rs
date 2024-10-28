@@ -533,6 +533,7 @@ impl<'a> InvokeContext<'a> {
                 Ok(())
             }
             ProgramResult::Err(ref err) => {
+                println!("{err:?}");
                 if let EbpfError::SyscallError(syscall_error) = err {
                     if let Some(instruction_err) = syscall_error.downcast_ref::<InstructionError>()
                     {
