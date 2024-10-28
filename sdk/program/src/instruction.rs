@@ -209,6 +209,9 @@ pub enum InstructionError {
     #[error("Program failed to compile")]
     ProgramFailedToCompile,
 
+    #[error("Catch all error for debug: {0}")]
+    CatchAllError(String),
+
     /// Account is immutable
     #[error("Account is immutable")]
     Immutable,

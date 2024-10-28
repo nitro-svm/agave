@@ -533,20 +533,20 @@ impl<'a> InvokeContext<'a> {
                 Ok(())
             }
             ProgramResult::Err(ref err) => {
-                println!("{err:?}");
-                if let EbpfError::SyscallError(syscall_error) = err {
-                    if let Some(instruction_err) = syscall_error.downcast_ref::<InstructionError>()
-                    {
-                        stable_log::program_failure(&logger, &program_id, instruction_err);
-                        Err(instruction_err.clone())
-                    } else {
-                        stable_log::program_failure(&logger, &program_id, syscall_error);
-                        Err(InstructionError::ProgramFailedToComplete)
-                    }
-                } else {
-                    stable_log::program_failure(&logger, &program_id, err);
-                    Err(InstructionError::ProgramFailedToComplete)
-                }
+                Err(InstructionError::CatchAllError(err.to_string()))
+                // if let EbpfError::SyscallError(syscall_error) = err {
+                //     if let Some(instruction_err) = syscall_error.downcast_ref::<InstructionError>()
+                //     {
+                //         stable_log::program_failure(&logger, &program_id, instruction_err);
+                //         Err(instruction_err.clone())
+                //     } else {
+                //         stable_log::program_failure(&logger, &program_id, syscall_error);
+                //         Err(InstructionError::ProgramFailedToComplete)
+                //     }
+                // } else {
+                //     stable_log::program_failure(&logger, &program_id, err);
+                //     Err(InstructionError::ProgramFailedToComplete)
+                // }
             }
         };
         let post_remaining_units = self.get_remaining();
