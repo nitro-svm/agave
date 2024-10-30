@@ -1,7 +1,7 @@
 pub use self::{
     cpi::{SyscallInvokeSignedC, SyscallInvokeSignedRust},
     logging::{
-        SyscallLog, SyscallLogBpfComputeUnits, SyscallLogData, SyscallLogPubkey, SyscallLogU64,
+        SyscallLog, SyscallLogBpfComputeUnits, SyscallLogData, SyscallLogPubkey, SyscallLogusize,
     },
     mem_ops::{SyscallMemcmp, SyscallMemcpy, SyscallMemmove, SyscallMemset},
     sysvar::{
@@ -84,7 +84,7 @@ pub enum SyscallError {
     #[error("SBF program panicked")]
     Abort,
     #[error("SBF program Panicked in {0} at {1}:{2}")]
-    Panic(String, u64, u64),
+    Panic(String, usize, usize),
     #[error("Cannot borrow invoke context")]
     InvokeContextBorrowFailed,
     #[error("Malformed signer seed: {0}: {1:?}")]
@@ -104,22 +104,25 @@ pub enum SyscallError {
     #[error("Overlapping copy")]
     CopyOverlapping,
     #[error("Return data too large ({0} > {1})")]
-    ReturnDataTooLarge(u64, u64),
+    ReturnDataTooLarge(usize, usize),
     #[error("Hashing too many sequences")]
     TooManySlices,
     #[error("InvalidLength")]
     InvalidLength,
     #[error("Invoked an instruction with data that is too large ({data_len} > {max_data_len})")]
-    MaxInstructionDataLenExceeded { data_len: u64, max_data_len: u64 },
+    MaxInstructionDataLenExceeded {
+        data_len: usize,
+        max_data_len: usize,
+    },
     #[error("Invoked an instruction with too many accounts ({num_accounts} > {max_accounts})")]
     MaxInstructionAccountsExceeded {
-        num_accounts: u64,
-        max_accounts: u64,
+        num_accounts: usize,
+        max_accounts: usize,
     },
     #[error("Invoked an instruction with too many account info's ({num_account_infos} > {max_account_infos})")]
     MaxInstructionAccountInfosExceeded {
-        num_account_infos: u64,
-        max_account_infos: u64,
+        num_account_infos: usize,
+        max_account_infos: usize,
     },
     #[error("InvalidAttribute")]
     InvalidAttribute,
@@ -138,9 +141,9 @@ pub trait HasherImpl {
     fn create_hasher() -> Self;
     fn hash(&mut self, val: &[u8]);
     fn result(self) -> Self::Output;
-    fn get_base_cost(compute_budget: &ComputeBudget) -> u64;
-    fn get_byte_cost(compute_budget: &ComputeBudget) -> u64;
-    fn get_max_slices(compute_budget: &ComputeBudget) -> u64;
+    fn get_base_cost(compute_budget: &ComputeBudget) -> usize;
+    fn get_byte_cost(compute_budget: &ComputeBudget) -> usize;
+    fn get_max_slices(compute_budget: &ComputeBudget) -> usize;
 }
 
 pub struct Sha256Hasher(Hasher);
@@ -163,13 +166,13 @@ impl HasherImpl for Sha256Hasher {
         self.0.result()
     }
 
-    fn get_base_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_base_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_base_cost
     }
-    fn get_byte_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_byte_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_byte_cost
     }
-    fn get_max_slices(compute_budget: &ComputeBudget) -> u64 {
+    fn get_max_slices(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_max_slices
     }
 }
@@ -190,13 +193,13 @@ impl HasherImpl for Blake3Hasher {
         self.0.result()
     }
 
-    fn get_base_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_base_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_base_cost
     }
-    fn get_byte_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_byte_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_byte_cost
     }
-    fn get_max_slices(compute_budget: &ComputeBudget) -> u64 {
+    fn get_max_slices(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_max_slices
     }
 }
@@ -217,18 +220,18 @@ impl HasherImpl for Keccak256Hasher {
         self.0.result()
     }
 
-    fn get_base_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_base_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_base_cost
     }
-    fn get_byte_cost(compute_budget: &ComputeBudget) -> u64 {
+    fn get_byte_cost(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_byte_cost
     }
-    fn get_max_slices(compute_budget: &ComputeBudget) -> u64 {
+    fn get_max_slices(compute_budget: &ComputeBudget) -> usize {
         compute_budget.sha256_max_slices
     }
 }
 
-fn consume_compute_meter(invoke_context: &InvokeContext, amount: u64) -> Result<(), Error> {
+fn consume_compute_meter(invoke_context: &InvokeContext, amount: usize) -> Result<(), Error> {
     invoke_context.consume_checked(amount)?;
     Ok(())
 }
@@ -321,7 +324,7 @@ pub fn create_program_runtime_environment_v1<'a>(
 
     // Logging
     result.register_function_hashed(*b"sol_log_", SyscallLog::vm)?;
-    result.register_function_hashed(*b"sol_log_64_", SyscallLogU64::vm)?;
+    result.register_function_hashed(*b"sol_log_64_", SyscallLogusize::vm)?;
     result.register_function_hashed(*b"sol_log_compute_units_", SyscallLogBpfComputeUnits::vm)?;
     result.register_function_hashed(*b"sol_log_pubkey", SyscallLogPubkey::vm)?;
 
@@ -503,9 +506,9 @@ fn address_is_aligned<T>(address: u64) -> bool {
 fn translate(
     memory_mapping: &MemoryMapping,
     access_type: AccessType,
-    vm_addr: u64,
-    len: u64,
-) -> Result<u64, Error> {
+    vm_addr: usize,
+    len: usize,
+) -> Result<usize, Error> {
     memory_mapping
         .map(access_type, vm_addr, len)
         .map_err(|err| err.into())
@@ -515,10 +518,15 @@ fn translate(
 fn translate_type_inner<'a, T>(
     memory_mapping: &MemoryMapping,
     access_type: AccessType,
-    vm_addr: u64,
+    vm_addr: usize,
     check_aligned: bool,
 ) -> Result<&'a mut T, Error> {
-    let host_addr = translate(memory_mapping, access_type, vm_addr, size_of::<T>() as u64)?;
+    let host_addr = translate(
+        memory_mapping,
+        access_type,
+        vm_addr,
+        size_of::<T>() as usize,
+    )?;
     if !check_aligned {
         // Ok(unsafe { std::mem::transmute::<u64, &mut T>(host_addr) })
         Ok(unsafe { &mut *(host_addr as *mut T) })
@@ -530,14 +538,14 @@ fn translate_type_inner<'a, T>(
 }
 fn translate_type_mut<'a, T>(
     memory_mapping: &MemoryMapping,
-    vm_addr: u64,
+    vm_addr: usize,
     check_aligned: bool,
 ) -> Result<&'a mut T, Error> {
     translate_type_inner::<T>(memory_mapping, AccessType::Store, vm_addr, check_aligned)
 }
 fn translate_type<'a, T>(
     memory_mapping: &MemoryMapping,
-    vm_addr: u64,
+    vm_addr: usize,
     check_aligned: bool,
 ) -> Result<&'a T, Error> {
     translate_type_inner::<T>(memory_mapping, AccessType::Load, vm_addr, check_aligned)
@@ -547,15 +555,15 @@ fn translate_type<'a, T>(
 fn translate_slice_inner<'a, T>(
     memory_mapping: &MemoryMapping,
     access_type: AccessType,
-    vm_addr: u64,
-    len: u64,
+    vm_addr: usize,
+    len: usize,
     check_aligned: bool,
 ) -> Result<&'a mut [T], Error> {
     if len == 0 {
         return Ok(&mut []);
     }
 
-    let total_size = len.saturating_mul(size_of::<T>() as u64);
+    let total_size = len.saturating_mul(size_of::<T>() as usize);
     if isize::try_from(total_size).is_err() {
         return Err(SyscallError::InvalidLength.into());
     }
@@ -569,8 +577,8 @@ fn translate_slice_inner<'a, T>(
 }
 fn translate_slice_mut<'a, T>(
     memory_mapping: &MemoryMapping,
-    vm_addr: u64,
-    len: u64,
+    vm_addr: usize,
+    len: usize,
     check_aligned: bool,
 ) -> Result<&'a mut [T], Error> {
     translate_slice_inner::<T>(
@@ -583,8 +591,8 @@ fn translate_slice_mut<'a, T>(
 }
 fn translate_slice<'a, T>(
     memory_mapping: &MemoryMapping,
-    vm_addr: u64,
-    len: u64,
+    vm_addr: usize,
+    len: usize,
     check_aligned: bool,
 ) -> Result<&'a [T], Error> {
     translate_slice_inner::<T>(
@@ -601,11 +609,11 @@ fn translate_slice<'a, T>(
 /// pass it to a user-defined work function
 fn translate_string_and_do(
     memory_mapping: &MemoryMapping,
-    addr: u64,
-    len: u64,
+    addr: usize,
+    len: usize,
     check_aligned: bool,
-    work: &mut dyn FnMut(&str) -> Result<u64, Error>,
-) -> Result<u64, Error> {
+    work: &mut dyn FnMut(&str) -> Result<usize, Error>,
+) -> Result<usize, Error> {
     let buf = translate_slice::<u8>(memory_mapping, addr, len, check_aligned)?;
     match from_utf8(buf) {
         Ok(message) => work(message),
@@ -621,13 +629,13 @@ declare_builtin_function!(
     SyscallAbort,
     fn rust(
         _invoke_context: &mut InvokeContext,
-        _arg1: u64,
-        _arg2: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        _arg1: usize,
+        _arg2: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         _memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         Err(SyscallError::Abort.into())
     }
 );
@@ -638,13 +646,13 @@ declare_builtin_function!(
     SyscallPanic,
     fn rust(
         invoke_context: &mut InvokeContext,
-        file: u64,
-        len: u64,
-        line: u64,
-        column: u64,
-        _arg5: u64,
+        file: usize,
+        len: usize,
+        line: usize,
+        column: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         consume_compute_meter(invoke_context, len)?;
 
         translate_string_and_do(
@@ -667,13 +675,13 @@ declare_builtin_function!(
     SyscallAllocFree,
     fn rust(
         invoke_context: &mut InvokeContext,
-        size: u64,
-        free_addr: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        size: usize,
+        free_addr: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         _memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let align = if invoke_context.get_check_aligned() {
             BPF_ALIGN_OF_U128
         } else {
@@ -696,9 +704,9 @@ declare_builtin_function!(
 );
 
 fn translate_and_check_program_address_inputs<'a>(
-    seeds_addr: u64,
-    seeds_len: u64,
-    program_id_addr: u64,
+    seeds_addr: usize,
+    seeds_len: usize,
+    program_id_addr: usize,
     memory_mapping: &mut MemoryMapping,
     check_aligned: bool,
 ) -> Result<(Vec<&'a [u8]>, &'a Pubkey), Error> {
@@ -715,8 +723,8 @@ fn translate_and_check_program_address_inputs<'a>(
             }
             translate_slice::<u8>(
                 memory_mapping,
-                untranslated_seed.as_ptr() as *const _ as u64,
-                untranslated_seed.len() as u64,
+                untranslated_seed.as_ptr() as *const _ as usize,
+                untranslated_seed.len() as usize,
                 check_aligned,
             )
         })
@@ -730,13 +738,13 @@ declare_builtin_function!(
     SyscallCreateProgramAddress,
     fn rust(
         invoke_context: &mut InvokeContext,
-        seeds_addr: u64,
-        seeds_len: u64,
-        program_id_addr: u64,
-        address_addr: u64,
-        _arg5: u64,
+        seeds_addr: usize,
+        seeds_len: usize,
+        program_id_addr: usize,
+        address_addr: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let cost = invoke_context
             .get_compute_budget()
             .create_program_address_units;
@@ -769,13 +777,13 @@ declare_builtin_function!(
     SyscallTryFindProgramAddress,
     fn rust(
         invoke_context: &mut InvokeContext,
-        seeds_addr: u64,
-        seeds_len: u64,
-        program_id_addr: u64,
-        address_addr: u64,
-        bump_seed_addr: u64,
+        seeds_addr: usize,
+        seeds_len: usize,
+        program_id_addr: usize,
+        address_addr: usize,
+        bump_seed_addr: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let cost = invoke_context
             .get_compute_budget()
             .create_program_address_units;
@@ -806,7 +814,7 @@ declare_builtin_function!(
                     let address = translate_slice_mut::<u8>(
                         memory_mapping,
                         address_addr,
-                        std::mem::size_of::<Pubkey>() as u64,
+                        std::mem::size_of::<Pubkey>() as usize,
                         invoke_context.get_check_aligned(),
                     )?;
                     if !is_nonoverlapping(
@@ -834,32 +842,32 @@ declare_builtin_function!(
     SyscallSecp256k1Recover,
     fn rust(
         invoke_context: &mut InvokeContext,
-        hash_addr: u64,
-        recovery_id_val: u64,
-        signature_addr: u64,
-        result_addr: u64,
-        _arg5: u64,
+        hash_addr: usize,
+        recovery_id_val: usize,
+        signature_addr: usize,
+        result_addr: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let cost = invoke_context.get_compute_budget().secp256k1_recover_cost;
         consume_compute_meter(invoke_context, cost)?;
 
         let hash = translate_slice::<u8>(
             memory_mapping,
             hash_addr,
-            keccak::HASH_BYTES as u64,
+            keccak::HASH_BYTES as usize,
             invoke_context.get_check_aligned(),
         )?;
         let signature = translate_slice::<u8>(
             memory_mapping,
             signature_addr,
-            SECP256K1_SIGNATURE_LENGTH as u64,
+            SECP256K1_SIGNATURE_LENGTH as usize,
             invoke_context.get_check_aligned(),
         )?;
         let secp256k1_recover_result = translate_slice_mut::<u8>(
             memory_mapping,
             result_addr,
-            SECP256K1_PUBLIC_KEY_LENGTH as u64,
+            SECP256K1_PUBLIC_KEY_LENGTH as usize,
             invoke_context.get_check_aligned(),
         )?;
 
@@ -895,13 +903,13 @@ declare_builtin_function!(
     SyscallCurvePointValidation,
     fn rust(
         invoke_context: &mut InvokeContext,
-        curve_id: u64,
-        point_addr: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        curve_id: usize,
+        point_addr: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         use solana_curve25519::{curve_syscall_traits::*, edwards, ristretto};
         match curve_id {
             CURVE25519_EDWARDS => {
@@ -961,13 +969,13 @@ declare_builtin_function!(
     SyscallCurveGroupOps,
     fn rust(
         invoke_context: &mut InvokeContext,
-        curve_id: u64,
-        group_op: u64,
-        left_input_addr: u64,
-        right_input_addr: u64,
-        result_point_addr: u64,
+        curve_id: usize,
+        group_op: usize,
+        left_input_addr: usize,
+        right_input_addr: usize,
+        result_point_addr: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         use solana_curve25519::{curve_syscall_traits::*, edwards, ristretto, scalar};
         match curve_id {
             CURVE25519_EDWARDS => match group_op {
@@ -1187,13 +1195,13 @@ declare_builtin_function!(
     SyscallCurveMultiscalarMultiplication,
     fn rust(
         invoke_context: &mut InvokeContext,
-        curve_id: u64,
-        scalars_addr: u64,
-        points_addr: u64,
-        points_len: u64,
-        result_point_addr: u64,
+        curve_id: usize,
+        scalars_addr: usize,
+        points_addr: usize,
+        points_len: usize,
+        result_point_addr: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         use solana_curve25519::{curve_syscall_traits::*, edwards, ristretto, scalar};
 
         if points_len > 512 {
@@ -1298,23 +1306,23 @@ declare_builtin_function!(
     SyscallSetReturnData,
     fn rust(
         invoke_context: &mut InvokeContext,
-        addr: u64,
-        len: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        addr: usize,
+        len: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let budget = invoke_context.get_compute_budget();
 
         let cost = len
             .checked_div(budget.cpi_bytes_per_unit)
-            .unwrap_or(u64::MAX)
+            .unwrap_or(usize::MAX)
             .saturating_add(budget.syscall_base_cost);
         consume_compute_meter(invoke_context, cost)?;
 
-        if len > MAX_RETURN_DATA as u64 {
-            return Err(SyscallError::ReturnDataTooLarge(len, MAX_RETURN_DATA as u64).into());
+        if len > MAX_RETURN_DATA as usize {
+            return Err(SyscallError::ReturnDataTooLarge(len, MAX_RETURN_DATA as usize).into());
         }
 
         let return_data = if len == 0 {
@@ -1346,24 +1354,24 @@ declare_builtin_function!(
     SyscallGetReturnData,
     fn rust(
         invoke_context: &mut InvokeContext,
-        return_data_addr: u64,
-        length: u64,
-        program_id_addr: u64,
-        _arg4: u64,
-        _arg5: u64,
+        return_data_addr: usize,
+        length: usize,
+        program_id_addr: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let budget = invoke_context.get_compute_budget();
 
         consume_compute_meter(invoke_context, budget.syscall_base_cost)?;
 
         let (program_id, return_data) = invoke_context.transaction_context.get_return_data();
-        let length = length.min(return_data.len() as u64);
+        let length = length.min(return_data.len() as usize);
         if length != 0 {
             let cost = length
-                .saturating_add(size_of::<Pubkey>() as u64)
+                .saturating_add(size_of::<Pubkey>() as usize)
                 .checked_div(budget.cpi_bytes_per_unit)
-                .unwrap_or(u64::MAX);
+                .unwrap_or(usize::MAX);
             consume_compute_meter(invoke_context, cost)?;
 
             let return_data_result = translate_slice_mut::<u8>(
@@ -1401,7 +1409,7 @@ declare_builtin_function!(
         }
 
         // Return the actual length, rather the length returned
-        Ok(return_data.len() as u64)
+        Ok(return_data.len() as usize)
     }
 );
 
@@ -1410,13 +1418,13 @@ declare_builtin_function!(
     SyscallGetProcessedSiblingInstruction,
     fn rust(
         invoke_context: &mut InvokeContext,
-        index: u64,
-        meta_addr: u64,
-        program_id_addr: u64,
-        data_addr: u64,
-        accounts_addr: u64,
+        index: usize,
+        meta_addr: usize,
+        program_id_addr: usize,
+        data_addr: usize,
+        accounts_addr: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let budget = invoke_context.get_compute_budget();
 
         consume_compute_meter(invoke_context, budget.syscall_base_cost)?;
@@ -1452,9 +1460,9 @@ declare_builtin_function!(
                 invoke_context.get_check_aligned(),
             )?;
 
-            if result_header.data_len == (instruction_context.get_instruction_data().len() as u64)
+            if result_header.data_len == (instruction_context.get_instruction_data().len() as usize)
                 && result_header.accounts_len
-                    == (instruction_context.get_number_of_instruction_accounts() as u64)
+                    == (instruction_context.get_number_of_instruction_accounts() as usize)
             {
                 let program_id = translate_type_mut::<Pubkey>(
                     memory_mapping,
@@ -1534,12 +1542,12 @@ declare_builtin_function!(
                     .collect::<Result<Vec<_>, InstructionError>>()?;
                 accounts.clone_from_slice(account_metas.as_slice());
             }
-            result_header.data_len = instruction_context.get_instruction_data().len() as u64;
+            result_header.data_len = instruction_context.get_instruction_data().len() as usize;
             result_header.accounts_len =
-                instruction_context.get_number_of_instruction_accounts() as u64;
-            return Ok(true as u64);
+                instruction_context.get_number_of_instruction_accounts() as usize;
+            return Ok(true as usize);
         }
-        Ok(false as u64)
+        Ok(false as usize)
     }
 );
 
@@ -1548,18 +1556,18 @@ declare_builtin_function!(
     SyscallGetStackHeight,
     fn rust(
         invoke_context: &mut InvokeContext,
-        _arg1: u64,
-        _arg2: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        _arg1: usize,
+        _arg2: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         _memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let budget = invoke_context.get_compute_budget();
 
         consume_compute_meter(invoke_context, budget.syscall_base_cost)?;
 
-        Ok(invoke_context.get_stack_height() as u64)
+        Ok(invoke_context.get_stack_height() as usize)
     }
 );
 
@@ -1568,16 +1576,16 @@ declare_builtin_function!(
     SyscallAltBn128,
     fn rust(
         invoke_context: &mut InvokeContext,
-        group_op: u64,
-        input_addr: u64,
-        input_size: u64,
-        result_addr: u64,
-        _arg5: u64,
+        group_op: usize,
+        input_addr: usize,
+        input_size: usize,
+        result_addr: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         use solana_sdk::alt_bn128::prelude::{ALT_BN128_ADD, ALT_BN128_MUL, ALT_BN128_PAIRING};
         let budget = invoke_context.get_compute_budget();
-        let (cost, output): (u64, usize) = match group_op {
+        let (cost, output): (usize, usize) = match group_op {
             ALT_BN128_ADD => (
                 budget.alt_bn128_addition_cost,
                 ALT_BN128_ADDITION_OUTPUT_LEN,
@@ -1588,7 +1596,7 @@ declare_builtin_function!(
             ),
             ALT_BN128_PAIRING => {
                 let ele_len = input_size
-                    .checked_div(ALT_BN128_PAIRING_ELEMENT_LEN as u64)
+                    .checked_div(ALT_BN128_PAIRING_ELEMENT_LEN as usize)
                     .expect("div by non-zero constant");
                 let cost = budget
                     .alt_bn128_pairing_one_pair_cost_first
@@ -1599,7 +1607,7 @@ declare_builtin_function!(
                     )
                     .saturating_add(budget.sha256_base_cost)
                     .saturating_add(input_size)
-                    .saturating_add(ALT_BN128_PAIRING_OUTPUT_LEN as u64);
+                    .saturating_add(ALT_BN128_PAIRING_OUTPUT_LEN as usize);
                 (cost, ALT_BN128_PAIRING_OUTPUT_LEN)
             }
             _ => {
@@ -1619,7 +1627,7 @@ declare_builtin_function!(
         let call_result = translate_slice_mut::<u8>(
             memory_mapping,
             result_addr,
-            output as u64,
+            output as usize,
             invoke_context.get_check_aligned(),
         )?;
 
@@ -1663,13 +1671,13 @@ declare_builtin_function!(
     SyscallBigModExp,
     fn rust(
         invoke_context: &mut InvokeContext,
-        params: u64,
-        return_value: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        params: usize,
+        return_value: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let params = &translate_slice::<BigModExpParams>(
             memory_mapping,
             params,
@@ -1683,8 +1691,8 @@ declare_builtin_function!(
             return Err(Box::new(SyscallError::InvalidLength));
         }
 
-        let input_len: u64 = std::cmp::max(params.base_len, params.exponent_len);
-        let input_len: u64 = std::cmp::max(input_len, params.modulus_len);
+        let input_len: usize = std::cmp::max(params.base_len, params.exponent_len);
+        let input_len: usize = std::cmp::max(input_len, params.modulus_len);
 
         let budget = invoke_context.get_compute_budget();
         consume_compute_meter(
@@ -1693,27 +1701,27 @@ declare_builtin_function!(
                 input_len
                     .saturating_mul(input_len)
                     .checked_div(budget.big_modular_exponentiation_cost)
-                    .unwrap_or(u64::MAX),
+                    .unwrap_or(usize::MAX),
             ),
         )?;
 
         let base = translate_slice::<u8>(
             memory_mapping,
-            params.base as *const _ as u64,
+            params.base as *const _ as usize,
             params.base_len,
             invoke_context.get_check_aligned(),
         )?;
 
         let exponent = translate_slice::<u8>(
             memory_mapping,
-            params.exponent as *const _ as u64,
+            params.exponent as *const _ as usize,
             params.exponent_len,
             invoke_context.get_check_aligned(),
         )?;
 
         let modulus = translate_slice::<u8>(
             memory_mapping,
-            params.modulus as *const _ as u64,
+            params.modulus as *const _ as usize,
             params.modulus_len,
             invoke_context.get_check_aligned(),
         )?;
@@ -1737,13 +1745,13 @@ declare_builtin_function!(
     SyscallPoseidon,
     fn rust(
         invoke_context: &mut InvokeContext,
-        parameters: u64,
-        endianness: u64,
-        vals_addr: u64,
-        vals_len: u64,
-        result_addr: u64,
+        parameters: usize,
+        endianness: usize,
+        vals_addr: usize,
+        vals_len: usize,
+        result_addr: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let parameters: poseidon::Parameters = parameters.try_into()?;
         let endianness: poseidon::Endianness = endianness.try_into()?;
 
@@ -1769,7 +1777,7 @@ declare_builtin_function!(
         let hash_result = translate_slice_mut::<u8>(
             memory_mapping,
             result_addr,
-            poseidon::HASH_BYTES as u64,
+            poseidon::HASH_BYTES as usize,
             invoke_context.get_check_aligned(),
         )?;
         let inputs = translate_slice::<&[u8]>(
@@ -1783,8 +1791,8 @@ declare_builtin_function!(
             .map(|input| {
                 translate_slice::<u8>(
                     memory_mapping,
-                    input.as_ptr() as *const _ as u64,
-                    input.len() as u64,
+                    input.as_ptr() as *const _ as usize,
+                    input.len() as usize,
                     invoke_context.get_check_aligned(),
                 )
             })
@@ -1815,13 +1823,13 @@ declare_builtin_function!(
     SyscallRemainingComputeUnits,
     fn rust(
         invoke_context: &mut InvokeContext,
-        _arg1: u64,
-        _arg2: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        _arg1: usize,
+        _arg2: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         _memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let budget = invoke_context.get_compute_budget();
         consume_compute_meter(invoke_context, budget.syscall_base_cost)?;
 
@@ -1835,13 +1843,13 @@ declare_builtin_function!(
     SyscallAltBn128Compression,
     fn rust(
         invoke_context: &mut InvokeContext,
-        op: u64,
-        input_addr: u64,
-        input_size: u64,
-        result_addr: u64,
-        _arg5: u64,
+        op: usize,
+        input_addr: usize,
+        input_size: usize,
+        result_addr: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         use solana_sdk::alt_bn128::compression::prelude::{
             alt_bn128_g1_compress, alt_bn128_g1_decompress, alt_bn128_g2_compress,
             alt_bn128_g2_decompress, ALT_BN128_G1_COMPRESS, ALT_BN128_G1_DECOMPRESS,
@@ -1849,7 +1857,7 @@ declare_builtin_function!(
         };
         let budget = invoke_context.get_compute_budget();
         let base_cost = budget.syscall_base_cost;
-        let (cost, output): (u64, usize) = match op {
+        let (cost, output): (usize, usize) = match op {
             ALT_BN128_G1_COMPRESS => (
                 base_cost.saturating_add(budget.alt_bn128_g1_compress),
                 G1_COMPRESSED,
@@ -1881,7 +1889,7 @@ declare_builtin_function!(
         let call_result = translate_slice_mut::<u8>(
             memory_mapping,
             result_addr,
-            output as u64,
+            output as usize,
             invoke_context.get_check_aligned(),
         )?;
 
@@ -1956,13 +1964,13 @@ declare_builtin_function!(
     SyscallHash<H: HasherImpl>,
     fn rust(
         invoke_context: &mut InvokeContext,
-        vals_addr: u64,
-        vals_len: u64,
-        result_addr: u64,
-        _arg4: u64,
-        _arg5: u64,
+        vals_addr: usize,
+        vals_len: usize,
+        result_addr: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let compute_budget = invoke_context.get_compute_budget();
         let hash_base_cost = H::get_base_cost(compute_budget);
         let hash_byte_cost = H::get_byte_cost(compute_budget);
@@ -1983,7 +1991,7 @@ declare_builtin_function!(
         let hash_result = translate_slice_mut::<u8>(
             memory_mapping,
             result_addr,
-            std::mem::size_of::<H::Output>() as u64,
+            std::mem::size_of::<H::Output>() as usize,
             invoke_context.get_check_aligned(),
         )?;
         let mut hasher = H::create_hasher();
@@ -1997,13 +2005,13 @@ declare_builtin_function!(
             for val in vals.iter() {
                 let bytes = translate_slice::<u8>(
                     memory_mapping,
-                    val.as_ptr() as u64,
-                    val.len() as u64,
+                    val.as_ptr() as usize,
+                    val.len() as usize,
                     invoke_context.get_check_aligned(),
                 )?;
                 let cost = compute_budget.mem_op_base_cost.max(
                     hash_byte_cost.saturating_mul(
-                        (val.len() as u64)
+                        (val.len() as usize)
                             .checked_div(2)
                             .expect("div by non-zero literal"),
                     ),
@@ -2022,13 +2030,13 @@ declare_builtin_function!(
     SyscallGetEpochStake,
     fn rust(
         invoke_context: &mut InvokeContext,
-        var_addr: u64,
-        _arg2: u64,
-        _arg3: u64,
-        _arg4: u64,
-        _arg5: u64,
+        var_addr: usize,
+        _arg2: usize,
+        _arg3: usize,
+        _arg4: usize,
+        _arg5: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         let compute_budget = invoke_context.get_compute_budget();
 
         if var_addr == 0 {
@@ -2046,7 +2054,7 @@ declare_builtin_function!(
             //
             // - The syscall aborts the virtual machine if:
             //     - Compute budget is exceeded.
-            // - Otherwise, the syscall returns a `u64` integer representing the total active
+            // - Otherwise, the syscall returns a `usize` integer representing the total active
             //   stake on the cluster for the current epoch.
             Ok(invoke_context.get_epoch_total_stake().unwrap_or(0))
         } else {
@@ -2060,9 +2068,9 @@ declare_builtin_function!(
             let compute_units = compute_budget
                 .syscall_base_cost
                 .saturating_add(
-                    (PUBKEY_BYTES as u64)
+                    (PUBKEY_BYTES as usize)
                         .checked_div(compute_budget.cpi_bytes_per_unit)
-                        .unwrap_or(u64::MAX),
+                        .unwrap_or(usize::MAX),
                 )
                 .saturating_add(compute_budget.mem_op_base_cost);
             consume_compute_meter(invoke_context, compute_units)?;
@@ -2073,7 +2081,7 @@ declare_builtin_function!(
             //     - Not all bytes in VM memory range `[vote_addr, vote_addr + 32)` are
             //       readable.
             //     - Compute budget is exceeded.
-            // - Otherwise, the syscall returns a `u64` integer representing the total active
+            // - Otherwise, the syscall returns a `usize` integer representing the total active
             //   stake delegated to the vote account at the provided address.
             //   If the provided vote address corresponds to an account that is not a vote
             //   account or does not exist, the syscall will return `0` for active stake.
@@ -2163,17 +2171,17 @@ mod tests {
 
     #[allow(dead_code)]
     struct MockSlice {
-        pub vm_addr: u64,
+        pub vm_addr: usize,
         pub len: usize,
     }
 
     #[test]
     fn test_translate() {
-        const START: u64 = 0x100000000;
-        const LENGTH: u64 = 1000;
+        const START: usize = 0x100000000;
+        const LENGTH: usize = 1000;
 
         let data = vec![0u8; LENGTH as usize];
-        let addr = data.as_ptr() as u64;
+        let addr = data.as_ptr() as usize;
         let config = Config::default();
         let memory_mapping = MemoryMapping::new(
             vec![MemoryRegion::new_readonly(&data, START)],
@@ -2261,7 +2269,7 @@ mod tests {
         )
         .unwrap();
         let translated_data =
-            translate_slice::<u8>(&memory_mapping, data.as_ptr() as u64, 0, true).unwrap();
+            translate_slice::<u8>(&memory_mapping, data.as_ptr() as usize, 0, true).unwrap();
         assert_eq!(data, translated_data);
         assert_eq!(0, translated_data.len());
 
@@ -2274,21 +2282,22 @@ mod tests {
         )
         .unwrap();
         let translated_data =
-            translate_slice::<u8>(&memory_mapping, 0x100000000, data.len() as u64, true).unwrap();
+            translate_slice::<u8>(&memory_mapping, 0x100000000, data.len() as usize, true).unwrap();
         assert_eq!(data, translated_data);
         *data.first_mut().unwrap() = 10;
         assert_eq!(data, translated_data);
         assert!(
-            translate_slice::<u8>(&memory_mapping, data.as_ptr() as u64, u64::MAX, true).is_err()
-        );
-
-        assert!(
-            translate_slice::<u8>(&memory_mapping, 0x100000000 - 1, data.len() as u64, true,)
+            translate_slice::<u8>(&memory_mapping, data.as_ptr() as usize, usize::MAX, true)
                 .is_err()
         );
 
-        // u64
-        let mut data = vec![1u64, 2, 3, 4, 5];
+        assert!(
+            translate_slice::<u8>(&memory_mapping, 0x100000000 - 1, data.len() as usize, true,)
+                .is_err()
+        );
+
+        // usize
+        let mut data = vec![1usize, 2, 3, 4, 5];
         let memory_mapping = MemoryMapping::new(
             vec![MemoryRegion::new_readonly(
                 bytes_of_slice(&data),
@@ -2299,11 +2308,12 @@ mod tests {
         )
         .unwrap();
         let translated_data =
-            translate_slice::<u64>(&memory_mapping, 0x100000000, data.len() as u64, true).unwrap();
+            translate_slice::<usize>(&memory_mapping, 0x100000000, data.len() as usize, true)
+                .unwrap();
         assert_eq!(data, translated_data);
         *data.first_mut().unwrap() = 10;
         assert_eq!(data, translated_data);
-        assert!(translate_slice::<u64>(&memory_mapping, 0x100000000, u64::MAX, true).is_err());
+        assert!(translate_slice::<usize>(&memory_mapping, 0x100000000, usize::MAX, true).is_err());
 
         // Pubkeys
         let mut data = vec![solana_sdk::pubkey::new_rand(); 5];
@@ -2319,7 +2329,7 @@ mod tests {
         )
         .unwrap();
         let translated_data =
-            translate_slice::<Pubkey>(&memory_mapping, 0x100000000, data.len() as u64, true)
+            translate_slice::<Pubkey>(&memory_mapping, 0x100000000, data.len() as usize, true)
                 .unwrap();
         assert_eq!(data, translated_data);
         *data.first_mut().unwrap() = solana_sdk::pubkey::new_rand(); // Both should point to same place
@@ -2341,7 +2351,7 @@ mod tests {
             translate_string_and_do(
                 &memory_mapping,
                 0x100000000,
-                string.len() as u64,
+                string.len() as usize,
                 true,
                 &mut |string: &str| {
                     assert_eq!(string, "Gaggablaghblagh!");
@@ -2376,11 +2386,11 @@ mod tests {
         )
         .unwrap();
 
-        invoke_context.mock_set_remaining(string.len() as u64 - 1);
+        invoke_context.mock_set_remaining(string.len() as usize - 1);
         let result = SyscallPanic::rust(
             &mut invoke_context,
             0x100000000,
-            string.len() as u64,
+            string.len() as usize,
             42,
             84,
             0,
@@ -2391,11 +2401,11 @@ mod tests {
             Result::Err(error) if error.downcast_ref::<InstructionError>().unwrap() == &InstructionError::ComputationalBudgetExceeded
         );
 
-        invoke_context.mock_set_remaining(string.len() as u64);
+        invoke_context.mock_set_remaining(string.len() as usize);
         let result = SyscallPanic::rust(
             &mut invoke_context,
             0x100000000,
-            string.len() as u64,
+            string.len() as usize,
             42,
             84,
             0,
@@ -2421,28 +2431,28 @@ mod tests {
         let result = SyscallLog::rust(
             &mut invoke_context,
             0x100000001, // AccessViolation
-            string.len() as u64,
+            string.len() as usize,
             0,
             0,
             0,
             &mut memory_mapping,
         );
-        assert_access_violation!(result, 0x100000001, string.len() as u64);
+        assert_access_violation!(result, 0x100000001, string.len() as usize);
         let result = SyscallLog::rust(
             &mut invoke_context,
             0x100000000,
-            string.len() as u64 * 2, // AccessViolation
+            string.len() as usize * 2, // AccessViolation
             0,
             0,
             0,
             &mut memory_mapping,
         );
-        assert_access_violation!(result, 0x100000000, string.len() as u64 * 2);
+        assert_access_violation!(result, 0x100000000, string.len() as usize * 2);
 
         let result = SyscallLog::rust(
             &mut invoke_context,
             0x100000000,
-            string.len() as u64,
+            string.len() as usize,
             0,
             0,
             0,
@@ -2452,7 +2462,7 @@ mod tests {
         let result = SyscallLog::rust(
             &mut invoke_context,
             0x100000000,
-            string.len() as u64,
+            string.len() as usize,
             0,
             0,
             0,
@@ -2474,14 +2484,14 @@ mod tests {
     }
 
     #[test]
-    fn test_syscall_sol_log_u64() {
+    fn test_syscall_sol_log_usize() {
         prepare_mockup!(invoke_context, program_id, bpf_loader::id());
         let cost = invoke_context.get_compute_budget().log_64_units;
 
         invoke_context.mock_set_remaining(cost);
         let config = Config::default();
         let mut memory_mapping = MemoryMapping::new(vec![], &config, &SBPFVersion::V2).unwrap();
-        let result = SyscallLogU64::rust(&mut invoke_context, 1, 2, 3, 4, 5, &mut memory_mapping);
+        let result = SyscallLogusize::rust(&mut invoke_context, 1, 2, 3, 4, 5, &mut memory_mapping);
         result.unwrap();
 
         assert_eq!(
@@ -2560,7 +2570,7 @@ mod tests {
             let memory_mapping = &mut vm.memory_mapping;
             let result = SyscallAllocFree::rust(
                 invoke_context,
-                solana_sdk::entrypoint::HEAP_LENGTH as u64,
+                solana_sdk::entrypoint::HEAP_LENGTH as usize,
                 0,
                 0,
                 0,
@@ -2570,7 +2580,7 @@ mod tests {
             assert_ne!(result.unwrap(), 0);
             let result = SyscallAllocFree::rust(
                 invoke_context,
-                solana_sdk::entrypoint::HEAP_LENGTH as u64,
+                solana_sdk::entrypoint::HEAP_LENGTH as usize,
                 0,
                 0,
                 0,
@@ -2579,7 +2589,7 @@ mod tests {
             );
             assert_eq!(result.unwrap(), 0);
             let result =
-                SyscallAllocFree::rust(invoke_context, u64::MAX, 0, 0, 0, 0, memory_mapping);
+                SyscallAllocFree::rust(invoke_context, usize::MAX, 0, 0, 0, 0, memory_mapping);
             assert_eq!(result.unwrap(), 0);
         }
 
@@ -2597,7 +2607,7 @@ mod tests {
             }
             let result = SyscallAllocFree::rust(
                 invoke_context,
-                solana_sdk::entrypoint::HEAP_LENGTH as u64,
+                solana_sdk::entrypoint::HEAP_LENGTH as usize,
                 0,
                 0,
                 0,
@@ -2620,7 +2630,7 @@ mod tests {
             }
             let result = SyscallAllocFree::rust(
                 invoke_context,
-                solana_sdk::entrypoint::HEAP_LENGTH as u64,
+                solana_sdk::entrypoint::HEAP_LENGTH as usize,
                 0,
                 0,
                 0,
@@ -2640,7 +2650,7 @@ mod tests {
             let memory_mapping = &mut vm.memory_mapping;
             let result = SyscallAllocFree::rust(
                 invoke_context,
-                size_of::<T>() as u64,
+                size_of::<T>() as usize,
                 0,
                 0,
                 0,
@@ -2654,7 +2664,7 @@ mod tests {
         aligned::<u8>();
         aligned::<u16>();
         aligned::<u32>();
-        aligned::<u64>();
+        aligned::<usize>();
         aligned::<u128>();
     }
 
@@ -2676,7 +2686,7 @@ mod tests {
         };
         let bytes_to_hash = [mock_slice1, mock_slice2];
         let mut hash_result = [0; HASH_BYTES];
-        let ro_len = bytes_to_hash.len() as u64;
+        let ro_len = bytes_to_hash.len() as usize;
         let ro_va = 0x100000000;
         let rw_va = 0x200000000;
         let mut memory_mapping = MemoryMapping::new(
@@ -2697,7 +2707,7 @@ mod tests {
                     invoke_context
                         .get_compute_budget()
                         .sha256_byte_cost
-                        .saturating_mul((bytes1.len() + bytes2.len()) as u64 / 2),
+                        .saturating_mul((bytes1.len() + bytes2.len()) as usize / 2),
                 ))
                 * 4,
         );
@@ -2744,7 +2754,7 @@ mod tests {
             0,
             &mut memory_mapping,
         );
-        assert_access_violation!(result, rw_va - 1, HASH_BYTES as u64);
+        assert_access_violation!(result, rw_va - 1, HASH_BYTES as usize);
         let result = SyscallHash::rust::<Sha256Hasher>(
             &mut invoke_context,
             ro_va,
@@ -3577,7 +3587,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_va,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3647,7 +3657,7 @@ mod tests {
                 epochschedule_id_va,
                 got_epochschedule_buf_va,
                 0,
-                EpochSchedule::size_of() as u64,
+                EpochSchedule::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3742,7 +3752,7 @@ mod tests {
                 rent_id_va,
                 got_rent_buf_va,
                 0,
-                Rent::size_of() as u64,
+                Rent::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3807,7 +3817,7 @@ mod tests {
                 rewards_id_va,
                 got_rewards_buf_va,
                 0,
-                EpochRewards::size_of() as u64,
+                EpochRewards::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3865,7 +3875,7 @@ mod tests {
                 restart_id_va,
                 got_restart_buf_va,
                 0,
-                LastRestartSlot::size_of() as u64,
+                LastRestartSlot::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3890,7 +3900,7 @@ mod tests {
             stake_history::MAX_ENTRIES + 1
         } else {
             stake_history::MAX_ENTRIES / 2
-        } as u64;
+        } as usize;
 
         for epoch in 1..epochs {
             src_history.add(
@@ -3934,7 +3944,7 @@ mod tests {
                 history_id_va,
                 got_history_buf_va,
                 0,
-                StakeHistory::size_of() as u64,
+                StakeHistory::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -3956,7 +3966,7 @@ mod tests {
             slot_hashes::MAX_ENTRIES + 1
         } else {
             slot_hashes::MAX_ENTRIES / 2
-        } as u64;
+        } as usize;
 
         for slot in 1..slots {
             src_hashes.add(slot, hashv(&[&slot.to_le_bytes()]));
@@ -3993,7 +4003,7 @@ mod tests {
                 hashes_id_va,
                 got_hashes_buf_va,
                 0,
-                SlotHashes::size_of() as u64,
+                SlotHashes::size_of() as usize,
                 0,
                 &mut memory_mapping,
             );
@@ -4049,7 +4059,7 @@ mod tests {
                 clock_id_va + 1,
                 got_clock_buf_rw_va,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4067,7 +4077,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_rw_va + 1,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4084,7 +4094,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_ro_va,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4101,8 +4111,8 @@ mod tests {
                 &mut invoke_context,
                 clock_id_va,
                 got_clock_buf_rw_va,
-                u64::MAX - Clock::size_of() as u64 / 2,
-                Clock::size_of() as u64,
+                usize::MAX - Clock::size_of() as usize / 2,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4115,7 +4125,7 @@ mod tests {
             assert_eq!(got_clock_buf_rw, got_clock_empty);
 
             // "`var_addr + length` is not in `[0, 2^64)`" is theoretically impossible to trigger
-            // because if the sum extended outside u64::MAX then it would not be writable and translate would fail
+            // because if the sum extended outside usize::MAX then it would not be writable and translate would fail
 
             // "`2` if the sysvar data is not present in the Sysvar Cache."
             let result = SyscallGetSysvar::rust(
@@ -4123,7 +4133,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_rw_va,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4146,7 +4156,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_rw_va,
                 1,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4161,7 +4171,7 @@ mod tests {
                 clock_id_va,
                 got_clock_buf_rw_va,
                 0,
-                Clock::size_of() as u64,
+                Clock::size_of() as usize,
                 0,
                 &mut memory_mapping,
             )
@@ -4175,13 +4185,13 @@ mod tests {
 
     type BuiltinFunctionRustInterface<'a> = fn(
         &mut InvokeContext<'a>,
-        u64,
-        u64,
-        u64,
-        u64,
-        u64,
+        usize,
+        usize,
+        usize,
+        usize,
+        usize,
         &mut MemoryMapping,
-    ) -> Result<u64, Box<dyn std::error::Error>>;
+    ) -> Result<usize, Box<dyn std::error::Error>>;
 
     fn call_program_address_common<'a, 'b: 'a>(
         invoke_context: &'a mut InvokeContext<'b>,
@@ -4190,11 +4200,11 @@ mod tests {
         overlap_outputs: bool,
         syscall: BuiltinFunctionRustInterface<'b>,
     ) -> Result<(Pubkey, u8), Error> {
-        const SEEDS_VA: u64 = 0x100000000;
-        const PROGRAM_ID_VA: u64 = 0x200000000;
-        const ADDRESS_VA: u64 = 0x300000000;
-        const BUMP_SEED_VA: u64 = 0x400000000;
-        const SEED_VA: u64 = 0x500000000;
+        const SEEDS_VA: usize = 0x100000000;
+        const PROGRAM_ID_VA: usize = 0x200000000;
+        const ADDRESS_VA: usize = 0x300000000;
+        const BUMP_SEED_VA: usize = 0x400000000;
+        const SEED_VA: usize = 0x500000000;
 
         let config = Config::default();
         let mut address = Pubkey::default();
@@ -4207,7 +4217,7 @@ mod tests {
 
         let mut mock_slices = Vec::with_capacity(seeds.len());
         for (i, seed) in seeds.iter().enumerate() {
-            let vm_addr = SEED_VA.saturating_add((i as u64).saturating_mul(0x100000000));
+            let vm_addr = SEED_VA.saturating_add((i as usize).saturating_mul(0x100000000));
             let mock_slice = MockSlice {
                 vm_addr,
                 len: seed.len(),
@@ -4224,7 +4234,7 @@ mod tests {
         let result = syscall(
             invoke_context,
             SEEDS_VA,
-            seeds.len() as u64,
+            seeds.len() as usize,
             PROGRAM_ID_VA,
             ADDRESS_VA,
             if overlap_outputs {
@@ -4268,9 +4278,9 @@ mod tests {
 
     #[test]
     fn test_set_and_get_return_data() {
-        const SRC_VA: u64 = 0x100000000;
-        const DST_VA: u64 = 0x200000000;
-        const PROGRAM_ID_VA: u64 = 0x300000000;
+        const SRC_VA: usize = 0x100000000;
+        const DST_VA: usize = 0x200000000;
+        const PROGRAM_ID_VA: usize = 0x300000000;
         let data = vec![42; 24];
         let mut data_buffer = vec![0; 16];
         let mut id_buffer = vec![0; 32];
@@ -4292,7 +4302,7 @@ mod tests {
         let result = SyscallSetReturnData::rust(
             &mut invoke_context,
             SRC_VA,
-            data.len() as u64,
+            data.len() as usize,
             0,
             0,
             0,
@@ -4303,7 +4313,7 @@ mod tests {
         let result = SyscallGetReturnData::rust(
             &mut invoke_context,
             DST_VA,
-            data_buffer.len() as u64,
+            data_buffer.len() as usize,
             PROGRAM_ID_VA,
             0,
             0,
@@ -4316,7 +4326,7 @@ mod tests {
         let result = SyscallGetReturnData::rust(
             &mut invoke_context,
             PROGRAM_ID_VA,
-            data_buffer.len() as u64,
+            data_buffer.len() as usize,
             PROGRAM_ID_VA,
             0,
             0,
@@ -4371,7 +4381,7 @@ mod tests {
 
         let syscall_base_cost = invoke_context.get_compute_budget().syscall_base_cost;
 
-        const VM_BASE_ADDRESS: u64 = 0x100000000;
+        const VM_BASE_ADDRESS: usize = 0x100000000;
         const META_OFFSET: usize = 0;
         const PROGRAM_ID_OFFSET: usize =
             META_OFFSET + std::mem::size_of::<ProcessedSiblingInstruction>();
@@ -4396,20 +4406,20 @@ mod tests {
         processed_sibling_instruction.accounts_len = 1;
         let program_id = translate_type_mut::<Pubkey>(
             &memory_mapping,
-            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as usize),
             true,
         )
         .unwrap();
         let data = translate_slice_mut::<u8>(
             &memory_mapping,
-            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as usize),
             processed_sibling_instruction.data_len,
             true,
         )
         .unwrap();
         let accounts = translate_slice_mut::<AccountMeta>(
             &memory_mapping,
-            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as usize),
             processed_sibling_instruction.accounts_len,
             true,
         )
@@ -4419,10 +4429,10 @@ mod tests {
         let result = SyscallGetProcessedSiblingInstruction::rust(
             &mut invoke_context,
             0,
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as usize),
             &mut memory_mapping,
         );
         assert_eq!(result.unwrap(), 1);
@@ -4449,10 +4459,10 @@ mod tests {
         let result = SyscallGetProcessedSiblingInstruction::rust(
             &mut invoke_context,
             1,
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(PROGRAM_ID_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(DATA_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(ACCOUNTS_OFFSET as usize),
             &mut memory_mapping,
         );
         assert_eq!(result.unwrap(), 0);
@@ -4461,10 +4471,10 @@ mod tests {
         let result = SyscallGetProcessedSiblingInstruction::rust(
             &mut invoke_context,
             0,
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
-            VM_BASE_ADDRESS.saturating_add(META_OFFSET as u64),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
+            VM_BASE_ADDRESS.saturating_add(META_OFFSET as usize),
             &mut memory_mapping,
         );
         assert_matches!(
@@ -4606,9 +4616,9 @@ mod tests {
         invoke_context.mock_set_remaining(cost * max_tries);
         let (_, bump_seed) =
             try_find_program_address(&mut invoke_context, seeds, &address).unwrap();
-        invoke_context.mock_set_remaining(cost * (max_tries - bump_seed as u64));
+        invoke_context.mock_set_remaining(cost * (max_tries - bump_seed as usize));
         try_find_program_address(&mut invoke_context, seeds, &address).unwrap();
-        invoke_context.mock_set_remaining(cost * (max_tries - bump_seed as u64 - 1));
+        invoke_context.mock_set_remaining(cost * (max_tries - bump_seed as usize - 1));
         assert_matches!(
             try_find_program_address(&mut invoke_context, seeds, &address),
             Result::Err(error) if error.downcast_ref::<InstructionError>().unwrap() == &InstructionError::ComputationalBudgetExceeded
@@ -4662,14 +4672,14 @@ mod tests {
         let config = Config::default();
         prepare_mockup!(invoke_context, program_id, bpf_loader::id());
 
-        const VADDR_PARAMS: u64 = 0x100000000;
-        const MAX_LEN: u64 = 512;
-        const INV_LEN: u64 = MAX_LEN + 1;
+        const VADDR_PARAMS: usize = 0x100000000;
+        const MAX_LEN: usize = 512;
+        const INV_LEN: usize = MAX_LEN + 1;
         let data: [u8; INV_LEN as usize] = [0; INV_LEN as usize];
-        const VADDR_DATA: u64 = 0x200000000;
+        const VADDR_DATA: usize = 0x200000000;
 
         let mut data_out: [u8; INV_LEN as usize] = [0; INV_LEN as usize];
-        const VADDR_OUT: u64 = 0x300000000;
+        const VADDR_OUT: usize = 0x300000000;
 
         // Test that SyscallBigModExp succeeds with the maximum param size
         {
@@ -4763,7 +4773,7 @@ mod tests {
         let mut compute_budget = ComputeBudget::default();
         let sysvar_cache = Arc::<SysvarCache>::default();
 
-        let expected_total_stake = 200_000_000_000_000u64;
+        let expected_total_stake = 200_000_000_000_000usize;
         // Compute units, as specified by SIMD-0133.
         // cu = syscall_base_cost
         let expected_cus = compute_budget.syscall_base_cost;
@@ -4782,7 +4792,7 @@ mod tests {
             &sysvar_cache,
         );
 
-        let null_pointer_var = std::ptr::null::<Pubkey>() as u64;
+        let null_pointer_var = std::ptr::null::<Pubkey>() as usize;
 
         let mut memory_mapping = MemoryMapping::new(vec![], &config, &SBPFVersion::V2).unwrap();
 
@@ -4806,13 +4816,13 @@ mod tests {
         let mut compute_budget = ComputeBudget::default();
         let sysvar_cache = Arc::<SysvarCache>::default();
 
-        let expected_epoch_stake = 55_000_000_000u64;
+        let expected_epoch_stake = 55_000_000_000usize;
         // Compute units, as specified by SIMD-0133.
         // cu = syscall_base_cost
         //     + floor(32/cpi_bytes_per_unit)
         //     + mem_op_base_cost
         let expected_cus = compute_budget.syscall_base_cost
-            + (PUBKEY_BYTES as u64) / compute_budget.cpi_bytes_per_unit
+            + (PUBKEY_BYTES as usize) / compute_budget.cpi_bytes_per_unit
             + compute_budget.mem_op_base_cost;
 
         // Set the compute budget to the expected CUs to ensure the syscall
@@ -4874,7 +4884,7 @@ mod tests {
 
         invoke_context.mock_set_remaining(compute_budget.compute_unit_limit);
         {
-            // Otherwise, the syscall returns a `u64` integer representing the
+            // Otherwise, the syscall returns a `usize` integer representing the
             // total active stake delegated to the vote account at the provided
             // address.
             let vote_address_var = 0x100000000;
@@ -4963,8 +4973,8 @@ mod tests {
 
     #[test]
     fn test_address_is_aligned() {
-        for address in 0..std::mem::size_of::<u64>() {
-            assert_eq!(address_is_aligned::<u64>(address as u64), address == 0);
+        for address in 0..std::mem::size_of::<usize>() {
+            assert_eq!(address_is_aligned::<usize>(address as usize), address == 0);
         }
     }
 }

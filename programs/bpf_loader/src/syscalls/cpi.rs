@@ -22,8 +22,8 @@ use {
 
 fn check_account_info_pointer(
     invoke_context: &InvokeContext,
-    vm_addr: u64,
-    expected_vm_addr: u64,
+    vm_addr: usize,
+    expected_vm_addr: usize,
     field: &str,
 ) -> Result<(), Error> {
     if vm_addr != expected_vm_addr {
@@ -41,7 +41,7 @@ fn check_account_info_pointer(
 
 enum VmValue<'a, 'b, T> {
     VmAddress {
-        vm_addr: u64,
+        vm_addr: usize,
         memory_mapping: &'b MemoryMapping<'a>,
         check_aligned: bool,
     },
@@ -79,7 +79,7 @@ impl<'a, 'b, T> VmValue<'a, 'b, T> {
 /// At the start of a CPI, this can be different from the data stored in the
 /// corresponding BorrowedAccount, and needs to be synched.
 struct CallerAccount<'a, 'b> {
-    lamports: &'a mut u64,
+    lamports: &'a mut usize,
     owner: &'a mut Pubkey,
     // The original data length of the account at the start of the current
     // instruction. We use this to determine wether an account was shrunk or
@@ -95,8 +95,8 @@ struct CallerAccount<'a, 'b> {
     serialized_data: &'a mut [u8],
     // Given the corresponding input AccountInfo::data, vm_data_addr points to
     // the pointer field and ref_to_len_in_vm points to the length field.
-    vm_data_addr: u64,
-    ref_to_len_in_vm: VmValue<'b, 'a, u64>,
+    vm_data_addr: usize,
+    ref_to_len_in_vm: VmValue<'b, 'a, usize>,
 }
 
 impl<'a, 'b> CallerAccount<'a, 'b> {
@@ -104,7 +104,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
     fn from_account_info(
         invoke_context: &InvokeContext,
         memory_mapping: &'b MemoryMapping<'a>,
-        _vm_addr: u64,
+        _vm_addr: usize,
         account_info: &AccountInfo,
         account_metadata: &SerializedAccountMetadata,
     ) -> Result<CallerAccount<'a, 'b>, Error> {
@@ -115,14 +115,14 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         if direct_mapping {
             check_account_info_pointer(
                 invoke_context,
-                account_info.key as *const _ as u64,
-                account_metadata.vm_key_addr,
+                account_info.key as *const _ as usize,
+                account_metadata.vm_key_addr as usize,
                 "key",
             )?;
             check_account_info_pointer(
                 invoke_context,
-                account_info.owner as *const _ as u64,
-                account_metadata.vm_owner_addr,
+                account_info.owner as *const _ as usize,
+                account_metadata.vm_owner_addr as usize,
                 "owner",
             )?;
         }
@@ -131,25 +131,25 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         // in vm space so they need to be translated.
         let lamports = {
             // Double translate lamports out of RefCell
-            let ptr = translate_type::<u64>(
+            let ptr = translate_type::<usize>(
                 memory_mapping,
-                account_info.lamports.as_ptr() as u64,
+                account_info.lamports.as_ptr() as usize,
                 invoke_context.get_check_aligned(),
             )?;
             if direct_mapping {
                 check_account_info_pointer(
                     invoke_context,
                     *ptr,
-                    account_metadata.vm_lamports_addr,
+                    account_metadata.vm_lamports_addr as usize,
                     "lamports",
                 )?;
             }
-            translate_type_mut::<u64>(memory_mapping, *ptr, invoke_context.get_check_aligned())?
+            translate_type_mut::<usize>(memory_mapping, *ptr, invoke_context.get_check_aligned())?
         };
 
         let owner = translate_type_mut::<Pubkey>(
             memory_mapping,
-            account_info.owner as *const _ as u64,
+            account_info.owner as *const _ as usize,
             invoke_context.get_check_aligned(),
         )?;
 
@@ -157,32 +157,32 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             // Double translate data out of RefCell
             let data = *translate_type::<&[u8]>(
                 memory_mapping,
-                account_info.data.as_ptr() as *const _ as u64,
+                account_info.data.as_ptr() as *const _ as usize,
                 invoke_context.get_check_aligned(),
             )?;
             if direct_mapping {
                 check_account_info_pointer(
                     invoke_context,
-                    data.as_ptr() as u64,
-                    account_metadata.vm_data_addr,
+                    data.as_ptr() as usize,
+                    account_metadata.vm_data_addr as usize,
                     "data",
                 )?;
             }
 
             consume_compute_meter(
                 invoke_context,
-                (data.len() as u64)
-                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
-                    .unwrap_or(u64::MAX),
+                (data.len() as usize)
+                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit as usize)
+                    .unwrap_or(usize::MAX),
             )?;
 
             let ref_to_len_in_vm = if direct_mapping {
-                let vm_addr = (account_info.data.as_ptr() as *const u64 as u64)
-                    .saturating_add(size_of::<u64>() as u64);
+                let vm_addr = (account_info.data.as_ptr() as *const usize as usize)
+                    .saturating_add(size_of::<usize>() as usize);
                 // In the same vein as the other check_account_info_pointer() checks, we don't lock
                 // this pointer to a specific address but we don't want it to be inside accounts, or
                 // callees might be able to write to the pointed memory.
-                if vm_addr >= ebpf::MM_INPUT_START {
+                if vm_addr >= ebpf::MM_INPUT_START as usize {
                     return Err(SyscallError::InvalidPointer.into());
                 }
                 VmValue::VmAddress {
@@ -194,13 +194,13 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 let translated = translate(
                     memory_mapping,
                     AccessType::Store,
-                    (account_info.data.as_ptr() as *const u64 as u64)
-                        .saturating_add(size_of::<u64>() as u64),
+                    (account_info.data.as_ptr() as *const usize as usize)
+                        .saturating_add(size_of::<usize>() as usize),
                     8,
-                )? as *mut u64;
+                )? as *mut usize;
                 VmValue::Translated(unsafe { &mut *translated })
             };
-            let vm_data_addr = data.as_ptr() as u64;
+            let vm_data_addr = data.as_ptr() as usize;
 
             let serialized_data = if direct_mapping {
                 // when direct mapping is enabled, the permissions on the
@@ -220,7 +220,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 translate_slice_mut::<u8>(
                     memory_mapping,
                     vm_data_addr,
-                    data.len() as u64,
+                    data.len() as usize,
                     invoke_context.get_check_aligned(),
                 )?
             };
@@ -241,7 +241,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
     fn from_sol_account_info(
         invoke_context: &InvokeContext,
         memory_mapping: &'b MemoryMapping<'a>,
-        vm_addr: u64,
+        vm_addr: usize,
         account_info: &SolAccountInfo,
         account_metadata: &SerializedAccountMetadata,
     ) -> Result<CallerAccount<'a, 'b>, Error> {
@@ -253,35 +253,35 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             check_account_info_pointer(
                 invoke_context,
                 account_info.key_addr,
-                account_metadata.vm_key_addr,
+                account_metadata.vm_key_addr as usize,
                 "key",
             )?;
 
             check_account_info_pointer(
                 invoke_context,
                 account_info.owner_addr,
-                account_metadata.vm_owner_addr,
+                account_metadata.vm_owner_addr as usize,
                 "owner",
             )?;
 
             check_account_info_pointer(
                 invoke_context,
                 account_info.lamports_addr,
-                account_metadata.vm_lamports_addr,
+                account_metadata.vm_lamports_addr as usize,
                 "lamports",
             )?;
 
             check_account_info_pointer(
                 invoke_context,
                 account_info.data_addr,
-                account_metadata.vm_data_addr,
+                account_metadata.vm_data_addr as usize,
                 "data",
             )?;
         }
 
         // account_info points to host memory. The addresses used internally are
         // in vm space so they need to be translated.
-        let lamports = translate_type_mut::<u64>(
+        let lamports = translate_type_mut::<usize>(
             memory_mapping,
             account_info.lamports_addr,
             invoke_context.get_check_aligned(),
@@ -296,8 +296,8 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             invoke_context,
             account_info
                 .data_len
-                .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
-                .unwrap_or(u64::MAX),
+                .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit as usize)
+                .unwrap_or(usize::MAX),
         )?;
 
         let serialized_data = if direct_mapping {
@@ -317,8 +317,8 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         // to ensure we can write. This is tested by programs/sbf/rust/ro_modify
         // which puts SolAccountInfo in rodata.
         let data_len_vm_addr = vm_addr
-            .saturating_add(&account_info.data_len as *const u64 as u64)
-            .saturating_sub(account_info as *const _ as *const u64 as u64);
+            .saturating_add(&account_info.data_len as *const usize as usize)
+            .saturating_sub(account_info as *const _ as *const usize as usize);
 
         let ref_to_len_in_vm = if direct_mapping {
             // In the same vein as the other check_account_info_pointer() checks, we don't lock this
@@ -337,9 +337,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 memory_mapping,
                 AccessType::Store,
                 data_len_vm_addr,
-                size_of::<u64>() as u64,
+                size_of::<usize>() as usize,
             )?;
-            VmValue::Translated(unsafe { &mut *(data_len_addr as *mut u64) })
+            VmValue::Translated(unsafe { &mut *(data_len_addr as *mut usize) })
         };
 
         Ok(CallerAccount {
@@ -371,23 +371,23 @@ type TranslatedAccounts<'a, 'b> = Vec<(IndexOfAccount, Option<CallerAccount<'a, 
 /// Implemented by language specific data structure translators
 trait SyscallInvokeSigned {
     fn translate_instruction(
-        addr: u64,
+        addr: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &mut InvokeContext,
     ) -> Result<StableInstruction, Error>;
     fn translate_accounts<'a, 'b>(
         instruction_accounts: &[InstructionAccount],
         program_indices: &[IndexOfAccount],
-        account_infos_addr: u64,
-        account_infos_len: u64,
+        account_infos_addr: usize,
+        account_infos_len: usize,
         is_loader_deprecated: bool,
         memory_mapping: &'b MemoryMapping<'a>,
         invoke_context: &mut InvokeContext,
     ) -> Result<TranslatedAccounts<'a, 'b>, Error>;
     fn translate_signers(
         program_id: &Pubkey,
-        signers_seeds_addr: u64,
-        signers_seeds_len: u64,
+        signers_seeds_addr: usize,
+        signers_seeds_len: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &InvokeContext,
     ) -> Result<Vec<Pubkey>, Error>;
@@ -398,13 +398,13 @@ declare_builtin_function!(
     SyscallInvokeSignedRust,
     fn rust(
         invoke_context: &mut InvokeContext,
-        instruction_addr: u64,
-        account_infos_addr: u64,
-        account_infos_len: u64,
-        signers_seeds_addr: u64,
-        signers_seeds_len: u64,
+        instruction_addr: usize,
+        account_infos_addr: usize,
+        account_infos_len: usize,
+        signers_seeds_addr: usize,
+        signers_seeds_len: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         cpi_common::<Self>(
             invoke_context,
             instruction_addr,
@@ -419,7 +419,7 @@ declare_builtin_function!(
 
 impl SyscallInvokeSigned for SyscallInvokeSignedRust {
     fn translate_instruction(
-        addr: u64,
+        addr: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &mut InvokeContext,
     ) -> Result<StableInstruction, Error> {
@@ -430,14 +430,14 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
         )?;
         let account_metas = translate_slice::<AccountMeta>(
             memory_mapping,
-            ix.accounts.as_ptr() as u64,
-            ix.accounts.len() as u64,
+            ix.accounts.as_ptr() as usize,
+            ix.accounts.len() as usize,
             invoke_context.get_check_aligned(),
         )?;
         let data = translate_slice::<u8>(
             memory_mapping,
-            ix.data.as_ptr() as u64,
-            ix.data.len() as u64,
+            ix.data.as_ptr() as usize,
+            ix.data.len() as usize,
             invoke_context.get_check_aligned(),
         )?
         .to_vec();
@@ -450,9 +450,9 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
         {
             consume_compute_meter(
                 invoke_context,
-                (data.len() as u64)
-                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
-                    .unwrap_or(u64::MAX),
+                (data.len() as usize)
+                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit as usize)
+                    .unwrap_or(usize::MAX),
             )?;
         }
 
@@ -481,8 +481,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
     fn translate_accounts<'a, 'b>(
         instruction_accounts: &[InstructionAccount],
         program_indices: &[IndexOfAccount],
-        account_infos_addr: u64,
-        account_infos_len: u64,
+        account_infos_addr: usize,
+        account_infos_len: usize,
         is_loader_deprecated: bool,
         memory_mapping: &'b MemoryMapping<'a>,
         invoke_context: &mut InvokeContext,
@@ -490,7 +490,7 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
         let (account_infos, account_info_keys) = translate_account_infos(
             account_infos_addr,
             account_infos_len,
-            |account_info: &AccountInfo| account_info.key as *const _ as u64,
+            |account_info: &AccountInfo| account_info.key as *const _ as usize,
             memory_mapping,
             invoke_context,
         )?;
@@ -510,8 +510,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
 
     fn translate_signers(
         program_id: &Pubkey,
-        signers_seeds_addr: u64,
-        signers_seeds_len: u64,
+        signers_seeds_addr: usize,
+        signers_seeds_len: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &InvokeContext,
     ) -> Result<Vec<Pubkey>, Error> {
@@ -529,8 +529,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
             for signer_seeds in signers_seeds.iter() {
                 let untranslated_seeds = translate_slice::<&[u8]>(
                     memory_mapping,
-                    signer_seeds.as_ptr() as *const _ as u64,
-                    signer_seeds.len() as u64,
+                    signer_seeds.as_ptr() as *const _ as usize,
+                    signer_seeds.len() as usize,
                     invoke_context.get_check_aligned(),
                 )?;
                 if untranslated_seeds.len() > MAX_SEEDS {
@@ -541,8 +541,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
                     .map(|untranslated_seed| {
                         translate_slice::<u8>(
                             memory_mapping,
-                            untranslated_seed.as_ptr() as *const _ as u64,
-                            untranslated_seed.len() as u64,
+                            untranslated_seed.as_ptr() as *const _ as usize,
+                            untranslated_seed.len() as usize,
                             invoke_context.get_check_aligned(),
                         )
                     })
@@ -562,18 +562,18 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
 #[derive(Debug)]
 #[repr(C)]
 struct SolInstruction {
-    program_id_addr: u64,
-    accounts_addr: u64,
-    accounts_len: u64,
-    data_addr: u64,
-    data_len: u64,
+    program_id_addr: usize,
+    accounts_addr: usize,
+    accounts_len: usize,
+    data_addr: usize,
+    data_len: usize,
 }
 
 /// Rust representation of C's SolAccountMeta
 #[derive(Debug)]
 #[repr(C)]
 struct SolAccountMeta {
-    pubkey_addr: u64,
+    pubkey_addr: usize,
     is_writable: bool,
     is_signer: bool,
 }
@@ -582,12 +582,12 @@ struct SolAccountMeta {
 #[derive(Debug)]
 #[repr(C)]
 struct SolAccountInfo {
-    key_addr: u64,
-    lamports_addr: u64,
-    data_len: u64,
-    data_addr: u64,
-    owner_addr: u64,
-    rent_epoch: u64,
+    key_addr: usize,
+    lamports_addr: usize,
+    data_len: usize,
+    data_addr: usize,
+    owner_addr: usize,
+    rent_epoch: usize,
     is_signer: bool,
     is_writable: bool,
     executable: bool,
@@ -597,16 +597,16 @@ struct SolAccountInfo {
 #[derive(Debug)]
 #[repr(C)]
 struct SolSignerSeedC {
-    addr: u64,
-    len: u64,
+    addr: usize,
+    len: usize,
 }
 
 /// Rust representation of C's SolSignerSeeds
 #[derive(Debug)]
 #[repr(C)]
 struct SolSignerSeedsC {
-    addr: u64,
-    len: u64,
+    addr: usize,
+    len: usize,
 }
 
 declare_builtin_function!(
@@ -614,13 +614,13 @@ declare_builtin_function!(
     SyscallInvokeSignedC,
     fn rust(
         invoke_context: &mut InvokeContext,
-        instruction_addr: u64,
-        account_infos_addr: u64,
-        account_infos_len: u64,
-        signers_seeds_addr: u64,
-        signers_seeds_len: u64,
+        instruction_addr: usize,
+        account_infos_addr: usize,
+        account_infos_len: usize,
+        signers_seeds_addr: usize,
+        signers_seeds_len: usize,
         memory_mapping: &mut MemoryMapping,
-    ) -> Result<u64, Error> {
+    ) -> Result<usize, Error> {
         cpi_common::<Self>(
             invoke_context,
             instruction_addr,
@@ -635,7 +635,7 @@ declare_builtin_function!(
 
 impl SyscallInvokeSigned for SyscallInvokeSignedC {
     fn translate_instruction(
-        addr: u64,
+        addr: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &mut InvokeContext,
     ) -> Result<StableInstruction, Error> {
@@ -670,8 +670,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedC {
             consume_compute_meter(
                 invoke_context,
                 (ix_data_len)
-                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
-                    .unwrap_or(u64::MAX),
+                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit as usize)
+                    .unwrap_or(usize::MAX),
             )?;
         }
 
@@ -717,8 +717,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedC {
     fn translate_accounts<'a, 'b>(
         instruction_accounts: &[InstructionAccount],
         program_indices: &[IndexOfAccount],
-        account_infos_addr: u64,
-        account_infos_len: u64,
+        account_infos_addr: usize,
+        account_infos_len: usize,
         is_loader_deprecated: bool,
         memory_mapping: &'b MemoryMapping<'a>,
         invoke_context: &mut InvokeContext,
@@ -746,8 +746,8 @@ impl SyscallInvokeSigned for SyscallInvokeSignedC {
 
     fn translate_signers(
         program_id: &Pubkey,
-        signers_seeds_addr: u64,
-        signers_seeds_len: u64,
+        signers_seeds_addr: usize,
+        signers_seeds_len: usize,
         memory_mapping: &MemoryMapping,
         invoke_context: &InvokeContext,
     ) -> Result<Vec<Pubkey>, Error> {
@@ -795,14 +795,14 @@ impl SyscallInvokeSigned for SyscallInvokeSignedC {
 }
 
 fn translate_account_infos<'a, T, F>(
-    account_infos_addr: u64,
-    account_infos_len: u64,
+    account_infos_addr: usize,
+    account_infos_len: usize,
     key_addr: F,
     memory_mapping: &MemoryMapping,
     invoke_context: &mut InvokeContext,
 ) -> Result<(&'a [T], Vec<&'a Pubkey>), Error>
 where
-    F: Fn(&T) -> u64,
+    F: Fn(&T) -> usize,
 {
     let account_infos = translate_slice::<T>(
         memory_mapping,
@@ -832,7 +832,7 @@ fn translate_and_update_accounts<'a, 'b, T, F>(
     program_indices: &[IndexOfAccount],
     account_info_keys: &[&Pubkey],
     account_infos: &[T],
-    account_infos_addr: u64,
+    account_infos_addr: usize,
     is_loader_deprecated: bool,
     invoke_context: &mut InvokeContext,
     memory_mapping: &'b MemoryMapping<'a>,
@@ -842,7 +842,7 @@ where
     F: Fn(
         &InvokeContext,
         &'b MemoryMapping<'a>,
-        u64,
+        usize,
         &T,
         &SerializedAccountMetadata,
     ) -> Result<CallerAccount<'a, 'b>, Error>,
@@ -885,9 +885,9 @@ where
             // Use the known account
             consume_compute_meter(
                 invoke_context,
-                (callee_account.get_data().len() as u64)
-                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
-                    .unwrap_or(u64::MAX),
+                (callee_account.get_data().len() as usize)
+                    .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit as usize)
+                    .unwrap_or(usize::MAX),
             )?;
 
             accounts.push((instruction_account.index_in_caller, None));
@@ -910,16 +910,15 @@ where
                 return Err(Box::new(SyscallError::InvalidLength));
             }
             #[allow(clippy::indexing_slicing)]
-            let caller_account =
-                do_translate(
-                    invoke_context,
-                    memory_mapping,
-                    account_infos_addr.saturating_add(
-                        caller_account_index.saturating_mul(mem::size_of::<T>()) as u64,
-                    ),
-                    &account_infos[caller_account_index],
-                    serialized_metadata,
-                )?;
+            let caller_account = do_translate(
+                invoke_context,
+                memory_mapping,
+                account_infos_addr.saturating_add(
+                    caller_account_index.saturating_mul(mem::size_of::<T>()) as usize,
+                ),
+                &account_infos[caller_account_index],
+                serialized_metadata,
+            )?;
 
             // before initiating CPI, the caller may have modified the
             // account (caller_account). We need to update the corresponding
@@ -962,17 +961,17 @@ fn check_instruction_size(
         .get_feature_set()
         .is_active(&feature_set::loosen_cpi_size_restriction::id())
     {
-        let data_len = data_len as u64;
-        let max_data_len = MAX_CPI_INSTRUCTION_DATA_LEN;
-        if data_len > max_data_len {
+        let data_len = data_len as usize;
+        let max_data_len = MAX_CPI_INSTRUCTION_DATA_LEN as usize;
+        if data_len > max_data_len as usize {
             return Err(Box::new(SyscallError::MaxInstructionDataLenExceeded {
                 data_len,
                 max_data_len,
             }));
         }
 
-        let num_accounts = num_accounts as u64;
-        let max_accounts = MAX_CPI_INSTRUCTION_ACCOUNTS as u64;
+        let num_accounts = num_accounts as usize;
+        let max_accounts = MAX_CPI_INSTRUCTION_ACCOUNTS as usize;
         if num_accounts > max_accounts {
             return Err(Box::new(SyscallError::MaxInstructionAccountsExceeded {
                 num_accounts,
@@ -1007,8 +1006,8 @@ fn check_account_infos(
         } else {
             64
         };
-        let num_account_infos = num_account_infos as u64;
-        let max_account_infos = max_cpi_account_infos as u64;
+        let num_account_infos = num_account_infos as usize;
+        let max_account_infos = max_cpi_account_infos as usize;
         if num_account_infos > max_account_infos {
             return Err(Box::new(SyscallError::MaxInstructionAccountInfosExceeded {
                 num_account_infos,
@@ -1057,20 +1056,20 @@ fn check_authorized_program(
 /// Call process instruction, common to both Rust and C
 fn cpi_common<S: SyscallInvokeSigned>(
     invoke_context: &mut InvokeContext,
-    instruction_addr: u64,
-    account_infos_addr: u64,
-    account_infos_len: u64,
-    signers_seeds_addr: u64,
-    signers_seeds_len: u64,
+    instruction_addr: usize,
+    account_infos_addr: usize,
+    account_infos_len: usize,
+    signers_seeds_addr: usize,
+    signers_seeds_len: usize,
     memory_mapping: &MemoryMapping,
-) -> Result<u64, Error> {
+) -> Result<usize, Error> {
     // CPI entry.
     //
     // Translate the inputs to the syscall and synchronize the caller's account
     // changes so the callee can see them.
     consume_compute_meter(
         invoke_context,
-        invoke_context.get_compute_budget().invoke_units,
+        invoke_context.get_compute_budget().invoke_units as usize,
     )?;
     if let Some(execute_time) = invoke_context.execute_time.as_mut() {
         execute_time.stop();
@@ -1162,7 +1161,7 @@ fn cpi_common<S: SyscallInvokeSigned>(
     }
 
     invoke_context.execute_time = Some(Measure::start("execute"));
-    Ok(SUCCESS)
+    Ok(SUCCESS as usize)
 }
 
 // Update the given account before executing CPI.
@@ -1186,8 +1185,8 @@ fn update_callee_account(
 ) -> Result<bool, Error> {
     let mut must_update_caller = false;
 
-    if callee_account.get_lamports() != *caller_account.lamports {
-        callee_account.set_lamports(*caller_account.lamports)?;
+    if callee_account.get_lamports() as usize != *caller_account.lamports {
+        callee_account.set_lamports(*caller_account.lamports as u64)?;
     }
 
     if direct_mapping {
@@ -1213,8 +1212,8 @@ fn update_callee_account(
                         memory_mapping,
                         caller_account
                             .vm_data_addr
-                            .saturating_add(caller_account.original_data_len as u64),
-                        realloc_bytes_used as u64,
+                            .saturating_add(caller_account.original_data_len as usize),
+                        realloc_bytes_used as usize,
                         invoke_context.get_check_aligned(),
                     )?;
                     callee_account
@@ -1304,7 +1303,7 @@ fn update_caller_account(
     callee_account: &mut BorrowedAccount<'_>,
     direct_mapping: bool,
 ) -> Result<(), Error> {
-    *caller_account.lamports = callee_account.get_lamports();
+    *caller_account.lamports = callee_account.get_lamports() as usize;
     *caller_account.owner = *callee_account.get_owner();
 
     let mut zero_all_mapped_spare_capacity = false;
@@ -1337,9 +1336,9 @@ fn update_caller_account(
             // An account's data pointer can change if the account is reallocated because of CoW,
             // because of BorrowedAccount::make_data_mut or by a program that uses the
             // AccountSharedData API directly (deprecated).
-            let callee_ptr = callee_account.get_data().as_ptr() as u64;
-            if region.host_addr.get() != callee_ptr {
-                region.host_addr.set(callee_ptr);
+            let callee_ptr = callee_account.get_data().as_ptr() as usize;
+            if region.host_addr.get() as usize != callee_ptr {
+                region.host_addr.set(callee_ptr as u64);
                 zero_all_mapped_spare_capacity = true;
             }
         }
@@ -1415,8 +1414,8 @@ fn update_caller_account(
                         memory_mapping,
                         caller_account
                             .vm_data_addr
-                            .saturating_add(dirty_realloc_start as u64),
-                        dirty_realloc_len as u64,
+                            .saturating_add(dirty_realloc_start as usize),
+                        dirty_realloc_len as usize,
                         invoke_context.get_check_aligned(),
                     )?;
                     serialized_data.fill(0);
@@ -1436,22 +1435,22 @@ fn update_caller_account(
             caller_account.serialized_data = translate_slice_mut::<u8>(
                 memory_mapping,
                 caller_account.vm_data_addr,
-                post_len as u64,
+                post_len as usize,
                 false, // Don't care since it is byte aligned
             )?;
         }
         // this is the len field in the AccountInfo::data slice
-        *caller_account.ref_to_len_in_vm.get_mut()? = post_len as u64;
+        *caller_account.ref_to_len_in_vm.get_mut()? = post_len as usize;
 
         // this is the len field in the serialized parameters
-        let serialized_len_ptr = translate_type_mut::<u64>(
+        let serialized_len_ptr = translate_type_mut::<usize>(
             memory_mapping,
             caller_account
                 .vm_data_addr
-                .saturating_sub(std::mem::size_of::<u64>() as u64),
+                .saturating_sub(std::mem::size_of::<usize>() as usize),
             invoke_context.get_check_aligned(),
         )?;
-        *serialized_len_ptr = post_len as u64;
+        *serialized_len_ptr = post_len as usize;
     }
 
     if direct_mapping {
@@ -1519,8 +1518,8 @@ fn update_caller_account(
                     memory_mapping,
                     caller_account
                         .vm_data_addr
-                        .saturating_add(caller_account.original_data_len as u64),
-                    realloc_bytes_used as u64,
+                        .saturating_add(caller_account.original_data_len as usize),
+                    realloc_bytes_used as usize,
                     invoke_context.get_check_aligned(),
                 )?
             };
@@ -1550,7 +1549,7 @@ fn update_caller_account(
 
 fn account_data_region<'a>(
     memory_mapping: &'a MemoryMapping<'_>,
-    vm_data_addr: u64,
+    vm_data_addr: usize,
     original_data_len: usize,
 ) -> Result<Option<&'a MemoryRegion>, Error> {
     if original_data_len == 0 {
@@ -1559,15 +1558,15 @@ fn account_data_region<'a>(
 
     // We can trust vm_data_addr to point to the correct region because we
     // enforce that in CallerAccount::from_(sol_)account_info.
-    let data_region = memory_mapping.region(AccessType::Load, vm_data_addr)?;
+    let data_region = memory_mapping.region(AccessType::Load, vm_data_addr as u64)?;
     // vm_data_addr must always point to the beginning of the region
-    debug_assert_eq!(data_region.vm_addr, vm_data_addr);
+    debug_assert_eq!(data_region.vm_addr as usize, vm_data_addr);
     Ok(Some(data_region))
 }
 
 fn account_realloc_region<'a>(
     memory_mapping: &'a MemoryMapping<'_>,
-    vm_data_addr: u64,
+    vm_data_addr: usize,
     original_data_len: usize,
     is_loader_deprecated: bool,
 ) -> Result<Option<&'a MemoryRegion>, Error> {
@@ -1575,9 +1574,9 @@ fn account_realloc_region<'a>(
         return Ok(None);
     }
 
-    let realloc_vm_addr = vm_data_addr.saturating_add(original_data_len as u64);
-    let realloc_region = memory_mapping.region(AccessType::Load, realloc_vm_addr)?;
-    debug_assert_eq!(realloc_region.vm_addr, realloc_vm_addr);
+    let realloc_vm_addr = vm_data_addr.saturating_add(original_data_len as usize);
+    let realloc_region = memory_mapping.region(AccessType::Load, realloc_vm_addr as u64)?;
+    debug_assert_eq!(realloc_region.vm_addr as usize, realloc_vm_addr);
     debug_assert!((MAX_PERMITTED_DATA_INCREASE
         ..MAX_PERMITTED_DATA_INCREASE.saturating_add(BPF_ALIGN_OF_U128))
         .contains(&(realloc_region.len as usize)));
@@ -1692,7 +1691,7 @@ mod tests {
             accounts: accounts.clone(),
             data: data.clone(),
         }
-        .into_region(vm_addr);
+        .into_region(vm_addr as usize);
 
         let config = Config {
             aligned_memory_mapping: false,
@@ -1728,7 +1727,7 @@ mod tests {
         let (derived_key, bump_seed) = Pubkey::find_program_address(&[b"foo"], &program_id);
 
         let vm_addr = MM_INPUT_START;
-        let (_mem, region) = mock_signers(&[b"foo", &[bump_seed]], vm_addr);
+        let (_mem, region) = mock_signers(&[b"foo", &[bump_seed]], vm_addr as usize);
 
         let config = Config {
             aligned_memory_mapping: false,
@@ -1762,7 +1761,7 @@ mod tests {
         );
 
         let key = Pubkey::new_unique();
-        let vm_addr = MM_INPUT_START;
+        let vm_addr = MM_INPUT_START as usize;
         let (_mem, region, account_metadata) =
             MockAccountInfo::new(key, &account).into_region(vm_addr);
 
@@ -1782,7 +1781,7 @@ mod tests {
             &account_metadata,
         )
         .unwrap();
-        assert_eq!(*caller_account.lamports, account.lamports());
+        assert_eq!(*caller_account.lamports, account.lamports() as usize);
         assert_eq!(caller_account.owner, account.owner());
         assert_eq!(caller_account.original_data_len, account.data().len());
         assert_eq!(
@@ -1864,7 +1863,7 @@ mod tests {
         );
 
         let mut mock_caller_account = MockCallerAccount::new(
-            account.lamports(),
+            account.lamports() as usize,
             *account.owner(),
             0xFFFFFFFF00000000,
             account.data(),
@@ -1886,9 +1885,9 @@ mod tests {
         let len_ptr = unsafe {
             data_slice
                 .as_ptr()
-                .offset(-(mem::size_of::<u64>() as isize))
+                .offset(-(mem::size_of::<usize>() as isize))
         };
-        let serialized_len = || unsafe { *len_ptr.cast::<u64>() as usize };
+        let serialized_len = || unsafe { *len_ptr.cast::<usize>() as usize };
         let mut caller_account = mock_caller_account.caller_account();
 
         let mut callee_account = borrow_instruction_account!(invoke_context, 0);
@@ -1992,7 +1991,7 @@ mod tests {
         );
 
         let mut mock_caller_account = MockCallerAccount::new(
-            account.lamports(),
+            account.lamports() as usize,
             *account.owner(),
             0xFFFFFFFF00000000,
             account.data(),
@@ -2014,9 +2013,9 @@ mod tests {
         let len_ptr = unsafe {
             data_slice
                 .as_ptr()
-                .offset(-(mem::size_of::<u64>() as isize))
+                .offset(-(mem::size_of::<usize>() as isize))
         };
-        let serialized_len = || unsafe { *len_ptr.cast::<u64>() as usize };
+        let serialized_len = || unsafe { *len_ptr.cast::<usize>() as usize };
         let mut caller_account = mock_caller_account.caller_account();
 
         let mut callee_account = borrow_instruction_account!(invoke_context, 0);
@@ -2065,8 +2064,8 @@ mod tests {
                     &memory_mapping,
                     caller_account
                         .vm_data_addr
-                        .saturating_add(caller_account.original_data_len as u64),
-                    MAX_PERMITTED_DATA_INCREASE as u64,
+                        .saturating_add(caller_account.original_data_len as usize),
+                    MAX_PERMITTED_DATA_INCREASE as usize,
                     invoke_context.get_check_aligned(),
                 )
                 .unwrap();
@@ -2167,7 +2166,7 @@ mod tests {
         );
 
         let mut mock_caller_account = MockCallerAccount::new(
-            account.lamports(),
+            account.lamports() as usize,
             *account.owner(),
             0xFFFFFFFF00000000,
             account.data(),
@@ -2215,7 +2214,7 @@ mod tests {
         let data = translate_slice::<u8>(
             &memory_mapping,
             caller_account.vm_data_addr,
-            callee_account.get_data().len() as u64,
+            callee_account.get_data().len() as usize,
             true,
         )
         .unwrap();
@@ -2403,7 +2402,7 @@ mod tests {
 
         // without direct mapping
         let mut data = b"foobarbaz".to_vec();
-        *caller_account.ref_to_len_in_vm.get_mut().unwrap() = data.len() as u64;
+        *caller_account.ref_to_len_in_vm.get_mut().unwrap() = data.len() as usize;
         caller_account.serialized_data = &mut data;
 
         let callee_account = borrow_instruction_account!(invoke_context, 0);
@@ -2485,7 +2484,7 @@ mod tests {
             &memory_mapping,
             caller_account
                 .vm_data_addr
-                .saturating_add(caller_account.original_data_len as u64),
+                .saturating_add(caller_account.original_data_len as usize),
             3,
             invoke_context.get_check_aligned(),
         )
@@ -2497,7 +2496,7 @@ mod tests {
             (6, b"foobar".to_vec()),    // == original_data_len, truncates
             (3, b"foo".to_vec()),       // < original_data_len, truncates
         ] {
-            *caller_account.ref_to_len_in_vm.get_mut().unwrap() = len as u64;
+            *caller_account.ref_to_len_in_vm.get_mut().unwrap() = len as usize;
             update_callee_account(
                 &invoke_context,
                 &memory_mapping,
@@ -2540,7 +2539,7 @@ mod tests {
 
         let vm_addr = MM_INPUT_START;
         let (_mem, region, account_metadata) =
-            MockAccountInfo::new(key, &account).into_region(vm_addr);
+            MockAccountInfo::new(key, &account).into_region(vm_addr as usize);
 
         let config = Config {
             aligned_memory_mapping: false,
@@ -2593,20 +2592,20 @@ mod tests {
 
     pub type TestTransactionAccount = (Pubkey, AccountSharedData, bool);
     struct MockCallerAccount {
-        lamports: u64,
+        lamports: usize,
         owner: Pubkey,
-        vm_addr: u64,
+        vm_addr: usize,
         data: Vec<u8>,
-        len: u64,
+        len: usize,
         regions: Vec<MemoryRegion>,
         direct_mapping: bool,
     }
 
     impl MockCallerAccount {
         fn new(
-            lamports: u64,
+            lamports: usize,
             owner: Pubkey,
-            vm_addr: u64,
+            vm_addr: usize,
             data: &[u8],
             direct_mapping: bool,
         ) -> MockCallerAccount {
@@ -2614,42 +2613,45 @@ mod tests {
 
             let mut d = vec![
                 0;
-                mem::size_of::<u64>()
+                mem::size_of::<usize>()
                     + if direct_mapping { 0 } else { data.len() }
                     + MAX_PERMITTED_DATA_INCREASE
             ];
             // always write the [len] part even when direct mapping
-            unsafe { ptr::write_unaligned::<u64>(d.as_mut_ptr().cast(), data.len() as u64) };
+            unsafe { ptr::write_unaligned::<usize>(d.as_mut_ptr().cast(), data.len() as usize) };
 
             // write the account data when not direct mapping
             if !direct_mapping {
-                d[mem::size_of::<u64>()..][..data.len()].copy_from_slice(data);
+                d[mem::size_of::<usize>()..][..data.len()].copy_from_slice(data);
             }
 
             // create a region for [len][data+realloc if !direct_mapping]
             let mut region_addr = vm_addr;
-            let region_len = mem::size_of::<u64>()
+            let region_len = mem::size_of::<usize>()
                 + if direct_mapping {
                     0
                 } else {
                     data.len() + MAX_PERMITTED_DATA_INCREASE
                 };
-            regions.push(MemoryRegion::new_writable(&mut d[..region_len], vm_addr));
-            region_addr += region_len as u64;
+            regions.push(MemoryRegion::new_writable(
+                &mut d[..region_len],
+                vm_addr as u64,
+            ));
+            region_addr += region_len as usize;
 
             if direct_mapping {
                 // create a region for the directly mapped data
-                regions.push(MemoryRegion::new_readonly(data, region_addr));
-                region_addr += data.len() as u64;
+                regions.push(MemoryRegion::new_readonly(data, region_addr as u64));
+                region_addr += data.len() as usize;
 
                 // create a region for the realloc padding
                 regions.push(MemoryRegion::new_writable(
-                    &mut d[mem::size_of::<u64>()..],
-                    region_addr,
+                    &mut d[mem::size_of::<usize>()..],
+                    region_addr as u64,
                 ));
             } else {
                 // caller_account.serialized_data must have the actual data length
-                d.truncate(mem::size_of::<u64>() + data.len());
+                d.truncate(mem::size_of::<usize>() + data.len());
             }
 
             MockCallerAccount {
@@ -2657,7 +2659,7 @@ mod tests {
                 owner,
                 vm_addr,
                 data: d,
-                len: data.len() as u64,
+                len: data.len() as usize,
                 regions,
                 direct_mapping,
             }
@@ -2667,8 +2669,8 @@ mod tests {
             // lifetime crimes
             unsafe {
                 slice::from_raw_parts(
-                    self.data[mem::size_of::<u64>()..].as_ptr(),
-                    self.data.capacity() - mem::size_of::<u64>(),
+                    self.data[mem::size_of::<usize>()..].as_ptr(),
+                    self.data.capacity() - mem::size_of::<usize>(),
                 )
             }
         }
@@ -2677,14 +2679,14 @@ mod tests {
             let data = if self.direct_mapping {
                 &mut []
             } else {
-                &mut self.data[mem::size_of::<u64>()..]
+                &mut self.data[mem::size_of::<usize>()..]
             };
             CallerAccount {
                 lamports: &mut self.lamports,
                 owner: &mut self.owner,
                 original_data_len: self.len as usize,
                 serialized_data: data,
-                vm_data_addr: self.vm_addr + mem::size_of::<u64>() as u64,
+                vm_data_addr: self.vm_addr + mem::size_of::<usize>() as usize,
                 ref_to_len_in_vm: VmValue::Translated(&mut self.len),
             }
         }
@@ -2752,7 +2754,7 @@ mod tests {
     }
 
     impl MockInstruction {
-        fn into_region(self, vm_addr: u64) -> (Vec<u8>, MemoryRegion) {
+        fn into_region(self, vm_addr: usize) -> (Vec<u8>, MemoryRegion) {
             let accounts_len = mem::size_of::<AccountMeta>() * self.accounts.len();
 
             let size = mem::size_of::<StableInstruction>() + accounts_len + self.data.len();
@@ -2791,7 +2793,7 @@ mod tests {
         }
     }
 
-    fn mock_signers(signers: &[&[u8]], vm_addr: u64) -> (Vec<u8>, MemoryRegion) {
+    fn mock_signers(signers: &[&[u8]], vm_addr: usize) -> (Vec<u8>, MemoryRegion) {
         let vm_addr = vm_addr as usize;
 
         // calculate size
@@ -2849,7 +2851,7 @@ mod tests {
         key: Pubkey,
         is_signer: bool,
         is_writable: bool,
-        lamports: u64,
+        lamports: usize,
         data: &'a [u8],
         owner: Pubkey,
         executable: bool,
@@ -2862,7 +2864,7 @@ mod tests {
                 key,
                 is_signer: false,
                 is_writable: false,
-                lamports: account.lamports(),
+                lamports: account.lamports() as usize,
                 data: account.data(),
                 owner: *account.owner(),
                 executable: account.executable(),
@@ -2870,11 +2872,11 @@ mod tests {
             }
         }
 
-        fn into_region(self, vm_addr: u64) -> (Vec<u8>, MemoryRegion, SerializedAccountMetadata) {
+        fn into_region(self, vm_addr: usize) -> (Vec<u8>, MemoryRegion, SerializedAccountMetadata) {
             let size = mem::size_of::<AccountInfo>()
                 + mem::size_of::<Pubkey>() * 2
-                + mem::size_of::<RcBox<RefCell<&mut u64>>>()
-                + mem::size_of::<u64>()
+                + mem::size_of::<RcBox<RefCell<&mut usize>>>()
+                + mem::size_of::<usize>()
                 + mem::size_of::<RcBox<RefCell<&mut [u8]>>>()
                 + self.data.len();
             let mut data = vec![0; size];
@@ -2882,8 +2884,8 @@ mod tests {
             let vm_addr = vm_addr as usize;
             let key_addr = vm_addr + mem::size_of::<AccountInfo>();
             let lamports_cell_addr = key_addr + mem::size_of::<Pubkey>();
-            let lamports_addr = lamports_cell_addr + mem::size_of::<RcBox<RefCell<&mut u64>>>();
-            let owner_addr = lamports_addr + mem::size_of::<u64>();
+            let lamports_addr = lamports_cell_addr + mem::size_of::<RcBox<RefCell<&mut usize>>>();
+            let owner_addr = lamports_addr + mem::size_of::<usize>();
             let data_cell_addr = owner_addr + mem::size_of::<Pubkey>();
             let data_addr = data_cell_addr + mem::size_of::<RcBox<RefCell<&mut [u8]>>>();
 
@@ -2892,7 +2894,9 @@ mod tests {
                 is_signer: self.is_signer,
                 is_writable: self.is_writable,
                 lamports: unsafe {
-                    Rc::from_raw((lamports_cell_addr + RcBox::<&mut u64>::VALUE_OFFSET) as *const _)
+                    Rc::from_raw(
+                        (lamports_cell_addr + RcBox::<&mut usize>::VALUE_OFFSET) as *const _,
+                    )
                 },
                 data: unsafe {
                     Rc::from_raw((data_cell_addr + RcBox::<&mut [u8]>::VALUE_OFFSET) as *const _)
@@ -2910,7 +2914,9 @@ mod tests {
                 );
                 ptr::write_unaligned(
                     (data.as_mut_ptr() as usize + lamports_cell_addr - vm_addr) as *mut _,
-                    RcBox::new(RefCell::new((lamports_addr as *mut u64).as_mut().unwrap())),
+                    RcBox::new(RefCell::new(
+                        (lamports_addr as *mut usize).as_mut().unwrap(),
+                    )),
                 );
                 ptr::write_unaligned(
                     (data.as_mut_ptr() as usize + lamports_addr - vm_addr) as *mut _,
