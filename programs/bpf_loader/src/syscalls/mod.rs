@@ -228,6 +228,47 @@ impl HasherImpl for Keccak256Hasher {
     }
 }
 
+pub struct VmSlice<'a, T> {
+    memory_mapping: &'a MemoryMapping<'a>,
+    ptr: u64,
+    len: u64,
+}
+
+impl<'a, T> VmSlice<'a, T> {
+    pub fn new<'a, T>(memory_mapping: &'a MemoryMapping, ptr: u64, len: u64) -> Self {
+        VmSlice { memory_mapping, ptr, len }
+    }
+
+    // Returns a slice using a mapped physical address
+    pub fn translate<'a, T>(
+        &self
+    ) -> Result<&'a [T], Error> {
+        translate_slice(self.memory_mapping, self.ptr, self.len, false)
+    }
+
+    pub fn translate_mut<'a, T>(
+        &mut self,
+    ) -> Result<&'a mut [T], Error> {
+        translate_slice_mut(self.memory_mapping, self.ptr, self.len, false)
+    }
+}
+
+impl<'a, T> Iterator for VmSlice<'a, T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.len > 0 {
+            let res = translate_type(self.memory_mapping, self.ptr, false).ok();
+            self.ptr.saturating_add(size_of::<T>());
+            self.len.saturating_sub(1);
+            res
+        }
+        else {
+            None
+        }
+    }
+}
+
 fn consume_compute_meter(invoke_context: &InvokeContext, amount: u64) -> Result<(), Error> {
     invoke_context.consume_checked(amount)?;
     Ok(())
