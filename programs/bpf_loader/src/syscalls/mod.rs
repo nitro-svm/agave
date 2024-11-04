@@ -255,7 +255,7 @@ impl<'a, T> VmSlice<'a, T> {
         }
     }
 
-    // Returns a slice using a mapped physical address
+    /// Returns a slice using a mapped physical address
     pub fn translate(&self) -> Result<&'a [T], Error> {
         translate_slice::<T>(self.memory_mapping, self.ptr, self.len, false)
     }
