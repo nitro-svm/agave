@@ -10,6 +10,7 @@ pub use self::{
         SyscallGetSysvar,
     },
 };
+
 #[allow(deprecated)]
 use {
     solana_bn254::prelude::{
@@ -59,6 +60,7 @@ use {
     solana_type_overrides::sync::Arc,
     std::{
         alloc::Layout,
+        marker::PhantomData,
         mem::{align_of, size_of},
         slice::from_raw_parts_mut,
         str::{from_utf8, Utf8Error},
@@ -230,40 +232,26 @@ pub struct VmSlice<'a, T> {
     memory_mapping: &'a MemoryMapping<'a>,
     ptr: u64,
     len: u64,
+    resource_type: PhantomData<T>,
 }
 
 impl<'a, T> VmSlice<'a, T> {
-    pub fn new<'a, T>(memory_mapping: &'a MemoryMapping, ptr: u64, len: u64) -> Self {
-        VmSlice { memory_mapping, ptr, len }
+    pub fn new(memory_mapping: &'a MemoryMapping, ptr: u64, len: u64) -> Self {
+        VmSlice {
+            memory_mapping,
+            ptr,
+            len,
+            resource_type: PhantomData,
+        }
     }
 
     // Returns a slice using a mapped physical address
-    pub fn translate<'a, T>(
-        &self
-    ) -> Result<&'a [T], Error> {
-        translate_slice(self.memory_mapping, self.ptr, self.len, false)
+    pub fn translate(&self) -> Result<&'a [T], Error> {
+        translate_slice::<T>(self.memory_mapping, self.ptr, self.len, false)
     }
 
-    pub fn translate_mut<'a, T>(
-        &mut self,
-    ) -> Result<&'a mut [T], Error> {
-        translate_slice_mut(self.memory_mapping, self.ptr, self.len, false)
-    }
-}
-
-impl<'a, T> Iterator for VmSlice<'a, T> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.len > 0 {
-            let res = translate_type(self.memory_mapping, self.ptr, false).ok();
-            self.ptr.saturating_add(size_of::<T>());
-            self.len.saturating_sub(1);
-            res
-        }
-        else {
-            None
-        }
+    pub fn translate_mut(&mut self) -> Result<&'a mut [T], Error> {
+        translate_slice_mut::<T>(self.memory_mapping, self.ptr, self.len, false)
     }
 }
 
