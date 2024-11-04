@@ -233,13 +233,6 @@ impl HasherImpl for Keccak256Hasher {
     }
 }
 
-pub struct VmSlice<'a, T> {
-    memory_mapping: &'a MemoryMapping<'a>,
-    ptr: u64,
-    len: u64,
-    resource_type: PhantomData<T>,
-}
-
 // The VmSlice class is used for cases when you need a slice that is stored in the BPF
 // interpreter's virtual address space. Because this source code can be compiled with
 // addresses of different bit depths, we cannot assume that the 64-bit BPF interpreter's
@@ -248,23 +241,42 @@ pub struct VmSlice<'a, T> {
 // 32-bit app build than in the 64-bit virtual space. Therefore instead of a slice-of-slices,
 // you should implement a slice-of-VmSlices, which can then use VmSlice::translate() to
 // map to the physical address.
-impl<'a, T> VmSlice<'a, T> {
-    pub fn new(memory_mapping: &'a MemoryMapping, ptr: u64, len: u64) -> Self {
+// This class must consist only of 16 bytes: a u64 ptr and a u64 len, to match the 64-bit
+// implementation of a slice in Rust. The PhantomData entry takes up 0 bytes.
+pub struct VmSlice<T> {
+    ptr: u64,
+    len: u64,
+    resource_type: PhantomData<T>,
+}
+
+impl<T> VmSlice<T> {
+    pub fn new(ptr: u64, len: u64) -> Self {
         VmSlice {
-            memory_mapping,
             ptr,
             len,
             resource_type: PhantomData,
         }
     }
 
-    /// Returns a slice using a mapped physical address
-    pub fn translate(&self) -> Result<&'a [T], Error> {
-        translate_slice::<T>(self.memory_mapping, self.ptr, self.len, false)
+    pub fn len(&self) -> u64 {
+        self.len
     }
 
-    pub fn translate_mut(&mut self) -> Result<&'a mut [T], Error> {
-        translate_slice_mut::<T>(self.memory_mapping, self.ptr, self.len, false)
+    /// Returns a slice using a mapped physical address
+    pub fn translate(
+        &self,
+        memory_mapping: &MemoryMapping,
+        check_aligned: bool,
+    ) -> Result<&[T], Error> {
+        translate_slice::<T>(memory_mapping, self.ptr, self.len, check_aligned)
+    }
+
+    pub fn translate_mut(
+        &mut self,
+        memory_mapping: &MemoryMapping,
+        check_aligned: bool,
+    ) -> Result<&mut [T], Error> {
+        translate_slice_mut::<T>(memory_mapping, self.ptr, self.len, check_aligned)
     }
 }
 
@@ -737,6 +749,61 @@ fn translate_slice<'a, T>(
     .map(|value| &*value)
 }
 
+fn translate_slice_of_slices_inner<'a, T>(
+    memory_mapping: &MemoryMapping,
+    access_type: AccessType,
+    vm_addr: u64,
+    len: u64,
+    check_aligned: bool,
+) -> Result<&'a mut [VmSlice<T>], Error> {
+    if len == 0 {
+        return Ok(&mut []);
+    }
+
+    let total_size = len.saturating_mul(size_of::<VmSlice<T>>() as u64);
+    if isize::try_from(total_size).is_err() {
+        return Err(SyscallError::InvalidLength.into());
+    }
+
+    let host_addr = translate(memory_mapping, access_type, vm_addr, total_size)?;
+
+    if check_aligned && !address_is_aligned::<VmSlice<T>>(host_addr) {
+        return Err(SyscallError::UnalignedPointer.into());
+    }
+    Ok(unsafe { from_raw_parts_mut(host_addr as *mut VmSlice<T>, len as usize) })
+}
+
+fn translate_slice_of_slices_mut<'a, T>(
+    memory_mapping: &MemoryMapping,
+    vm_addr: u64,
+    len: u64,
+    check_aligned: bool,
+) -> Result<&'a mut [VmSlice<T>], Error> {
+    translate_slice_of_slices_inner::<T>(
+        memory_mapping,
+        AccessType::Store,
+        vm_addr,
+        len,
+        check_aligned,
+    )
+}
+
+fn translate_slice_of_slices<'a, T>(
+    memory_mapping: &MemoryMapping,
+    vm_addr: u64,
+    len: u64,
+    check_aligned: bool,
+) -> Result<&'a [VmSlice<T>], Error> {
+    translate_slice_of_slices_inner::<T>(
+        memory_mapping,
+        AccessType::Load,
+        vm_addr,
+        len,
+        check_aligned,
+    )
+    .map(|value| &*value)
+}
+
 /// Take a virtual pointer to a string (points to SBF VM memory space), translate it
 /// pass it to a user-defined work function
 fn translate_string_and_do(
@@ -843,22 +910,17 @@ fn translate_and_check_program_address_inputs<'a>(
     check_aligned: bool,
 ) -> Result<(Vec<&'a [u8]>, &'a Pubkey), Error> {
     let untranslated_seeds =
-        translate_slice::<&[u8]>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
+        translate_slice_of_slices::<u8>(memory_mapping, seeds_addr, seeds_len, check_aligned)?;
     if untranslated_seeds.len() > MAX_SEEDS {
         return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
     }
     let seeds = untranslated_seeds
         .iter()
         .map(|untranslated_seed| {
-            if untranslated_seed.len() > MAX_SEED_LEN {
+            if untranslated_seed.len() > MAX_SEED_LEN as u64 {
                 return Err(SyscallError::BadSeeds(PubkeyError::MaxSeedLengthExceeded).into());
             }
-            translate_slice::<u8>(
-                memory_mapping,
-                untranslated_seed.as_ptr() as *const _ as u64,
-                untranslated_seed.len() as u64,
-                check_aligned,
-            )
+            untranslated_seed.translate(memory_mapping, check_aligned)
         })
         .collect::<Result<Vec<_>, Error>>()?;
     let program_id = translate_type::<Pubkey>(memory_mapping, program_id_addr, check_aligned)?;
