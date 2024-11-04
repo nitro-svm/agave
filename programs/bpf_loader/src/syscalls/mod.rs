@@ -237,6 +237,14 @@ pub struct VmSlice<'a, T> {
     resource_type: PhantomData<T>,
 }
 
+// The VmSlice class is used for cases when you need a slice that is stored in the BPF
+// interpreter's virtual address space. Because this source code can be compiled with
+// addresses of different bit depths, we cannot assume that the 64-bit BPF interpreter's
+// pointer sizes can be mapped to physical pointer sizes. In particular, if you need a
+// slice-of-slices in the virtual space, the inner slices will be different sizes in a
+// 32-bit app build than in the 64-bit virtual space. Therefore instead of a slice-of-slices,
+// you should implement a slice-of-VmSlices, which can then use VmSlice::translate() to
+// map to the physical address.
 impl<'a, T> VmSlice<'a, T> {
     pub fn new(memory_mapping: &'a MemoryMapping, ptr: u64, len: u64) -> Self {
         VmSlice {
