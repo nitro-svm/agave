@@ -253,6 +253,9 @@ impl<T> VmSlice<T> {
         }
     }
 
+    pub fn ptr(&self) -> u64 {
+        self.ptr
+    }
     pub fn len(&self) -> u64 {
         self.len
     }
@@ -1894,7 +1897,7 @@ declare_builtin_function!(
             poseidon::HASH_BYTES as u64,
             invoke_context.get_check_aligned(),
         )?;
-        let inputs = translate_slice::<&[u8]>(
+        let inputs = translate_slice_of_slices::<u8>(
             memory_mapping,
             vals_addr,
             vals_len,
@@ -1902,14 +1905,7 @@ declare_builtin_function!(
         )?;
         let inputs = inputs
             .iter()
-            .map(|input| {
-                translate_slice::<u8>(
-                    memory_mapping,
-                    input.as_ptr() as *const _ as u64,
-                    input.len() as u64,
-                    invoke_context.get_check_aligned(),
-                )
-            })
+            .map(|input| input.translate(memory_mapping, invoke_context.get_check_aligned()))
             .collect::<Result<Vec<_>, Error>>()?;
 
         let simplify_alt_bn128_syscall_error_codes = invoke_context
@@ -2110,22 +2106,18 @@ declare_builtin_function!(
         )?;
         let mut hasher = H::create_hasher();
         if vals_len > 0 {
-            let vals = translate_slice::<&[u8]>(
+            let vals = translate_slice_of_slices::<u8>(
                 memory_mapping,
                 vals_addr,
                 vals_len,
                 invoke_context.get_check_aligned(),
             )?;
+
             for val in vals.iter() {
-                let bytes = translate_slice::<u8>(
-                    memory_mapping,
-                    val.as_ptr() as u64,
-                    val.len() as u64,
-                    invoke_context.get_check_aligned(),
-                )?;
+                let bytes = val.translate(memory_mapping, invoke_context.get_check_aligned())?;
                 let cost = compute_budget.mem_op_base_cost.max(
                     hash_byte_cost.saturating_mul(
-                        (val.len() as u64)
+                        val.len()
                             .checked_div(2)
                             .expect("div by non-zero literal"),
                     ),
