@@ -53,7 +53,7 @@ impl<T> StableVec<T> {
 impl<T> AsRef<[T]> for StableVec<T> {
     fn as_ref(&self) -> &[T] {
         self.deref()
-    } // === is this right?
+    }
 }
 
 impl<T> AsMut<[T]> for StableVec<T> {
