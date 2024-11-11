@@ -1,7 +1,10 @@
 //! `Vec`, with a stable memory layout
 
-use std::ops::{Deref, DerefMut};
-use std::{marker::PhantomData, mem::ManuallyDrop};
+use std::{
+    marker::PhantomData,
+    mem::ManuallyDrop,
+    ops::{Deref, DerefMut},
+};
 
 /// `Vec`, with a stable memory layout
 ///
