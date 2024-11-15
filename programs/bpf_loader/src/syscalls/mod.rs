@@ -265,6 +265,16 @@ impl<T> VmSlice<T> {
         self.len
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    /// Adjust the length of the vector. This is unchecked, and it assumes that the pointer
+    /// points to valid memory of the correct length after vm-translation.
+    pub fn resize(&mut self, len: u64) {
+        self.len = len;
+    }
+
     /// Returns a slice using a mapped physical address
     pub fn translate(
         &self,
@@ -776,6 +786,7 @@ fn translate_slice_of_slices_inner<'a, T>(
     Ok(unsafe { from_raw_parts_mut(host_addr as *mut VmSlice<T>, len as usize) })
 }
 
+#[allow(dead_code)]
 fn translate_slice_of_slices_mut<'a, T>(
     memory_mapping: &MemoryMapping,
     vm_addr: u64,
