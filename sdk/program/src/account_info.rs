@@ -1,10 +1,12 @@
 //! Account information.
 
+use std::marker::PhantomData;
 use {
     crate::{
         clock::Epoch, debug_account_data::*, entrypoint::MAX_PERMITTED_DATA_INCREASE,
         program_error::ProgramError, program_memory::sol_memset, pubkey::Pubkey,
     },
+    //solana_bpf_loader_program::syscalls::VmSlice,
     std::{
         cell::{Ref, RefCell, RefMut},
         fmt,
@@ -391,6 +393,111 @@ pub fn next_account_infos<'a, 'b: 'a>(
 impl<'a> AsRef<AccountInfo<'a>> for AccountInfo<'a> {
     fn as_ref(&self) -> &AccountInfo<'a> {
         self
+    }
+}
+
+#[derive(Clone)]
+pub struct VmSliceTemp<T> {
+    ptr: u64,
+    len: u64,
+    resource_type: PhantomData<T>,
+}
+
+impl<T> VmSliceTemp<T> {
+    pub fn new(ptr: u64, len: u64) -> Self {
+        VmSliceTemp {
+            ptr,
+            len,
+            resource_type: PhantomData,
+        }
+    }
+
+    pub fn ptr(&self) -> u64 {
+        self.ptr
+    }
+    pub fn len(&self) -> u64 {
+        self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    /// Adjust the length of the vector. This is unchecked, and it assumes that the pointer
+    /// points to valid memory of the correct length after vm-translation.
+    pub fn resize(&mut self, len: u64) {
+        self.len = len;
+    }
+}
+
+
+// Structs to allow the AccountInfo translation to properly reference elements within
+// the 64-bit virtual address space even when built in 32-bit mode.
+#[derive(Clone)]
+pub struct VmNonNull<T>
+{
+    pub addr: u64,
+    resource_type: PhantomData<T>,
+}
+#[derive(Clone)]
+pub struct VmBoxOfRefCell<T>
+{
+    _strong_addr: u64,
+    _weak_addr: u64,
+    _borrow_flag: u64,
+    pub value: T,
+}
+
+/// Account information, in the virtual address space. Note: Since the addresses are u64,
+/// there is no lifetime on this struct, and the borrow checker cannot properly reason
+/// about references to the virtual memory via these addresses.
+#[derive(Clone)]
+#[repr(C)]
+pub struct VmAccountInfo<'a> {
+    /// Public key of the account (&'a Pubkey)
+    pub key: u64,
+    /// The lamports in the account.  Modifiable by programs. (u64 is address: &'a mut u64)
+    pub lamports: VmNonNull<VmBoxOfRefCell<u64>>,
+    /// The data held in this account.  Modifiable by programs. (u64 is address: &'a mut [u8])
+    pub data: VmNonNull<VmBoxOfRefCell<VmSliceTemp<u8>>>,
+    /// Program that owns this account (&'a Pubkey)
+    pub owner: u64,
+    /// The epoch at which this account will next owe rent
+    pub rent_epoch: u64,
+
+    /// Was the transaction signed by this account's public key?
+    pub is_signer: bool,
+    /// Is the account writable?
+    pub is_writable: bool,
+    /// This account's data contains a loaded program (and is now read-only)
+    pub executable: bool,
+
+    phantom: PhantomData<&'a u8>,
+}
+
+impl<'a> crate::account_info::VmAccountInfo<'a> {
+
+    pub fn new(
+        key: u64,
+        is_signer: bool,
+        is_writable: bool,
+        lamports: u64,
+        data: VmSliceTemp<u8>,
+        owner: u64,
+        executable: bool,
+        rent_epoch: Epoch,
+    ) -> Self {
+        Self {
+            key,
+            is_signer,
+            is_writable,
+            lamports: VmNonNull { addr: lamports, resource_type: PhantomData::<VmBoxOfRefCell<u64>>::default() },//Rc::new(RefCell::new(lamports)),
+            data: VmNonNull { addr: lamports, resource_type: PhantomData::<VmBoxOfRefCell<VmSliceTemp<u8>>>::default() },//Rc::new(RefCell::new(data)),
+            owner,
+            executable,
+            rent_epoch,
+            phantom: PhantomData::default(),
+        }
     }
 }
 
