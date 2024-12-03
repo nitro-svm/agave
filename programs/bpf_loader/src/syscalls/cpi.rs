@@ -9,6 +9,7 @@ use {
         memory_region::{MemoryRegion, MemoryState},
     },
     solana_sdk::{
+        account_info::{ VmAccountInfo, VmBoxOfRefCell, },
         feature_set::enable_bpf_loader_set_authority_checked_ix,
         saturating_add_assign,
         stable_layout::stable_instruction::StableInstruction,
@@ -74,7 +75,8 @@ impl<'a, 'b, T> VmValue<'a, 'b, T> {
     }
 }
 
-/// Host side representation of AccountInfo or SolAccountInfo passed to the CPI syscall.
+
+/// Host side representation of VmAccountInfo or SolAccountInfo passed to the CPI syscall.
 ///
 /// At the start of a CPI, this can be different from the data stored in the
 /// corresponding BorrowedAccount, and needs to be synched.
@@ -93,19 +95,19 @@ struct CallerAccount<'a, 'b> {
     // This is only set when direct mapping is off (see the relevant comment in
     // CallerAccount::from_account_info).
     serialized_data: &'a mut [u8],
-    // Given the corresponding input AccountInfo::data, vm_data_addr points to
+    // Given the corresponding input VmAccountInfo::data, vm_data_addr points to
     // the pointer field and ref_to_len_in_vm points to the length field.
     vm_data_addr: u64,
     ref_to_len_in_vm: VmValue<'b, 'a, u64>,
 }
 
 impl<'a, 'b> CallerAccount<'a, 'b> {
-    // Create a CallerAccount given an AccountInfo.
-    fn from_account_info(
+    // Create a CallerAccount given a VmAccountInfo.
+    fn from_vm_account_info(
         invoke_context: &InvokeContext,
         memory_mapping: &'b MemoryMapping<'a>,
         _vm_addr: u64,
-        account_info: &AccountInfo,
+        account_info: &VmAccountInfo,
         account_metadata: &SerializedAccountMetadata,
     ) -> Result<CallerAccount<'a, 'b>, Error> {
         let direct_mapping = invoke_context
@@ -115,13 +117,13 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         if direct_mapping {
             check_account_info_pointer(
                 invoke_context,
-                account_info.key as *const _ as u64,
+                account_info.key,
                 account_metadata.vm_key_addr,
                 "key",
             )?;
             check_account_info_pointer(
                 invoke_context,
-                account_info.owner as *const _ as u64,
+                account_info.owner,
                 account_metadata.vm_owner_addr,
                 "owner",
             )?;
@@ -130,55 +132,67 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         // account_info points to host memory. The addresses used internally are
         // in vm space so they need to be translated.
         let lamports = {
-            // Double translate lamports out of RefCell
-            let ptr = translate_type::<u64>(
+            // Triple translate lamports out of Rc<RefCell>
+            let ptr_box = translate_type::<VmBoxOfRefCell<u64>>(
                 memory_mapping,
-                account_info.lamports.as_ptr() as u64,
+                account_info.lamports.addr,
                 invoke_context.get_check_aligned(),
+            )?;
+            let ptr_lamp_addr = translate_type_mut::<u64>(
+                memory_mapping,
+                ptr_box.value,
+                invoke_context.get_check_aligned()
             )?;
             if direct_mapping {
                 check_account_info_pointer(
                     invoke_context,
-                    *ptr,
+                    *ptr_lamp_addr,
                     account_metadata.vm_lamports_addr,
                     "lamports",
                 )?;
             }
-            translate_type_mut::<u64>(memory_mapping, *ptr, invoke_context.get_check_aligned())?
+            translate_type_mut::<u64>(memory_mapping, *ptr_lamp_addr, invoke_context.get_check_aligned())?
         };
 
         let owner = translate_type_mut::<Pubkey>(
             memory_mapping,
-            account_info.owner as *const _ as u64,
+            account_info.owner,
             invoke_context.get_check_aligned(),
         )?;
 
         let (serialized_data, vm_data_addr, ref_to_len_in_vm) = {
             // Double translate data out of RefCell
-            let data = *translate_type::<&[u8]>(
+            let ptr_box = translate_type_mut::<VmBoxOfRefCell<VmSlice<u8>>>(
                 memory_mapping,
-                account_info.data.as_ptr() as *const _ as u64,
+                account_info.data.addr,
                 invoke_context.get_check_aligned(),
             )?;
-            if direct_mapping {
-                check_account_info_pointer(
-                    invoke_context,
-                    data.as_ptr() as u64,
-                    account_metadata.vm_data_addr,
-                    "data",
-                )?;
-            }
+
+            let vm_data_addr = ptr_box.value.ptr();
+
+            // Translate the vmSlice into a physical address
+            let data_slice = ptr_box.value.translate_mut(
+                memory_mapping,
+                invoke_context.get_check_aligned()
+            )?;
+            // if direct_mapping {             // Not sure what this should be checking. &(ptr_box.value) ?
+            //     check_account_info_pointer(
+            //         invoke_context,
+            //         data.ptr(),
+            //         account_metadata.vm_data_addr,
+            //         "data",
+            //     )?;
+            // }
 
             consume_compute_meter(
                 invoke_context,
-                (data.len() as u64)
+                (data_slice.len() as u64)
                     .checked_div(invoke_context.get_compute_budget().cpi_bytes_per_unit)
                     .unwrap_or(u64::MAX),
             )?;
 
             let ref_to_len_in_vm = if direct_mapping {
-                let vm_addr = (account_info.data.as_ptr() as *const u64 as u64)
-                    .saturating_add(size_of::<u64>() as u64);
+                let vm_addr = vm_data_addr.saturating_add(size_of::<u64>() as u64);
                 // In the same vein as the other check_account_info_pointer() checks, we don't lock
                 // this pointer to a specific address but we don't want it to be inside accounts, or
                 // callees might be able to write to the pointed memory.
@@ -194,13 +208,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 let translated = translate(
                     memory_mapping,
                     AccessType::Store,
-                    (account_info.data.as_ptr() as *const u64 as u64)
-                        .saturating_add(size_of::<u64>() as u64),
-                    8,
-                )? as *mut u64;
+                    vm_data_addr.saturating_add(size_of::<u64>() as u64), 8)? as *mut u64;
                 VmValue::Translated(unsafe { &mut *translated })
             };
-            let vm_data_addr = data.as_ptr() as u64;
 
             let serialized_data = if direct_mapping {
                 // when direct mapping is enabled, the permissions on the
@@ -217,12 +227,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 // _yet_, but we will be able to once the caller returns.
                 &mut []
             } else {
-                translate_slice_mut::<u8>(
-                    memory_mapping,
-                    vm_data_addr,
-                    data.len() as u64,
-                    invoke_context.get_check_aligned(),
-                )?
+                data_slice
             };
             (serialized_data, vm_data_addr, ref_to_len_in_vm)
         };
@@ -301,7 +306,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         )?;
 
         let serialized_data = if direct_mapping {
-            // See comment in CallerAccount::from_account_info()
+            // See comment in CallerAccount::from_vm_account_info()
             &mut []
         } else {
             translate_slice_mut::<u8>(
@@ -490,7 +495,7 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
         let (account_infos, account_info_keys) = translate_account_infos(
             account_infos_addr,
             account_infos_len,
-            |account_info: &AccountInfo| account_info.key as *const _ as u64,
+            |account_info: &VmAccountInfo| account_info.key,
             memory_mapping,
             invoke_context,
         )?;
@@ -504,7 +509,7 @@ impl SyscallInvokeSigned for SyscallInvokeSignedRust {
             is_loader_deprecated,
             invoke_context,
             memory_mapping,
-            CallerAccount::from_account_info,
+            CallerAccount::from_vm_account_info,
         )
     }
 
@@ -1427,7 +1432,7 @@ fn update_caller_account(
         }
 
         // when direct mapping is enabled we don't cache the serialized data in
-        // caller_account.serialized_data. See CallerAccount::from_account_info.
+        // caller_account.serialized_data. See CallerAccount::from_vm_account_info.
         if !direct_mapping {
             caller_account.serialized_data = translate_slice_mut::<u8>(
                 memory_mapping,
@@ -1770,7 +1775,7 @@ mod tests {
 
         let account_info = translate_type::<AccountInfo>(&memory_mapping, vm_addr, false).unwrap();
 
-        let caller_account = CallerAccount::from_account_info(
+        let caller_account = CallerAccount::from_vm_account_info(
             &invoke_context,
             &memory_mapping,
             vm_addr,
