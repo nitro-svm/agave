@@ -138,20 +138,20 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 account_info.lamports.addr,
                 invoke_context.get_check_aligned(),
             )?;
-            let ptr_lamp_addr = translate_type_mut::<u64>(
-                memory_mapping,
-                ptr_box.value,
-                invoke_context.get_check_aligned()
-            )?;
             if direct_mapping {
                 check_account_info_pointer(
                     invoke_context,
-                    *ptr_lamp_addr,
+                    ptr_box.value,
                     account_metadata.vm_lamports_addr,
                     "lamports",
                 )?;
             }
-            translate_type_mut::<u64>(memory_mapping, *ptr_lamp_addr, invoke_context.get_check_aligned())?
+
+            translate_type_mut::<u64>(
+                memory_mapping,
+                ptr_box.value,
+                invoke_context.get_check_aligned()
+            )?
         };
 
         let owner = translate_type_mut::<Pubkey>(
@@ -168,21 +168,22 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 invoke_context.get_check_aligned(),
             )?;
 
-            let vm_data_addr = ptr_box.value.ptr();
+            let vm_data_addr = ptr_box.value.ptr(); // virtual address of VmSlice's contents
 
-            // Translate the vmSlice into a physical address
+            if direct_mapping {
+                check_account_info_pointer(
+                    invoke_context,
+                    vm_data_addr,
+                    account_metadata.vm_data_addr,
+                    "data",
+                )?;
+            }
+
+            // Translate the vmSlice into a physically addressed "true" Rust slice
             let data_slice = ptr_box.value.translate_mut(
                 memory_mapping,
                 invoke_context.get_check_aligned()
             )?;
-            // if direct_mapping {             // Not sure what this should be checking. &(ptr_box.value) ?
-            //     check_account_info_pointer(
-            //         invoke_context,
-            //         data.ptr(),
-            //         account_metadata.vm_data_addr,
-            //         "data",
-            //     )?;
-            // }
 
             consume_compute_meter(
                 invoke_context,
@@ -191,8 +192,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                     .unwrap_or(u64::MAX),
             )?;
 
+            let len_offset = size_of::<u64>().saturating_mul(4) as u64;
             let ref_to_len_in_vm = if direct_mapping {
-                let vm_addr = vm_data_addr.saturating_add(size_of::<u64>() as u64);
+                let vm_addr = account_info.data.addr.saturating_add(len_offset);
                 // In the same vein as the other check_account_info_pointer() checks, we don't lock
                 // this pointer to a specific address but we don't want it to be inside accounts, or
                 // callees might be able to write to the pointed memory.
@@ -208,7 +210,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 let translated = translate(
                     memory_mapping,
                     AccessType::Store,
-                    vm_data_addr.saturating_add(size_of::<u64>() as u64), 8)? as *mut u64;
+                    account_info.data.addr.saturating_add(len_offset), 8)? as *mut u64;
                 VmValue::Translated(unsafe { &mut *translated })
             };
 
