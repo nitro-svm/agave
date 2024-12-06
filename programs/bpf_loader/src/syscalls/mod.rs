@@ -240,6 +240,8 @@ impl HasherImpl for Keccak256Hasher {
 // map to the physical address.
 // This class must consist only of 16 bytes: a u64 ptr and a u64 len, to match the 64-bit
 // implementation of a slice in Rust. The PhantomData entry takes up 0 bytes.
+#[derive(Clone)]
+#[repr(C)]
 pub struct VmSlice<T> {
     ptr: u64,
     len: u64,
