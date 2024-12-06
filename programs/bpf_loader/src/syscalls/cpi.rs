@@ -132,7 +132,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         // account_info points to host memory. The addresses used internally are
         // in vm space so they need to be translated.
         let lamports = {
-            // Triple translate lamports out of Rc<RefCell>
+            // Triple translate lamports out of AccountInfo's Rc<RefCell>, which here has
+            // been refactored into a VmNonNull holding a VmBoxOfRefCell to avoid issues
+            // with variable pointer sizes between 32- and 64-bit builds.
             let ptr_box = translate_type::<VmBoxOfRefCell<u64>>(
                 memory_mapping,
                 account_info.lamports.addr,
@@ -161,7 +163,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
         )?;
 
         let (serialized_data, vm_data_addr, ref_to_len_in_vm) = {
-            // Double translate data out of RefCell
+            // Double translate data out of its nested structure
             let ptr_box = translate_type_mut::<VmBoxOfRefCell<VmSlice<u8>>>(
                 memory_mapping,
                 account_info.data.addr,
@@ -192,7 +194,11 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                     .unwrap_or(u64::MAX),
             )?;
 
+            // The offset from the virtual address of the VmBoxOfRefCell<VmSlice<u8>> to the
+            // length field of the VmSlice<u8>, which address is returned by this function in
+            // the CallerAccount struct.
             let len_offset = size_of::<u64>().saturating_mul(4) as u64;
+
             let ref_to_len_in_vm = if direct_mapping {
                 let vm_addr = account_info.data.addr.saturating_add(len_offset);
                 // In the same vein as the other check_account_info_pointer() checks, we don't lock

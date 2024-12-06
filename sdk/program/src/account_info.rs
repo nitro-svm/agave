@@ -452,7 +452,7 @@ pub struct VmAccountInfo<'a> {
     /// Program that owns this account (in `AccountInfo`: &'a Pubkey)
     pub owner: u64,
     /// The epoch at which this account will next owe rent
-    pub rent_epoch: u64,
+    pub rent_epoch: Epoch,
 
     /// Was the transaction signed by this account's public key?
     pub is_signer: bool,
