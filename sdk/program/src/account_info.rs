@@ -444,9 +444,9 @@ pub struct VmBoxOfRefCell<T>
 pub struct VmAccountInfo<'a> {
     /// Public key of the account (&'a Pubkey)
     pub key: u64,
-    /// The lamports in the account.  Modifiable by programs. (u64 is address: &'a mut u64)
+    /// The address to the lamports in the account.  Modifiable by programs. (in `AccountInfo`: &'a mut u64)
     pub lamports: VmNonNull<VmBoxOfRefCell<u64>>,
-    /// The data held in this account.  Modifiable by programs. (u64 is address: &'a mut [u8])
+    /// The data slice held in this account.  Modifiable by programs. (In `AccountInfo`: &'a mut [u8])
     pub data: VmNonNull<VmBoxOfRefCell<VmSlice<u8>>>,
     /// Program that owns this account (&'a Pubkey)
     pub owner: u64,
