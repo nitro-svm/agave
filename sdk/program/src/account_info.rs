@@ -448,7 +448,7 @@ pub struct VmAccountInfo<'a> {
     pub lamports: VmNonNull<VmBoxOfRefCell<u64>>,
     /// The data slice held in this account.  Modifiable by programs. (In `AccountInfo`: &'a mut [u8])
     pub data: VmNonNull<VmBoxOfRefCell<VmSlice<u8>>>,
-    /// Program that owns this account (&'a Pubkey)
+    /// Program that owns this account (in `AccountInfo`: &'a Pubkey)
     pub owner: u64,
     /// The epoch at which this account will next owe rent
     pub rent_epoch: u64,
