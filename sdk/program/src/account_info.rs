@@ -426,6 +426,7 @@ pub struct VmNonNull<T>
     pub addr: u64,
     resource_type: PhantomData<T>,
 }
+
 #[derive(Clone)]
 #[repr(C)]
 pub struct VmBoxOfRefCell<T>
