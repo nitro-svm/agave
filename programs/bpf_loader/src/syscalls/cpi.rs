@@ -9,7 +9,6 @@ use {
         memory_region::{MemoryRegion, MemoryState},
     },
     solana_sdk::{
-        account_info::{VmAccountInfo, VmBoxOfRefCell},
         feature_set::enable_bpf_loader_set_authority_checked_ix,
         saturating_add_assign,
         stable_layout::stable_instruction::StableInstruction,
