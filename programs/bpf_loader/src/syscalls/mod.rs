@@ -11,7 +11,6 @@ pub use self::{
     },
 };
 
-use solana_sdk::clock::Epoch;
 #[allow(deprecated)]
 use {
     solana_compute_budget::compute_budget::ComputeBudget,
@@ -70,6 +69,7 @@ use {
     },
     thiserror::Error as ThisError,
 };
+use solana_sdk::clock::Epoch;
 
 mod cpi;
 mod logging;
@@ -291,29 +291,22 @@ impl<T> VmSlice<T> {
     ) -> Result<&mut [T], Error> {
         translate_slice_mut::<T>(memory_mapping, self.ptr, self.len, check_aligned)
     }
-
-    // Does not confirm write access is allowed, but otherwise identical to translate_mut()
-    pub fn translate_unchecked_mut(
-        &mut self,
-        memory_mapping: &MemoryMapping,
-        check_aligned: bool,
-    ) -> Result<&mut [T], Error> {
-        translate_slice_unchecked_mut::<T>(memory_mapping, self.ptr, self.len, check_aligned)
-    }
 }
 
 // Structs to allow the AccountInfo translation to properly reference elements within
 // the 64-bit virtual address space even when built in 32-bit mode.
 #[derive(Clone)]
 #[repr(C)]
-pub struct VmNonNull<T> {
+pub struct VmNonNull<T>
+{
     pub addr: u64,
     resource_type: PhantomData<T>,
 }
 
 #[derive(Clone)]
 #[repr(C)]
-pub struct VmBoxOfRefCell<T> {
+pub struct VmBoxOfRefCell<T>
+{
     _strong_addr: u64,
     _weak_addr: u64,
     _borrow_flag: u64,
@@ -695,21 +688,6 @@ fn translate_slice_mut<'a, T>(
     translate_slice_inner::<T>(
         memory_mapping,
         AccessType::Store,
-        vm_addr,
-        len,
-        check_aligned,
-    )
-}
-// Does not confirm write access is allowed, but otherwise identical to translate_slice_mut()
-fn translate_slice_unchecked_mut<'a, T>(
-    memory_mapping: &MemoryMapping,
-    vm_addr: u64,
-    len: u64,
-    check_aligned: bool,
-) -> Result<&'a mut [T], Error> {
-    translate_slice_inner::<T>(
-        memory_mapping,
-        AccessType::Load,
         vm_addr,
         len,
         check_aligned,

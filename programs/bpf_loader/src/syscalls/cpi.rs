@@ -180,17 +180,10 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             }
 
             // Translate the vmSlice into a physically addressed "true" Rust slice
-            let data_slice = if direct_mapping {
-                // we don't actually reference the data
-                ptr_box.value.translate_unchecked_mut(
-                    memory_mapping,
-                    invoke_context.get_check_aligned(),
-                )?
-            } else {
-                ptr_box
-                    .value
-                    .translate_mut(memory_mapping, invoke_context.get_check_aligned())?
-            };
+            let data_slice = ptr_box
+                .value
+                .translate(memory_mapping, invoke_context.get_check_aligned())?;
+
             consume_compute_meter(
                 invoke_context,
                 (data_slice.len() as u64)
@@ -241,7 +234,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 // _yet_, but we will be able to once the caller returns.
                 &mut []
             } else {
-                data_slice
+                ptr_box
+                    .value
+                    .translate_mut(memory_mapping, invoke_context.get_check_aligned())?
             };
             (serialized_data, vm_data_addr, ref_to_len_in_vm)
         };
