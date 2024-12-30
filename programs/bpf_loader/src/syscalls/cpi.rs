@@ -74,7 +74,6 @@ impl<'a, 'b, T> VmValue<'a, 'b, T> {
     }
 }
 
-
 /// Host side representation of VmAccountInfo or SolAccountInfo passed to the CPI syscall.
 ///
 /// At the start of a CPI, this can be different from the data stored in the
@@ -151,7 +150,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             translate_type_mut::<u64>(
                 memory_mapping,
                 ptr_box.value,
-                invoke_context.get_check_aligned()
+                invoke_context.get_check_aligned(),
             )?
         };
 
@@ -181,10 +180,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
             }
 
             // Translate the vmSlice into a physically addressed "true" Rust slice
-            let data_slice = ptr_box.value.translate_mut(
-                memory_mapping,
-                invoke_context.get_check_aligned()
-            )?;
+            let data_slice = ptr_box
+                .value
+                .translate(memory_mapping, invoke_context.get_check_aligned())?;
 
             consume_compute_meter(
                 invoke_context,
@@ -215,7 +213,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 let translated = translate(
                     memory_mapping,
                     AccessType::Store,
-                    account_info.data.addr.saturating_add(len_offset), 8)? as *mut u64;
+                    account_info.data.addr.saturating_add(len_offset),
+                    8,
+                )? as *mut u64;
                 VmValue::Translated(unsafe { &mut *translated })
             };
 
@@ -234,7 +234,9 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 // _yet_, but we will be able to once the caller returns.
                 &mut []
             } else {
-                data_slice
+                ptr_box
+                    .value
+                    .translate_mut(memory_mapping, invoke_context.get_check_aligned())?
             };
             (serialized_data, vm_data_addr, ref_to_len_in_vm)
         };
