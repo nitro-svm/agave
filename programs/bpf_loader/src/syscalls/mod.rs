@@ -10,7 +10,6 @@ pub use self::{
         SyscallGetSysvar,
     },
 };
-
 #[allow(deprecated)]
 use {
     solana_account_info::AccountInfo,
