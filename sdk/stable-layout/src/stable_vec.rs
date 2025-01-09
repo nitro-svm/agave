@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn test_memory_layout() {
-        assert_eq!(offset_of!(StableVec<i32>, ptr), 0);
+        assert_eq!(offset_of!(StableVec<i32>, addr), 0);
         assert_eq!(offset_of!(StableVec<i32>, cap), 8);
         assert_eq!(offset_of!(StableVec<i32>, len), 16);
         assert_eq!(align_of::<StableVec<i32>>(), 8);
