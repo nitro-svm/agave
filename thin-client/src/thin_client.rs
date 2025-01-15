@@ -27,9 +27,9 @@ use {
         signature::{Keypair, Signature, Signer},
         signers::Signers,
         system_instruction,
-        timing::duration_as_ms,
         transaction::{self, Transaction, VersionedTransaction},
         transport::Result as TransportResult,
+        unchecked_div_by_const,
     },
     std::{
         io,
@@ -41,6 +41,15 @@ use {
         time::{Duration, Instant},
     },
 };
+
+pub fn duration_as_ms(d: &Duration) -> u64 {
+    d.as_secs()
+        .saturating_mul(1000)
+        .saturating_add(unchecked_div_by_const!(
+            u64::from(d.subsec_nanos()),
+            1_000_000
+        ))
+}
 
 struct ClientOptimizer {
     cur_index: AtomicUsize,
