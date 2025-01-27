@@ -5415,6 +5415,7 @@ dependencies = [
  "spl-token-group-interface",
  "spl-token-metadata-interface",
  "thiserror",
+ "zstd",
 ]
 
 [[package]]
