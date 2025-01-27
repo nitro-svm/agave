@@ -3417,8 +3417,8 @@ impl RpcClient {
         commitment_config: CommitmentConfig,
     ) -> RpcResult<Option<Account>> {
         let config = RpcAccountInfoConfig {
-            // encoding: Some(UiAccountEncoding::Base64Zstd), Zstd is not supported by svm-rollup
-            encoding: Some(UiAccountEncoding::Base64),
+            encoding: Some(UiAccountEncoding::Base64Zstd), // Zstd is not supported by svm-rollup
+            // encoding: Some(UiAccountEncoding::Base64),
             commitment: Some(commitment_config),
             data_slice: None,
             min_context_slot: None,
@@ -3645,8 +3645,8 @@ impl RpcClient {
         self.get_multiple_accounts_with_config(
             pubkeys,
             RpcAccountInfoConfig {
-                // encoding: Some(UiAccountEncoding::Base64Zstd), Zstd is not supported by svm-rollup
-                encoding: Some(UiAccountEncoding::Base64),
+                encoding: Some(UiAccountEncoding::Base64Zstd), // Zstd is not supported by svm-rollup
+                // encoding: Some(UiAccountEncoding::Base64),
                 commitment: Some(commitment_config),
                 data_slice: None,
                 min_context_slot: None,
@@ -3919,8 +3919,8 @@ impl RpcClient {
             pubkey,
             RpcProgramAccountsConfig {
                 account_config: RpcAccountInfoConfig {
-                    // encoding: Some(UiAccountEncoding::Base64Zstd), Zstd is not supported by svm-rollup
-                    encoding: Some(UiAccountEncoding::Base64),
+                    encoding: Some(UiAccountEncoding::Base64Zstd), // Zstd is not supported by svm-rollup
+                    // encoding: Some(UiAccountEncoding::Base64),
                     ..RpcAccountInfoConfig::default()
                 },
                 ..RpcProgramAccountsConfig::default()

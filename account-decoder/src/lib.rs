@@ -27,7 +27,7 @@ use {
         pubkey::Pubkey,
     },
     std::{
-        // io::{Read, Write},
+        io::{Read, Write},
         str::FromStr,
     },
 };
@@ -65,15 +65,15 @@ impl UiAccountData {
             UiAccountData::Binary(blob, encoding) => match encoding {
                 UiAccountEncoding::Base58 => bs58::decode(blob).into_vec().ok(),
                 UiAccountEncoding::Base64 => BASE64_STANDARD.decode(blob).ok(),
-                // UiAccountEncoding::Base64Zstd => {
-                //     BASE64_STANDARD.decode(blob).ok().and_then(|zstd_data| {
-                //         let mut data = vec![];
-                //         zstd::stream::read::Decoder::new(zstd_data.as_slice())
-                //             .and_then(|mut reader| reader.read_to_end(&mut data))
-                //             .map(|_| data)
-                //             .ok()
-                //     })
-                // }
+                UiAccountEncoding::Base64Zstd => {
+                    BASE64_STANDARD.decode(blob).ok().and_then(|zstd_data| {
+                        let mut data = vec![];
+                        zstd::stream::read::Decoder::new(zstd_data.as_slice())
+                            .and_then(|mut reader| reader.read_to_end(&mut data))
+                            .map(|_| data)
+                            .ok()
+                    })
+                }
                 UiAccountEncoding::Binary | UiAccountEncoding::JsonParsed => None,
             },
         }
@@ -87,8 +87,8 @@ pub enum UiAccountEncoding {
     Base58,
     Base64,
     JsonParsed,
-    // #[serde(rename = "base64+zstd")]
-    // Base64Zstd, // Unsupproted by svm-rollup
+    #[serde(rename = "base64+zstd")]
+    Base64Zstd,
 }
 
 impl UiAccount {
@@ -125,21 +125,21 @@ impl UiAccount {
                 BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
                 encoding,
             ),
-            // UiAccountEncoding::Base64Zstd => {
-            //     let mut encoder = zstd::stream::write::Encoder::new(Vec::new(), 0).unwrap();
-            //     match encoder
-            //         .write_all(slice_data(account.data(), data_slice_config))
-            //         .and_then(|()| encoder.finish())
-            //     {
-            //         Ok(zstd_data) => {
-            //             UiAccountData::Binary(BASE64_STANDARD.encode(zstd_data), encoding)
-            //         }
-            //         Err(_) => UiAccountData::Binary(
-            //             BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
-            //             UiAccountEncoding::Base64,
-            //         ),
-            //     }
-            // }
+            UiAccountEncoding::Base64Zstd => {
+                let mut encoder = zstd::stream::write::Encoder::new(Vec::new(), 0).unwrap();
+                match encoder
+                    .write_all(slice_data(account.data(), data_slice_config))
+                    .and_then(|()| encoder.finish())
+                {
+                    Ok(zstd_data) => {
+                        UiAccountData::Binary(BASE64_STANDARD.encode(zstd_data), encoding)
+                    }
+                    Err(_) => UiAccountData::Binary(
+                        BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
+                        UiAccountEncoding::Base64,
+                    ),
+                }
+            }
             UiAccountEncoding::JsonParsed => {
                 if let Ok(parsed_data) =
                     parse_account_data_v2(pubkey, account.owner(), account.data(), additional_data)
