@@ -298,16 +298,14 @@ impl<T> VmSlice<T> {
 // the 64-bit virtual address space even when built in 32-bit mode.
 #[derive(Clone)]
 #[repr(C)]
-pub struct VmNonNull<T>
-{
+pub struct VmNonNull<T> {
     pub addr: u64,
     resource_type: PhantomData<T>,
 }
 
 #[derive(Clone)]
 #[repr(C)]
-pub struct VmBoxOfRefCell<T>
-{
+pub struct VmBoxOfRefCell<T> {
     _strong_addr: u64,
     _weak_addr: u64,
     _borrow_flag: u64,
