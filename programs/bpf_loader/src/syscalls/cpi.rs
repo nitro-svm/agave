@@ -1617,7 +1617,6 @@ mod tests {
         crate::mock_create_vm,
         assert_matches::assert_matches,
         solana_account::{Account, AccountSharedData, ReadableAccount},
-        solana_clock::Epoch,
         solana_feature_set::bpf_account_data_direct_mapping,
         solana_instruction::Instruction,
         solana_program_runtime::{
@@ -1793,7 +1792,7 @@ mod tests {
         };
         let memory_mapping = MemoryMapping::new(vec![region], &config, SBPFVersion::V3).unwrap();
 
-        let account_info = translate_type::<AccountInfo>(&memory_mapping, vm_addr, false).unwrap();
+        let account_info = translate_type::<VmAccountInfo>(&memory_mapping, vm_addr, false).unwrap();
 
         let caller_account = CallerAccount::from_vm_account_info(
             &invoke_context,
@@ -2892,7 +2891,7 @@ mod tests {
         }
 
         fn into_region(self, vm_addr: u64) -> (Vec<u8>, MemoryRegion, SerializedAccountMetadata) {
-            let size = mem::size_of::<AccountInfo>()
+            let size = mem::size_of::<VmAccountInfo>()
                 + mem::size_of::<Pubkey>() * 2
                 + mem::size_of::<RcBox<RefCell<&mut u64>>>()
                 + mem::size_of::<u64>()
@@ -2901,14 +2900,14 @@ mod tests {
             let mut data = vec![0; size];
 
             let vm_addr = vm_addr as usize;
-            let key_addr = vm_addr + mem::size_of::<AccountInfo>();
+            let key_addr = vm_addr + mem::size_of::<VmAccountInfo>();
             let lamports_cell_addr = key_addr + mem::size_of::<Pubkey>();
             let lamports_addr = lamports_cell_addr + mem::size_of::<RcBox<RefCell<&mut u64>>>();
             let owner_addr = lamports_addr + mem::size_of::<u64>();
             let data_cell_addr = owner_addr + mem::size_of::<Pubkey>();
             let data_addr = data_cell_addr + mem::size_of::<RcBox<RefCell<&mut [u8]>>>();
 
-            let info = AccountInfo {
+            let info = VmAccountInfo {
                 key: unsafe { (key_addr as *const Pubkey).as_ref() }.unwrap(),
                 is_signer: self.is_signer,
                 is_writable: self.is_writable,
