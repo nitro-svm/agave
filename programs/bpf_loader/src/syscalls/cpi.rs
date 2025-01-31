@@ -139,7 +139,7 @@ impl<'a, 'b> CallerAccount<'a, 'b> {
                 invoke_context.get_check_aligned(),
             )?;
             if direct_mapping {
-                if account_info.lamports.addr as u64 >= ebpf::MM_INPUT_START {
+                if account_info.lamports.addr >= ebpf::MM_INPUT_START {
                     return Err(SyscallError::InvalidPointer.into());
                 }
 
