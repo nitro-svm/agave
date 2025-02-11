@@ -501,6 +501,10 @@ solana-curve25519 = { path = "curves/curve25519" }
 solana-program = { path = "sdk/program" }
 solana-zk-sdk = { path = "zk-sdk" }
 solana-zk-token-sdk = { path = "zk-token-sdk" }
+# We patch these spl dependencies via our patches repo to avoid trait missmatches
+spl-associated-token-account = { git = "https://github.com/nitro-svm/nitro-patches.git" }
+spl-token = { git = "https://github.com/nitro-svm/nitro-patches.git" }
+spl-token-2022 = { git = "https://github.com/nitro-svm/nitro-patches.git" }
 
 # Our dependency tree has `curve25519-dalek` v3.2.1.  They have removed the
 # constraint in the next major release. The commit that removes the `zeroize`
@@ -552,3 +556,4 @@ rev = "b500cdc2a920cd5bff9e2dd974d7b97349d61464"
 [patch.crates-io.tokio]
 git = "https://github.com/anza-xyz/solana-tokio.git"
 rev = "7cf47705faacf7bf0e43e4131a5377b3291fce21"
+
