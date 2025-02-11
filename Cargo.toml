@@ -415,12 +415,12 @@ solana-zk-token-proof-program = { path = "programs/zk-token-proof", version = "=
 solana-zk-token-sdk = { path = "zk-token-sdk", version = "=2.0.5" }
 solana-patches = { path = "patches", version = "=2.0.5" }
 solana_rbpf = "=0.8.4"
-spl-associated-token-account = "=4.0.0"
+spl-associated-token-account = { git = "https://github.com/nitro-svm/nitro-patches.git" }
 spl-instruction-padding = "0.2"
 spl-memo = "=5.0.0"
 spl-pod = "=0.3.0"
-spl-token = "=6.0.0"
-spl-token-2022 = "=4.0.0"
+spl-token = { git = "https://github.com/nitro-svm/nitro-patches.git" }
+spl-token-2022 = { git = "https://github.com/nitro-svm/nitro-patches.git" }
 spl-token-group-interface = "=0.3.0"
 spl-token-metadata-interface = "=0.4.0"
 static_assertions = "1.1.0"
@@ -501,10 +501,6 @@ solana-curve25519 = { path = "curves/curve25519" }
 solana-program = { path = "sdk/program" }
 solana-zk-sdk = { path = "zk-sdk" }
 solana-zk-token-sdk = { path = "zk-token-sdk" }
-# We patch these spl dependencies via our patches repo to avoid trait missmatches
-spl-associated-token-account = { git = "https://github.com/nitro-svm/nitro-patches.git" }
-spl-token = { git = "https://github.com/nitro-svm/nitro-patches.git" }
-spl-token-2022 = { git = "https://github.com/nitro-svm/nitro-patches.git" }
 
 # Our dependency tree has `curve25519-dalek` v3.2.1.  They have removed the
 # constraint in the next major release. The commit that removes the `zeroize`
@@ -556,4 +552,3 @@ rev = "b500cdc2a920cd5bff9e2dd974d7b97349d61464"
 [patch.crates-io.tokio]
 git = "https://github.com/anza-xyz/solana-tokio.git"
 rev = "7cf47705faacf7bf0e43e4131a5377b3291fce21"
-
