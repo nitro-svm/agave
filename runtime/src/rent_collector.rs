@@ -14,8 +14,11 @@ use {
     solana_clock::Epoch,
     solana_pubkey::Pubkey,
     solana_rent::{Rent, RentDue},
-    solana_rent_collector::{CollectedInfo, RentCollector},
-    solana_svm_rent_collector::{rent_state::RentState, svm_rent_collector::SVMRentCollector},
+    solana_rent_collector::RentCollector,
+    solana_svm_rent_collector::{
+        rent_state::RentState,
+        svm_rent_collector::{CollectedInfo, SVMRentCollector},
+    },
     solana_transaction_context::IndexOfAccount,
     solana_transaction_error::{TransactionError, TransactionResult as Result},
 };
@@ -75,13 +78,13 @@ impl SVMRentCollector for RentCollectorWithMetrics {
 fn submit_rent_state_metrics(pre_rent_state: &RentState, post_rent_state: &RentState) {
     match (pre_rent_state, post_rent_state) {
         (&RentState::Uninitialized, &RentState::RentPaying { .. }) => {
-            inc_new_counter_info!("rent_paying_err-new_account", 1);
+            // inc_new_counter_info!("rent_paying_err-new_account", 1);
         }
         (&RentState::RentPaying { .. }, &RentState::RentPaying { .. }) => {
-            inc_new_counter_info!("rent_paying_ok-legacy", 1);
+            // inc_new_counter_info!("rent_paying_ok-legacy", 1);
         }
         (_, &RentState::RentPaying { .. }) => {
-            inc_new_counter_info!("rent_paying_err-other", 1);
+            // inc_new_counter_info!("rent_paying_err-other", 1);
         }
         _ => {}
     }

@@ -66,64 +66,64 @@ impl PrioritizationFeeMetrics {
         );
     }
 
-    fn report(&self, slot: Slot) {
-        let &PrioritizationFeeMetrics {
-            total_writable_accounts_count,
-            relevant_writable_accounts_count,
-            prioritized_transactions_count: Saturating(prioritized_transactions_count),
-            non_prioritized_transactions_count: Saturating(non_prioritized_transactions_count),
-            attempted_update_on_finalized_fee_count:
-                Saturating(attempted_update_on_finalized_fee_count),
-            total_prioritization_fee: Saturating(total_prioritization_fee),
-            min_prioritization_fee,
-            max_prioritization_fee,
-            total_update_elapsed_us: Saturating(total_update_elapsed_us),
-        } = self;
-        datapoint_info!(
-            "block_prioritization_fee",
-            ("slot", slot as i64, i64),
-            (
-                "total_writable_accounts_count",
-                total_writable_accounts_count as i64,
-                i64
-            ),
-            (
-                "relevant_writable_accounts_count",
-                relevant_writable_accounts_count as i64,
-                i64
-            ),
-            (
-                "prioritized_transactions_count",
-                prioritized_transactions_count as i64,
-                i64
-            ),
-            (
-                "non_prioritized_transactions_count",
-                non_prioritized_transactions_count as i64,
-                i64
-            ),
-            (
-                "attempted_update_on_finalized_fee_count",
-                attempted_update_on_finalized_fee_count as i64,
-                i64
-            ),
-            (
-                "total_prioritization_fee",
-                total_prioritization_fee as i64,
-                i64
-            ),
-            (
-                "min_prioritization_fee",
-                min_prioritization_fee.unwrap_or(0) as i64,
-                i64
-            ),
-            ("max_prioritization_fee", max_prioritization_fee as i64, i64),
-            (
-                "total_update_elapsed_us",
-                total_update_elapsed_us as i64,
-                i64
-            ),
-        );
+    fn report(&self, _slot: Slot) {
+        // let &PrioritizationFeeMetrics {
+        //     total_writable_accounts_count,
+        //     relevant_writable_accounts_count,
+        //     prioritized_transactions_count: Saturating(prioritized_transactions_count),
+        //     non_prioritized_transactions_count: Saturating(non_prioritized_transactions_count),
+        //     attempted_update_on_finalized_fee_count:
+        //         Saturating(attempted_update_on_finalized_fee_count),
+        //     total_prioritization_fee: Saturating(total_prioritization_fee),
+        //     min_prioritization_fee,
+        //     max_prioritization_fee,
+        //     total_update_elapsed_us: Saturating(total_update_elapsed_us),
+        // } = self;
+        // datapoint_info!(
+        //     "block_prioritization_fee",
+        //     ("slot", slot as i64, i64),
+        //     (
+        //         "total_writable_accounts_count",
+        //         total_writable_accounts_count as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "relevant_writable_accounts_count",
+        //         relevant_writable_accounts_count as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "prioritized_transactions_count",
+        //         prioritized_transactions_count as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "non_prioritized_transactions_count",
+        //         non_prioritized_transactions_count as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "attempted_update_on_finalized_fee_count",
+        //         attempted_update_on_finalized_fee_count as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "total_prioritization_fee",
+        //         total_prioritization_fee as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "min_prioritization_fee",
+        //         min_prioritization_fee.unwrap_or(0) as i64,
+        //         i64
+        //     ),
+        //     ("max_prioritization_fee", max_prioritization_fee as i64, i64),
+        //     (
+        //         "total_update_elapsed_us",
+        //         total_update_elapsed_us as i64,
+        //         i64
+        //     ),
+        // );
     }
 }
 
@@ -244,22 +244,22 @@ impl PrioritizationFee {
         self.metrics.report(slot);
 
         // report this slot's min_transaction_fee and top 10 min_writable_account_fees
-        let min_transaction_fee = self.get_min_transaction_fee().unwrap_or(0);
+        let _min_transaction_fee = self.get_min_transaction_fee().unwrap_or(0);
         let mut accounts_fees: Vec<_> = self.get_writable_account_fees().collect();
         accounts_fees.sort_by(|lh, rh| rh.1.cmp(lh.1));
-        datapoint_info!(
-            "block_min_prioritization_fee",
-            ("slot", slot as i64, i64),
-            ("entity", "block", String),
-            ("min_prioritization_fee", min_transaction_fee as i64, i64),
-        );
-        for (account_key, fee) in accounts_fees.iter().take(10) {
-            datapoint_trace!(
-                "block_min_prioritization_fee",
-                ("slot", slot as i64, i64),
-                ("entity", account_key.to_string(), String),
-                ("min_prioritization_fee", **fee as i64, i64),
-            );
+        // datapoint_info!(
+        //     "block_min_prioritization_fee",
+        //     ("slot", slot as i64, i64),
+        //     ("entity", "block", String),
+        //     ("min_prioritization_fee", min_transaction_fee as i64, i64),
+        // );
+        for (_account_key, _fee) in accounts_fees.iter().take(10) {
+            // datapoint_trace!(
+            //     "block_min_prioritization_fee",
+            //     ("slot", slot as i64, i64),
+            //     ("entity", account_key.to_string(), String),
+            //     ("min_prioritization_fee", **fee as i64, i64),
+            // );
         }
     }
 }

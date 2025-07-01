@@ -2638,10 +2638,6 @@ mod tests {
             &CheckPoint::TimeoutListenerTriggered(0),
             &CheckPoint::TimeoutListenerTriggered(1),
             &TestCheckPoint::AfterTimeoutListenerTriggered,
-            &TestCheckPoint::BeforeTimeoutListenerTriggered,
-            &CheckPoint::TimeoutListenerTriggered(0),
-            &CheckPoint::TimeoutListenerTriggered(1),
-            &TestCheckPoint::AfterTimeoutListenerTriggered,
         ]);
 
         let ignored_prioritization_fee_cache = Arc::new(PrioritizationFeeCache::new(0u64));

@@ -2,17 +2,36 @@
 //! SDK.
 
 use {
+    super::CollectedInfo,
     crate::svm_rent_collector::SVMRentCollector,
     solana_account::AccountSharedData,
     solana_clock::Epoch,
     solana_pubkey::Pubkey,
     solana_rent::{Rent, RentDue},
-    solana_rent_collector::{CollectedInfo, RentCollector},
+    solana_rent_collector::RentCollector,
 };
+
+impl From<solana_rent_collector::CollectedInfo> for CollectedInfo {
+    fn from(info: solana_rent_collector::CollectedInfo) -> Self {
+        Self {
+            rent_amount: info.rent_amount,
+            account_data_len_reclaimed: info.account_data_len_reclaimed,
+        }
+    }
+}
+
+impl From<CollectedInfo> for solana_rent_collector::CollectedInfo {
+    fn from(info: CollectedInfo) -> Self {
+        Self {
+            rent_amount: info.rent_amount,
+            account_data_len_reclaimed: info.account_data_len_reclaimed,
+        }
+    }
+}
 
 impl SVMRentCollector for RentCollector {
     fn collect_rent(&self, address: &Pubkey, account: &mut AccountSharedData) -> CollectedInfo {
-        self.collect_from_existing_account(address, account)
+        self.collect_from_existing_account(address, account).into()
     }
 
     fn get_rent(&self) -> &Rent {

@@ -7,7 +7,7 @@ use {
     solana_runtime::{
         snapshot_hash::SnapshotHash,
         snapshot_package::SnapshotKind,
-        snapshot_utils::{self, ArchiveFormat, ZstdConfig},
+        snapshot_utils::{self, ArchiveFormat},
     },
     std::{
         fs,
@@ -68,12 +68,12 @@ pub fn download_snapshot_archive(
     fs::create_dir_all(&snapshot_archives_remote_dir).unwrap();
 
     for archive_format in [
-        ArchiveFormat::TarZstd {
-            config: ZstdConfig::default(),
-        },
+        // ArchiveFormat::TarZstd {
+        //     config: ZstdConfig::default(),
+        // },
         ArchiveFormat::TarGzip,
-        ArchiveFormat::TarBzip2,
-        ArchiveFormat::TarLz4,
+        // ArchiveFormat::TarBzip2,
+        // ArchiveFormat::TarLz4,
         ArchiveFormat::Tar,
     ] {
         let destination_path = match snapshot_kind {

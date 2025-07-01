@@ -111,7 +111,6 @@ following arguments:
 - `check_results`: A mutable slice of transaction check results.
 - `environment`: The runtime environment for transaction batch processing.
 - `config`: Configurations for customizing transaction processing behavior.
-
 The method returns a `LoadAndExecuteSanitizedTransactionsOutput`, which is
 defined below in more detail.
 

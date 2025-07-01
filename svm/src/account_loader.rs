@@ -1,5 +1,7 @@
 #[cfg(feature = "dev-context-only-utils")]
 use qualifier_attr::{field_qualifiers, qualifiers};
+use solana_clock::Epoch;
+use solana_svm_rent_collector::svm_rent_collector::CollectedInfo;
 use {
     crate::{
         account_overrides::AccountOverrides, nonce_info::NonceInfo,
@@ -22,7 +24,6 @@ use {
     },
     solana_pubkey::Pubkey,
     solana_rent::RentDue,
-    solana_rent_collector::{CollectedInfo, RENT_EXEMPT_RENT_EPOCH},
     solana_rent_debits::RentDebits,
     solana_sdk_ids::{
         bpf_loader_upgradeable, native_loader,
@@ -371,14 +372,14 @@ pub fn collect_rent_from_account(
         // are any rent paying accounts, their `rent_epoch` won't change either. However, if the
         // account itself is rent-exempted but its `rent_epoch` is not u64::MAX, we will set its
         // `rent_epoch` to u64::MAX. In such case, the behavior stays the same as before.
-        if account.rent_epoch() != RENT_EXEMPT_RENT_EPOCH
+        if account.rent_epoch() != Epoch::MAX
             && rent_collector.get_rent_due(
                 account.lamports(),
                 account.data().len(),
                 account.rent_epoch(),
             ) == RentDue::Exempt
         {
-            account.set_rent_epoch(RENT_EXEMPT_RENT_EPOCH);
+            account.set_rent_epoch(Epoch::MAX);
         }
 
         CollectedInfo::default()
@@ -843,7 +844,7 @@ fn load_transaction_account<CB: TransactionProcessingCallback>(
         // All new accounts must be rent-exempt (enforced in Bank::execute_loaded_transaction).
         // Currently, rent collection sets rent_epoch to u64::MAX, but initializing the account
         // with this field already set would allow us to skip rent collection for these accounts.
-        default_account.set_rent_epoch(RENT_EXEMPT_RENT_EPOCH);
+        default_account.set_rent_epoch(Epoch::MAX);
         LoadedTransactionAccount {
             loaded_size: default_account.data().len(),
             account: default_account,
@@ -916,6 +917,7 @@ mod tests {
         agave_reserved_account_keys::ReservedAccountKeys,
         rand0_7::prelude::*,
         solana_account::{Account, AccountSharedData, ReadableAccount, WritableAccount},
+        solana_clock::Epoch,
         solana_epoch_schedule::EpochSchedule,
         solana_hash::Hash,
         solana_instruction::{AccountMeta, Instruction},
@@ -933,7 +935,7 @@ mod tests {
         },
         solana_pubkey::Pubkey,
         solana_rent::Rent,
-        solana_rent_collector::{RentCollector, RENT_EXEMPT_RENT_EPOCH},
+        solana_rent_collector::RentCollector,
         solana_rent_debits::RentDebits,
         solana_sdk_ids::{
             bpf_loader, bpf_loader_upgradeable, native_loader, system_program, sysvar,
@@ -2201,7 +2203,7 @@ mod tests {
         let loaded_accounts_data_size = base_account_size as u32 * 2;
 
         let mut account_data = AccountSharedData::default();
-        account_data.set_rent_epoch(RENT_EXEMPT_RENT_EPOCH);
+        account_data.set_rent_epoch(Epoch::MAX);
         assert_eq!(
             result.unwrap(),
             LoadedTransactionAccounts {
@@ -2370,7 +2372,7 @@ mod tests {
         let loaded_accounts_data_size = base_account_size as u32 * 2;
 
         let mut account_data = AccountSharedData::default();
-        account_data.set_rent_epoch(RENT_EXEMPT_RENT_EPOCH);
+        account_data.set_rent_epoch(Epoch::MAX);
 
         let TransactionLoadResult::Loaded(loaded_transaction) = load_result else {
             panic!("transaction loading failed");
@@ -2476,7 +2478,7 @@ mod tests {
             collect_rent_from_account(&feature_set, &rent_collector, &address, &mut account),
             CollectedInfo::default()
         );
-        assert_eq!(account.rent_epoch(), RENT_EXEMPT_RENT_EPOCH);
+        assert_eq!(account.rent_epoch(), Epoch::MAX);
     }
 
     #[test]

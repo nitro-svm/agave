@@ -888,6 +888,11 @@ mod tests {
                 Some(&committed_status),
                 &bank,
             );
+            QosService::remove_or_update_costs(
+                qos_cost_results.iter(),
+                Some(&committed_status),
+                &bank,
+            );
 
             // assert the final block cost
             let mut expected_final_txs_count = 0u64;

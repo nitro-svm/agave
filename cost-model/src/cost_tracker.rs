@@ -5,7 +5,7 @@
 //!
 use {
     crate::{block_cost_limits::*, transaction_cost::TransactionCost},
-    solana_metrics::datapoint_info,
+    // solana_metrics::datapoint_info,
     solana_pubkey::Pubkey,
     solana_runtime_transaction::transaction_with_meta::TransactionWithMeta,
     solana_transaction_error::TransactionError,
@@ -216,55 +216,55 @@ impl CostTracker {
         self.transaction_count.0
     }
 
-    pub fn report_stats(&self, bank_slot: solana_clock::Slot, is_leader: bool) {
+    pub fn report_stats(&self, _bank_slot: solana_clock::Slot, _is_leader: bool) {
         // skip reporting if block is empty
         if self.transaction_count.0 == 0 {
             return;
         }
 
-        let (costliest_account, costliest_account_cost) = self.find_costliest_account();
+        let (_costliest_account, _costliest_account_cost) = self.find_costliest_account();
 
-        datapoint_info!(
-            "cost_tracker_stats",
-            "is_leader" => is_leader.to_string(),
-            ("bank_slot", bank_slot as i64, i64),
-            ("block_cost", self.block_cost as i64, i64),
-            ("vote_cost", self.vote_cost as i64, i64),
-            ("transaction_count", self.transaction_count.0 as i64, i64),
-            ("number_of_accounts", self.number_of_accounts() as i64, i64),
-            ("costliest_account", costliest_account.to_string(), String),
-            ("costliest_account_cost", costliest_account_cost as i64, i64),
-            (
-                "allocated_accounts_data_size",
-                self.allocated_accounts_data_size.0,
-                i64
-            ),
-            (
-                "transaction_signature_count",
-                self.transaction_signature_count.0,
-                i64
-            ),
-            (
-                "secp256k1_instruction_signature_count",
-                self.secp256k1_instruction_signature_count.0,
-                i64
-            ),
-            (
-                "ed25519_instruction_signature_count",
-                self.ed25519_instruction_signature_count.0,
-                i64
-            ),
-            (
-                "inflight_transaction_count",
-                self.in_flight_transaction_count.0,
-                i64
-            ),
-            (
-                "secp256r1_instruction_signature_count",
-                self.secp256r1_instruction_signature_count.0,
-                i64
-            )
-        );
+        // datapoint_info!(
+        //     "cost_tracker_stats",
+        //     "is_leader" => is_leader.to_string(),
+        //     ("bank_slot", bank_slot as i64, i64),
+        //    ("block_cost", self.block_cost as i64, i64),
+        //    ("vote_cost", self.vote_cost as i64, i64),
+        //    ("transaction_count", self.transaction_count.0 as i64, i64),
+        //    ("number_of_accounts", self.number_of_accounts() as i64, i64),
+        //    ("costliest_account", costliest_account.to_string(), String),
+        //    ("costliest_account_cost", costliest_account_cost as i64, i64),
+        //    (
+        //        "allocated_accounts_data_size",
+        //        self.allocated_accounts_data_size.0,
+        //        i64
+        //    ),
+        //    (
+        //        "transaction_signature_count",
+        //        self.transaction_signature_count.0,
+        //        i64
+        //    ),
+        //    (
+        //        "secp256k1_instruction_signature_count",
+        //        self.secp256k1_instruction_signature_count.0,
+        //        i64
+        //    ),
+        //    (
+        //        "ed25519_instruction_signature_count",
+        //        self.ed25519_instruction_signature_count.0,
+        //        i64
+        //    ),
+        //    (
+        //        "inflight_transaction_count",
+        //        self.in_flight_transaction_count.0,
+        //        i64
+        //    ),
+        //    (
+        //        "secp256r1_instruction_signature_count",
+        //        self.secp256r1_instruction_signature_count.0,
+        //        i64
+        //    )
+        //);
     }
 
     fn find_costliest_account(&self) -> (Pubkey, u64) {
@@ -392,6 +392,7 @@ impl CostTracker {
     }
 
     /// count number of none-zero CU accounts
+    #[allow(dead_code)]
     fn number_of_accounts(&self) -> usize {
         self.cost_by_writable_accounts
             .values()

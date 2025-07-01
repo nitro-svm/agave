@@ -150,6 +150,25 @@ solana_pubkey::declare_id!("MyProgram1111111111111111111111111111111111");
     * `--no-accounts-db-index-hashing` (#2063)
     * `--incremental-snapshots` (#2148)
     * `--halt-on-known-validators-accounts-hash-mismatch` (#2157)
+  * SDK:
+    * Support for Borsh v0.9 removed, please use v1 or v0.10 (#1440)
+    * `Copy` is no longer derived on `Rent` and `EpochSchedule`, please switch to using `clone()` (solana-labs#32767)
+    * `solana-sdk`: deprecated symbols removed
+    * `solana-program`: deprecated symbols removed
+  * RPC: obsolete and deprecated v1 endpoints are removed. These endpoints are:
+    confirmTransaction, getSignatureStatus, getSignatureConfirmation, getTotalSupply,
+    getConfirmedSignaturesForAddress, getConfirmedBlock, getConfirmedBlocks, getConfirmedBlocksWithLimit,
+    getConfirmedTransaction, getConfirmedSignaturesForAddress2, getRecentBlockhash, getFees,
+    getFeeCalculatorForBlockhash, getFeeRateGovernor, getSnapshotSlot getStakeActivation
+  * Deprecated methods are removed from `RpcClient` and `RpcClient::nonblocking`
+  * `solana-client`: deprecated re-exports removed; please import `solana-connection-cache`, `solana-quic-client`, or `solana-udp-client` directly
+  * Deprecated arguments removed from `agave-validator`:
+    * `--enable-rpc-obsolete_v1_7` (#1886)
+    * `--accounts-db-caching-enabled` (#2063)
+    * `--accounts-db-index-hashing` (#2063)
+    * `--no-accounts-db-index-hashing` (#2063)
+    * `--incremental-snapshots` (#2148)
+    * `--halt-on-known-validators-accounts-hash-mismatch` (#2157)
 * Changes
   * `central-scheduler` as default option for `--block-production-method` (#34891)
   * `solana-rpc-client-api`: `RpcFilterError` depends on `base64` version 0.22, so users may need to upgrade to `base64` version 0.22

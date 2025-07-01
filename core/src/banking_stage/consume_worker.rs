@@ -683,6 +683,12 @@ impl ConsumeWorkerTransactionErrorMetrics {
                 i64
             ),
             (
+                "invalid_compute_budget",
+                self.invalid_compute_budget
+                    .swap(0, Ordering::Relaxed),
+                i64
+            ),
+            (
                 "not_allowed_during_cluster_maintenance",
                 self.not_allowed_during_cluster_maintenance
                     .swap(0, Ordering::Relaxed),
