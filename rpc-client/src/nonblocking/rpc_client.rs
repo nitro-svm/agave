@@ -4009,7 +4009,8 @@ impl RpcClient {
             pubkey,
             RpcProgramAccountsConfig {
                 account_config: RpcAccountInfoConfig {
-                    encoding: Some(UiAccountEncoding::Base64Zstd),
+                    encoding: Some(UiAccountEncoding::Base64Zstd), // Zstd is not supported by svm-rollup
+                    // encoding: Some(UiAccountEncoding::Base64),
                     ..RpcAccountInfoConfig::default()
                 },
                 ..RpcProgramAccountsConfig::default()

@@ -7,12 +7,12 @@ use {
     solana_hash::Hash,
     solana_lattice_hash::lt_hash::LtHash,
     solana_measure::{meas_dur, measure::Measure},
+    solana_patches::time::Duration,
     solana_pubkey::Pubkey,
     solana_svm_callback::AccountState,
     std::{
         ops::AddAssign,
         sync::atomic::{AtomicU64, Ordering},
-        time::Duration,
     },
 };
 
@@ -111,7 +111,7 @@ impl Bank {
         // Get all the accounts stored in this slot.
         // Since this bank is in the middle of being frozen, it hasn't been rooted.
         // That means the accounts should all be in the write cache, and loading will be fast.
-        let (accounts_curr, time_loading_accounts_curr) = meas_dur!({
+        let (accounts_curr, _time_loading_accounts_curr) = meas_dur!({
             self.rc
                 .accounts
                 .accounts_db
@@ -236,82 +236,82 @@ impl Bank {
             .thread_pool
             .install(do_calculate_delta_lt_hash);
 
-        let total_time = measure_total.end_as_duration();
-        let num_accounts_modified =
+        let _total_time = measure_total.end_as_duration();
+        let _num_accounts_modified =
             num_accounts_total.saturating_sub(stats.num_accounts_unmodified);
-        datapoint_info!(
-            "bank-accounts_lt_hash",
-            ("slot", slot, i64),
-            ("num_accounts_total", num_accounts_total, i64),
-            ("num_accounts_modified", num_accounts_modified, i64),
-            (
-                "num_accounts_unmodified",
-                stats.num_accounts_unmodified,
-                i64
-            ),
-            ("num_cache_misses", stats.num_cache_misses, i64),
-            ("total_us", total_time.as_micros(), i64),
-            (
-                "loading_accounts_curr_us",
-                time_loading_accounts_curr.as_micros(),
-                i64
-            ),
-            (
-                "par_loading_accounts_prev_us",
-                stats.time_loading_accounts_prev.as_micros(),
-                i64
-            ),
-            (
-                "par_comparing_accounts_us",
-                stats.time_comparing_accounts.as_micros(),
-                i64
-            ),
-            (
-                "par_computing_hashes_us",
-                stats.time_computing_hashes.as_micros(),
-                i64
-            ),
-            (
-                "par_mixing_hashes_us",
-                stats.time_mixing_hashes.as_micros(),
-                i64
-            ),
-            (
-                "num_inspect_account_hits",
-                self.stats_for_accounts_lt_hash
-                    .num_inspect_account_hits
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "num_inspect_account_misses",
-                self.stats_for_accounts_lt_hash
-                    .num_inspect_account_misses
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "num_inspect_account_after_frozen",
-                self.stats_for_accounts_lt_hash
-                    .num_inspect_account_after_frozen
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "inspect_account_lookup_ns",
-                self.stats_for_accounts_lt_hash
-                    .inspect_account_lookup_time_ns
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "inspect_account_insert_ns",
-                self.stats_for_accounts_lt_hash
-                    .inspect_account_insert_time_ns
-                    .load(Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "bank-accounts_lt_hash",
+        //     ("slot", slot, i64),
+        //     ("num_accounts_total", num_accounts_total, i64),
+        //     ("num_accounts_modified", num_accounts_modified, i64),
+        //     (
+        //         "num_accounts_unmodified",
+        //         stats.num_accounts_unmodified,
+        //         i64
+        //     ),
+        //     ("num_cache_misses", stats.num_cache_misses, i64),
+        //     ("total_us", total_time.as_micros(), i64),
+        //     (
+        //         "loading_accounts_curr_us",
+        //         time_loading_accounts_curr.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "par_loading_accounts_prev_us",
+        //         stats.time_loading_accounts_prev.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "par_comparing_accounts_us",
+        //         stats.time_comparing_accounts.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "par_computing_hashes_us",
+        //         stats.time_computing_hashes.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "par_mixing_hashes_us",
+        //         stats.time_mixing_hashes.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "num_inspect_account_hits",
+        //         self.stats_for_accounts_lt_hash
+        //             .num_inspect_account_hits
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "num_inspect_account_misses",
+        //         self.stats_for_accounts_lt_hash
+        //             .num_inspect_account_misses
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "num_inspect_account_after_frozen",
+        //         self.stats_for_accounts_lt_hash
+        //             .num_inspect_account_after_frozen
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "inspect_account_lookup_ns",
+        //         self.stats_for_accounts_lt_hash
+        //             .inspect_account_lookup_time_ns
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "inspect_account_insert_ns",
+        //         self.stats_for_accounts_lt_hash
+        //             .inspect_account_insert_time_ns
+        //             .load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
 
         delta_lt_hash
     }

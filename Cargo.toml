@@ -142,6 +142,8 @@ members = [
     "zk-keygen",
     "zk-sdk",
     "zk-token-sdk",
+    # Patches to make this code run under the SP1 prover (time support)
+    "patches",
 ]
 
 exclude = ["programs/sbf", "svm/examples", "svm/tests/example-programs"]
@@ -180,7 +182,7 @@ agave-banking-stage-ingress-types = { path = "banking-stage-ingress-types", vers
 agave-cargo-registry = { path = "cargo-registry", version = "=3.0.0" }
 agave-feature-set = { path = "feature-set", version = "=3.0.0" }
 agave-geyser-plugin-interface = { path = "geyser-plugin-interface", version = "=3.0.0" }
-agave-precompiles = { path = "precompiles", version = "=3.0.0" }
+agave-precompiles = { path = "precompiles", version = "=2.2.2" }
 agave-reserved-account-keys = { path = "reserved-account-keys", version = "=3.0.0" }
 agave-thread-manager = { path = "thread-manager", version = "=3.0.0" }
 agave-transaction-view = { path = "transaction-view", version = "=3.0.0" }
@@ -463,6 +465,7 @@ solana-nonce-account = "2.2.1"
 solana-notifier = { path = "notifier", version = "=3.0.0" }
 solana-offchain-message = "2.2.1"
 solana-packet = "2.2.1"
+solana-patches = { path = "patches", version = "=3.0.0" }
 solana-perf = { path = "perf", version = "=3.0.0" }
 solana-poh = { path = "poh", version = "=3.0.0" }
 solana-poh-config = "2.2.1"
@@ -484,7 +487,7 @@ solana-quic-definitions = "2.2.1"
 solana-rayon-threadlimit = { path = "rayon-threadlimit", version = "=3.0.0" }
 solana-remote-wallet = { path = "remote-wallet", version = "=3.0.0", default-features = false }
 solana-rent = "2.2.1"
-solana-rent-collector = "2.2.1"
+solana-rent-collector = { path = "svm-rent-collector", package = "solana-svm-rent-collector", version = "3.0.0" }
 solana-rent-debits = "2.2.1"
 solana-reward-info = "2.2.1"
 solana-rpc = { path = "rpc", version = "=3.0.0" }
@@ -539,7 +542,10 @@ solana-tps-client = { path = "tps-client", version = "=3.0.0" }
 solana-tpu-client = { path = "tpu-client", version = "=3.0.0", default-features = false }
 solana-tpu-client-next = { path = "tpu-client-next", version = "=3.0.0" }
 solana-transaction = "2.2.3"
-solana-transaction-context = { path = "transaction-context", version = "=3.0.0", features = ["bincode", "debug-signature"] }
+solana-transaction-context = { path = "transaction-context", version = "=3.0.0", features = [
+    "bincode",
+    "debug-signature",
+] }
 solana-transaction-error = "2.2.1"
 solana-transaction-metrics-tracker = { path = "transaction-metrics-tracker", version = "=3.0.0" }
 solana-transaction-status = { path = "transaction-status", version = "=3.0.0" }

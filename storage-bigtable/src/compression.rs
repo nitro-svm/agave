@@ -17,9 +17,17 @@ fn decompress_reader<'a, R: Read + 'a>(
 ) -> Result<Box<dyn Read + 'a>, io::Error> {
     let buf_reader = BufReader::new(stream);
     let decompress_reader: Box<dyn Read> = match method {
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Bzip2 => Box::new(bzip2::bufread::BzDecoder::new(buf_reader)),
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Gzip => Box::new(flate2::read::GzDecoder::new(buf_reader)),
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Zstd => Box::new(zstd::stream::read::Decoder::new(buf_reader)?),
+        // Fallbacks for RISC-V - treat compressed data as uncompressed
+        #[cfg(target_arch = "riscv32")]
+        CompressionMethod::Bzip2 | CompressionMethod::Gzip | CompressionMethod::Zstd => {
+            Box::new(buf_reader)
+        }
         CompressionMethod::NoCompression => Box::new(buf_reader),
     };
     Ok(decompress_reader)
@@ -45,20 +53,28 @@ pub fn decompress(data: &[u8]) -> Result<Vec<u8>, io::Error> {
 pub fn compress(method: CompressionMethod, data: &[u8]) -> Result<Vec<u8>, io::Error> {
     let mut compressed_data = bincode::serialize(&method).unwrap();
     compressed_data.extend(match method {
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Bzip2 => {
             let mut e = bzip2::write::BzEncoder::new(Vec::new(), bzip2::Compression::best());
             e.write_all(data)?;
             e.finish()?
         }
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Gzip => {
             let mut e = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
             e.write_all(data)?;
             e.finish()?
         }
+        #[cfg(not(target_arch = "riscv32"))]
         CompressionMethod::Zstd => {
             let mut e = zstd::stream::write::Encoder::new(Vec::new(), 0).unwrap();
             e.write_all(data)?;
             e.finish()?
+        }
+        // Fallbacks for RISC-V -- return uncompressed data
+        #[cfg(target_arch = "riscv32")]
+        CompressionMethod::Bzip2 | CompressionMethod::Gzip | CompressionMethod::Zstd => {
+            data.to_vec()
         }
         CompressionMethod::NoCompression => data.to_vec(),
     });

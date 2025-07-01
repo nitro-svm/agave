@@ -60,7 +60,7 @@ impl Bank {
             // epoch rewards have not been partitioned yet, so partition them now
             // This should happen only once immediately on the first rewards distribution block, after reward calculation block.
             let epoch_rewards_sysvar = self.get_epoch_rewards_sysvar();
-            let (partition_indices, partition_us) = measure_us!({
+            let (partition_indices, _partition_us) = measure_us!({
                 epoch_rewards_hasher::hash_rewards_into_partitions(
                     &status.all_stake_rewards,
                     &epoch_rewards_sysvar.parent_blockhash,
@@ -75,17 +75,17 @@ impl Bank {
                 partition_indices,
             );
 
-            datapoint_info!(
-                "epoch-rewards-status-update",
-                ("slot", self.slot(), i64),
-                ("block_height", height, i64),
-                ("partition_us", partition_us, i64),
-                (
-                    "distribution_starting_block_height",
-                    distribution_starting_block_height,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "epoch-rewards-status-update",
+            //     ("slot", self.slot(), i64),
+            //     ("block_height", height, i64),
+            //     ("partition_us", partition_us, i64),
+            //     (
+            //         "distribution_starting_block_height",
+            //         distribution_starting_block_height,
+            //         i64
+            //     ),
+            // );
         }
 
         let EpochRewardStatus::Active(EpochRewardPhase::Distribution(partition_rewards)) =
@@ -112,17 +112,17 @@ impl Bank {
         }
 
         if height.saturating_add(1) >= distribution_end_exclusive {
-            datapoint_info!(
-                "epoch-rewards-status-update",
-                ("slot", self.slot(), i64),
-                ("block_height", height, i64),
-                ("active", 0, i64),
-                (
-                    "distribution_starting_block_height",
-                    distribution_starting_block_height,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     "epoch-rewards-status-update",
+            //     ("slot", self.slot(), i64),
+            //     ("block_height", height, i64),
+            //     ("active", 0, i64),
+            //     (
+            //         "distribution_starting_block_height",
+            //         distribution_starting_block_height,
+            //         i64
+            //     ),
+            // );
 
             assert!(matches!(
                 self.epoch_reward_status,

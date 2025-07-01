@@ -145,6 +145,7 @@ impl SecondaryIndexEntry for RwLockSecondaryIndexEntry {
 }
 
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub struct SecondaryIndex<SecondaryIndexEntryType: SecondaryIndexEntry + Default + Sync + Send> {
     metrics_name: &'static str,
     // Map from index keys to index values
@@ -191,20 +192,20 @@ impl<SecondaryIndexEntryType: SecondaryIndexEntry + Default + Sync + Send>
         }
 
         if self.stats.last_report.should_update(1000) {
-            datapoint_info!(
-                self.metrics_name,
-                ("num_secondary_keys", self.index.len() as i64, i64),
-                (
-                    "num_inner_keys",
-                    self.stats.num_inner_keys.load(Ordering::Relaxed) as i64,
-                    i64
-                ),
-                (
-                    "num_reverse_index_keys",
-                    self.reverse_index.len() as i64,
-                    i64
-                ),
-            );
+            // datapoint_info!(
+            //     self.metrics_name,
+            //     ("num_secondary_keys", self.index.len() as i64, i64),
+            //     (
+            //         "num_inner_keys",
+            //         self.stats.num_inner_keys.load(Ordering::Relaxed) as i64,
+            //         i64
+            //     ),
+            //     (
+            //         "num_reverse_index_keys",
+            //         self.reverse_index.len() as i64,
+            //         i64
+            //     ),
+            // );
         }
     }
 

@@ -54,7 +54,7 @@ use {
         transaction_processor::ExecutionRecordingConfig,
     },
     solana_svm_transaction::{svm_message::SVMMessage, svm_transaction::SVMTransaction},
-    solana_timings::{report_execute_timings, ExecuteTimingType, ExecuteTimings},
+    solana_timings::{ExecuteTimingType, ExecuteTimings},
     solana_transaction::{
         sanitized::SanitizedTransaction, versioned::VersionedTransaction,
         TransactionVerificationMode,
@@ -66,7 +66,6 @@ use {
         borrow::Cow,
         collections::{HashMap, HashSet},
         num::Saturating,
-        ops::Index,
         path::PathBuf,
         result,
         sync::{
@@ -1329,19 +1328,19 @@ pub struct ThreadExecuteTimings {
 }
 
 impl ThreadExecuteTimings {
-    pub fn report_stats(&self, slot: Slot) {
-        lazy! {
-            datapoint_info!(
-                "replay-slot-end-to-end-stats",
-                ("slot", slot as i64, i64),
-                ("total_thread_us", self.total_thread_us.0 as i64, i64),
-                ("total_transactions_executed", self.total_transactions_executed.0 as i64, i64),
-                // Everything inside the `eager!` block will be eagerly expanded before
-                // evaluation of the rest of the surrounding macro.
-                // Pass false because this code-path is never touched by unified scheduler.
-                eager!{report_execute_timings!(self.execute_timings, false)}
-            );
-        };
+    pub fn report_stats(&self, _slot: Slot) {
+        // lazy! {
+        // datapoint_info!(
+        //     "replay-slot-end-to-end-stats",
+        //     ("slot", slot as i64, i64),
+        //     ("total_thread_us", self.total_thread_us.0 as i64, i64),
+        //     ("total_transactions_executed", self.total_transactions_executed.0 as i64, i64),
+        //     // Everything inside the `eager!` block will be eagerly expanded before
+        //     // evaluation of the rest of the surrounding macro.
+        //     // Pass false because this code-path is never touched by unified scheduler.
+        //     eager!{report_execute_timings!(self.execute_timings, false)}
+        // );
+        // };
     }
 
     pub fn accumulate(&mut self, other: &ThreadExecuteTimings) {
@@ -1369,66 +1368,77 @@ impl ReplaySlotStats {
     pub fn report_stats(
         &self,
         slot: Slot,
-        num_txs: usize,
-        num_entries: usize,
-        num_shreds: u64,
-        bank_complete_time_us: u64,
+        _num_txs: usize,
+        _num_entries: usize,
+        _num_shreds: u64,
+        _bank_complete_time_us: u64,
         is_unified_scheduler_enabled: bool,
     ) {
-        let confirmation_elapsed = if is_unified_scheduler_enabled {
+        let _confirmation_elapsed = if is_unified_scheduler_enabled {
             "confirmation_without_replay_us"
         } else {
             "confirmation_time_us"
         };
-        let replay_elapsed = if is_unified_scheduler_enabled {
+        let _replay_elapsed = if is_unified_scheduler_enabled {
             "task_submission_us"
         } else {
             "replay_time"
         };
-        let execute_batches_us = if is_unified_scheduler_enabled {
+        let _execute_batches_us = if is_unified_scheduler_enabled {
             None
         } else {
             Some(self.batch_execute.wall_clock_us.0 as i64)
         };
 
-        lazy! {
-            datapoint_info!(
-                "replay-slot-stats",
-                ("slot", slot as i64, i64),
-                ("fetch_entries_time", self.fetch_elapsed as i64, i64),
-                (
-                    "fetch_entries_fail_time",
-                    self.fetch_fail_elapsed as i64,
-                    i64
-                ),
-                (
-                    "entry_poh_verification_time",
-                    self.poh_verify_elapsed as i64,
-                    i64
-                ),
-                (
-                    "entry_transaction_verification_time",
-                    self.transaction_verify_elapsed as i64,
-                    i64
-                ),
-                (confirmation_elapsed, self.confirmation_elapsed as i64, i64),
-                (replay_elapsed, self.replay_elapsed as i64, i64),
-                ("execute_batches_us", execute_batches_us, Option<i64>),
-                (
-                    "replay_total_elapsed",
-                    self.started.elapsed().as_micros() as i64,
-                    i64
-                ),
-                ("bank_complete_time_us", bank_complete_time_us, i64),
-                ("total_transactions", num_txs as i64, i64),
-                ("total_entries", num_entries as i64, i64),
-                ("total_shreds", num_shreds as i64, i64),
-                // Everything inside the `eager!` block will be eagerly expanded before
-                // evaluation of the rest of the surrounding macro.
-                eager!{report_execute_timings!(self.batch_execute.totals, is_unified_scheduler_enabled)}
-            );
-        };
+        // lazy! {
+        // datapoint_info!(
+        //     "replay-slot-stats",
+        //     ("slot", slot as i64, i64),
+        //     ("fetch_entries_time", self.fetch_elapsed as i64, i64),
+        //     (
+        //         "fetch_entries_fail_time",
+        //         self.fetch_fail_elapsed as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "entry_poh_verification_time",
+        //         self.poh_verify_elapsed as i64,
+        //         i64
+        //     ),
+        //     (
+        //         "entry_transaction_verification_time",
+        //         self.transaction_verify_elapsed as i64,
+        //         i64
+        //     ),
+        //     (confirmation_elapsed, self.confirmation_elapsed as i64, i64),
+        //     (replay_elapsed, self.replay_elapsed as i64, i64),
+        //     ("execute_batches_us", execute_batches_us, Option<i64>),
+        //     (confirmation_elapsed, self.confirmation_elapsed as i64, i64),
+        //     (replay_elapsed, self.replay_elapsed as i64, i64),
+        //     ("execute_batches_us", execute_batches_us, Option<i64>),
+        //     (
+        //         "replay_total_elapsed",
+        //         self.started.elapsed().as_micros() as i64,
+        //         i64
+        //     ),
+        //     ("bank_complete_time_us", bank_complete_time_us, i64),
+        //     ("total_transactions", num_txs as i64, i64),
+        //     ("total_entries", num_entries as i64, i64),
+        //     ("total_shreds", num_shreds as i64, i64),
+        //     // Everything inside the `eager!` block will be eagerly expanded before
+        //     // evaluation of the rest of the surrounding macro.
+        //     eager!{report_execute_timings!(self.batch_execute.totals, is_unified_scheduler_enabled)}
+        //     eager!{report_execute_timings!(self.batch_execute.totals, is_unified_scheduler_enabled)}
+        // );
+        // };
 
+        // Skip reporting replay-slot-end-to-end-stats entirely if unified scheduler is enabled,
+        // because the whole metrics itself is only meaningful for rayon-based worker threads.
+        //
+        // See slowest_thread doc comment for details.
+        if !is_unified_scheduler_enabled {
+            self.batch_execute.slowest_thread.report_stats(slot);
+        }
         // Skip reporting replay-slot-end-to-end-stats entirely if unified scheduler is enabled,
         // because the whole metrics itself is only meaningful for rayon-based worker threads.
         //

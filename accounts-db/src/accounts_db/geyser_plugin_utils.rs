@@ -6,14 +6,11 @@ use {
     solana_account::AccountSharedData,
     solana_clock::Slot,
     solana_measure::meas_dur,
-    solana_metrics::*,
+    // solana_metrics::*,
+    solana_patches::time::{Duration, Instant},
     solana_pubkey::Pubkey,
     solana_transaction::sanitized::SanitizedTransaction,
-    std::{
-        cmp::Reverse,
-        ops::AddAssign,
-        time::{Duration, Instant},
-    },
+    std::{cmp::Reverse, ops::AddAssign},
 };
 
 #[derive(Default)]
@@ -25,20 +22,20 @@ pub struct GeyserPluginNotifyAtSnapshotRestoreStats {
 
 impl GeyserPluginNotifyAtSnapshotRestoreStats {
     pub fn report(&self) {
-        datapoint_info!(
-            "accountsdb_plugin_notify_account_restore_from_snapshot_summary",
-            ("notified_accounts", self.notified_accounts, i64),
-            (
-                "elapsed_notifying_us",
-                self.elapsed_notifying.as_micros(),
-                i64
-            ),
-            (
-                "total_pure_notify_us",
-                self.total_pure_notify.as_micros(),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "accountsdb_plugin_notify_account_restore_from_snapshot_summary",
+        //     ("notified_accounts", self.notified_accounts, i64),
+        //     (
+        //         "elapsed_notifying_us",
+        //         self.elapsed_notifying.as_micros(),
+        //         i64
+        //     ),
+        //     (
+        //         "total_pure_notify_us",
+        //         self.total_pure_notify.as_micros(),
+        //         i64
+        //     ),
+        // );
     }
 }
 

@@ -41,7 +41,7 @@ impl UiAccountData {
             UiAccountData::Binary(blob, encoding) => match encoding {
                 UiAccountEncoding::Base58 => bs58::decode(blob).into_vec().ok(),
                 UiAccountEncoding::Base64 => BASE64_STANDARD.decode(blob).ok(),
-                #[cfg(feature = "zstd")]
+                #[cfg(all(feature = "zstd", not(target_arch = "riscv32")))]
                 UiAccountEncoding::Base64Zstd => {
                     BASE64_STANDARD.decode(blob).ok().and_then(|zstd_data| {
                         let mut data = vec![];
@@ -51,7 +51,7 @@ impl UiAccountData {
                             .ok()
                     })
                 }
-                #[cfg(not(feature = "zstd"))]
+                #[cfg(any(not(feature = "zstd"), target_arch = "riscv32"))]
                 UiAccountEncoding::Base64Zstd => None,
                 UiAccountEncoding::Binary | UiAccountEncoding::JsonParsed => None,
             },

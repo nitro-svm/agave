@@ -85,52 +85,52 @@ impl ActiveStats {
             ActiveStatItem::HashMerkleTree => &self.hash_merkle,
             ActiveStatItem::HashScan => &self.hash_scan,
         };
-        let value = modify_stat(stat);
-        match item {
-            ActiveStatItem::Clean => datapoint_info!("accounts_db_active", ("clean", value, i64)),
-            ActiveStatItem::CleanConstructCandidates => datapoint_info!(
-                "accounts_db_active",
-                ("clean_construct_candidates", value, i64),
-            ),
-            ActiveStatItem::CleanScanCandidates => {
-                datapoint_info!("accounts_db_active", ("clean_scan_candidates", value, i64))
-            }
-            ActiveStatItem::CleanOldAccounts => {
-                datapoint_info!("accounts_db_active", ("clean_old_accounts", value, i64))
-            }
-            ActiveStatItem::CleanCollectStoreCounts => {
-                datapoint_info!(
-                    "accounts_db_active",
-                    ("clean_collect_store_counts", value, i64),
-                )
-            }
-            ActiveStatItem::CleanCalcDeleteDeps => {
-                datapoint_info!("accounts_db_active", ("clean_calc_delete_deps", value, i64))
-            }
-            ActiveStatItem::CleanFilterZeroLamport => datapoint_info!(
-                "accounts_db_active",
-                ("clean_filter_zero_lamport", value, i64),
-            ),
-            ActiveStatItem::CleanReclaims => {
-                datapoint_info!("accounts_db_active", ("clean_reclaims", value, i64))
-            }
-            ActiveStatItem::SquashAncient => {
-                datapoint_info!("accounts_db_active", ("squash_ancient", value, i64))
-            }
-            ActiveStatItem::Shrink => {
-                datapoint_info!("accounts_db_active", ("shrink", value, i64))
-            }
-            ActiveStatItem::Hash => datapoint_info!("accounts_db_active", ("hash", value, i64)),
-            ActiveStatItem::Flush => datapoint_info!("accounts_db_active", ("flush", value, i64)),
-            ActiveStatItem::HashDeDup => {
-                datapoint_info!("accounts_db_active", ("hash_dedup", value, i64))
-            }
-            ActiveStatItem::HashMerkleTree => {
-                datapoint_info!("accounts_db_active", ("hash_merkle_tree", value, i64))
-            }
-            ActiveStatItem::HashScan => {
-                datapoint_info!("accounts_db_active", ("hash_scan", value, i64))
-            }
-        };
+        let _value = modify_stat(stat);
+        // match item {
+        //     ActiveStatItem::Clean => datapoint_info!("accounts_db_active", ("clean", value, i64)),
+        //     ActiveStatItem::CleanConstructCandidates => datapoint_info!(
+        //         "accounts_db_active",
+        //         ("clean_construct_candidates", value, i64),
+        //     ),
+        //     ActiveStatItem::CleanScanCandidates => {
+        //         datapoint_info!("accounts_db_active", ("clean_scan_candidates", value, i64))
+        //     }
+        //     ActiveStatItem::CleanOldAccounts => {
+        //         datapoint_info!("accounts_db_active", ("clean_old_accounts", value, i64))
+        //     }
+        //     ActiveStatItem::CleanCollectStoreCounts => {
+        //         datapoint_info!(
+        //             "accounts_db_active",
+        //             ("clean_collect_store_counts", value, i64),
+        //         )
+        //     }
+        //     ActiveStatItem::CleanCalcDeleteDeps => {
+        //         datapoint_info!("accounts_db_active", ("clean_calc_delete_deps", value, i64))
+        //     }
+        //     ActiveStatItem::CleanFilterZeroLamport => datapoint_info!(
+        //         "accounts_db_active",
+        //         ("clean_filter_zero_lamport", value, i64),
+        //     ),
+        //     ActiveStatItem::CleanReclaims => {
+        //         datapoint_info!("accounts_db_active", ("clean_reclaims", value, i64))
+        //     }
+        //     ActiveStatItem::SquashAncient => {
+        //         datapoint_info!("accounts_db_active", ("squash_ancient", value, i64))
+        //     }
+        //     ActiveStatItem::Shrink => {
+        //         datapoint_info!("accounts_db_active", ("shrink", value, i64))
+        //     }
+        //     ActiveStatItem::Hash => datapoint_info!("accounts_db_active", ("hash", value, i64)),
+        //     ActiveStatItem::Flush => datapoint_info!("accounts_db_active", ("flush", value, i64)),
+        //     ActiveStatItem::HashDeDup => {
+        //         datapoint_info!("accounts_db_active", ("hash_dedup", value, i64))
+        //     }
+        //     ActiveStatItem::HashMerkleTree => {
+        //         datapoint_info!("accounts_db_active", ("hash_merkle_tree", value, i64))
+        //     }
+        //     ActiveStatItem::HashScan => {
+        //         datapoint_info!("accounts_db_active", ("hash_scan", value, i64))
+        //     }
+        // };
     }
 }

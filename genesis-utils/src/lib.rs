@@ -1,6 +1,6 @@
 use {
     log::*,
-    solana_accounts_db::hardened_unpack::unpack_genesis_archive,
+    // solana_accounts_db::hardened_unpack::unpack_genesis_archive,
     solana_download_utils::download_genesis_if_missing,
     solana_genesis_config::{GenesisConfig, DEFAULT_GENESIS_ARCHIVE},
     solana_hash::Hash,
@@ -40,7 +40,7 @@ fn get_genesis_config(
     rpc_addr: &SocketAddr,
     ledger_path: &std::path::Path,
     expected_genesis_hash: Option<Hash>,
-    max_genesis_archive_unpacked_size: u64,
+    _max_genesis_archive_unpacked_size: u64,
     no_genesis_fetch: bool,
     use_progress_bar: bool,
 ) -> Result<GenesisConfig, String> {
@@ -52,12 +52,12 @@ fn get_genesis_config(
     if let Ok(tmp_genesis_package) =
         download_genesis_if_missing(rpc_addr, &genesis_package, use_progress_bar)
     {
-        unpack_genesis_archive(
-            &tmp_genesis_package,
-            ledger_path,
-            max_genesis_archive_unpacked_size,
-        )
-        .map_err(|err| format!("Failed to unpack downloaded genesis config: {err}"))?;
+        // unpack_genesis_archive(
+        //     &tmp_genesis_package,
+        //     ledger_path,
+        //     max_genesis_archive_unpacked_size,
+        // )
+        // .map_err(|err| format!("Failed to unpack downloaded genesis config: {err}"))?;
 
         let downloaded_genesis = GenesisConfig::load(ledger_path)
             .map_err(|err| format!("Failed to load downloaded genesis config: {err}"))?;

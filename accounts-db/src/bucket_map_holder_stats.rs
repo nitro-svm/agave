@@ -1,9 +1,8 @@
 use {
     crate::{
-        accounts_index::{in_mem_accounts_index::InMemAccountsIndex, DiskIndexValue, IndexValue},
+        accounts_index::{DiskIndexValue, IndexValue},
         bucket_map_holder::{Age, AtomicAge, BucketMapHolder},
     },
-    solana_clock::Slot,
     solana_time_utils::AtomicInterval,
     std::{
         fmt::Debug,
@@ -154,7 +153,7 @@ impl BucketMapHolderStats {
             )
         }
     }
-
+    #[allow(dead_code)]
     fn calc_percent(ms: u64, elapsed_ms: u64) -> f32 {
         if elapsed_ms == 0 {
             0.0
@@ -185,7 +184,8 @@ impl BucketMapHolderStats {
             + self.held_in_mem.ref_count.load(Ordering::Relaxed);
         in_mem.saturating_sub(held_in_mem) as usize
     }
-
+    #[allow(unused_variables)]
+    #[allow(unused_mut)]
     pub fn report_stats<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>>(
         &self,
         storage: &BucketMapHolder<T, U>,
@@ -216,7 +216,7 @@ impl BucketMapHolderStats {
             .unwrap_or_default();
         let in_mem_stats = Self::get_stats(in_mem_per_bucket_counts);
         let disk_stats = Self::get_stats(disk_per_bucket_counts);
-
+        #[allow(dead_code)]
         const US_PER_MS: u64 = 1_000;
 
         // all metrics during startup are written to a different data point
@@ -226,433 +226,433 @@ impl BucketMapHolderStats {
         // sum of elapsed time in each thread
         let mut thread_time_elapsed_ms = elapsed_ms * storage.threads as u64;
         if storage.is_disk_index_enabled() {
-            if was_startup {
-                // these stats only apply at startup
-                datapoint_info!(
-                    "accounts_index_startup",
-                    (
-                        "entries_created",
-                        disk.map(|disk| disk
-                            .stats
-                            .index
-                            .startup
-                            .entries_created
-                            .swap(0, Ordering::Relaxed))
-                            .unwrap_or_default(),
-                        i64
-                    ),
-                    (
-                        "entries_reused",
-                        disk.map(|disk| disk
-                            .stats
-                            .index
-                            .startup
-                            .entries_reused
-                            .swap(0, Ordering::Relaxed))
-                            .unwrap_or_default(),
-                        i64
-                    ),
-                );
-            }
-            let count_in_mem = self.count_in_mem.load(Ordering::Relaxed);
-            let held_in_mem_slot_list_len =
-                self.held_in_mem.slot_list_len.swap(0, Ordering::Relaxed);
-            // If an entry is held in-mem due to slot list length then it has (at least) two slot
-            // list entries.  Since `approx_size_of_one_entry()` already includes the ref count &
-            // metadata sizes, only add in a second slot list entry.
-            let estimate_mem_bytes = count_in_mem
-                * InMemAccountsIndex::<T, U>::approx_size_of_one_entry()
-                + held_in_mem_slot_list_len as usize * size_of::<(Slot, T)>();
-            datapoint_info!(
-                if startup || was_startup {
-                    thread_time_elapsed_ms *= 2; // more threads are allocated during startup
-                    "accounts_index_startup"
-                } else {
-                    "accounts_index"
-                },
-                ("estimate_mem_bytes", estimate_mem_bytes, i64),
-                (
-                    "flush_should_evict_us",
-                    self.flush_should_evict_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                ("count_in_mem", count_in_mem, i64),
-                ("count", self.total_count(), i64),
-                (
-                    "bg_waiting_percent",
-                    Self::calc_percent(
-                        self.bg_waiting_us.swap(0, Ordering::Relaxed) / US_PER_MS,
-                        thread_time_elapsed_ms
-                    ),
-                    f64
-                ),
-                (
-                    "bg_throttling_wait_percent",
-                    Self::calc_percent(
-                        self.bg_throttling_wait_us.swap(0, Ordering::Relaxed) / US_PER_MS,
-                        thread_time_elapsed_ms
-                    ),
-                    f64
-                ),
-                ("slot_list_len", held_in_mem_slot_list_len, i64),
-                (
-                    "ref_count",
-                    self.held_in_mem.ref_count.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "slot_list_cached",
-                    self.held_in_mem.slot_list_cached.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                ("min_in_bin_mem", in_mem_stats.0, i64),
-                ("max_in_bin_mem", in_mem_stats.1, i64),
-                ("count_from_bins_mem", in_mem_stats.2, i64),
-                ("median_from_bins_mem", in_mem_stats.3, i64),
-                ("min_in_bin_disk", disk_stats.0, i64),
-                ("max_in_bin_disk", disk_stats.1, i64),
-                ("count_from_bins_disk", disk_stats.2, i64),
-                ("median_from_bins_disk", disk_stats.3, i64),
-                (
-                    "gets_from_mem",
-                    self.gets_from_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_mem_us",
-                    self.get_mem_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "gets_missing",
-                    self.gets_missing.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_missing_us",
-                    self.get_missing_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entries_from_mem",
-                    self.entries_from_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entry_mem_us",
-                    self.entry_mem_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "load_disk_found_count",
-                    self.load_disk_found_count.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "load_disk_found_us",
-                    self.load_disk_found_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "load_disk_missing_count",
-                    self.load_disk_missing_count.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "load_disk_missing_us",
-                    self.load_disk_missing_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entries_missing",
-                    self.entries_missing.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entry_missing_us",
-                    self.entry_missing_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "failed_to_evict",
-                    self.failed_to_evict.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "updates_in_mem",
-                    self.updates_in_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_range_us",
-                    self.get_range_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                ("inserts", self.inserts.swap(0, Ordering::Relaxed), i64),
-                ("deletes", self.deletes.swap(0, Ordering::Relaxed), i64),
-                (
-                    "active_threads",
-                    self.active_threads.load(Ordering::Relaxed),
-                    i64
-                ),
-                ("items", self.items.swap(0, Ordering::Relaxed), i64),
-                ("keys", self.keys.swap(0, Ordering::Relaxed), i64),
-                ("ms_per_age", ms_per_age, i64),
-                (
-                    "buckets_scanned",
-                    self.buckets_scanned.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "flush_scan_us",
-                    self.flush_scan_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "flush_update_us",
-                    self.flush_update_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "flush_grow_us",
-                    self.flush_grow_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "flush_evict_us",
-                    self.flush_evict_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "disk_index_resizes",
-                    disk.map(|disk| disk.stats.index.resizes.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_failed_resizes",
-                    disk.map(|disk| disk.stats.index.failed_resizes.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_max_size",
-                    disk.map(|disk| { disk.stats.index.max_size.swap(0, Ordering::Relaxed) })
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_new_file_us",
-                    disk.map(|disk| disk.stats.index.new_file_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_resize_us",
-                    disk.map(|disk| disk.stats.index.resize_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_flush_file_us",
-                    disk.map(|disk| disk.stats.index.flush_file_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_index_file_size",
-                    disk.map(|disk| disk.stats.index.total_file_size.load(Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "index_exceptional_entry",
-                    disk.map(|disk| disk
-                        .stats
-                        .index
-                        .index_uses_uncommon_slot_list_len_or_refcount
-                        .load(Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_data_file_size",
-                    disk.map(|disk| disk.stats.data.total_file_size.load(Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_data_file_count",
-                    disk.map(|disk| disk.stats.data.file_count.load(Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_find_index_entry_mut_us",
-                    disk.map(|disk| disk
-                        .stats
-                        .index
-                        .find_index_entry_mut_us
-                        .swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_index_flush_mmap_us",
-                    disk.map(|disk| disk.stats.index.mmap_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_resizes",
-                    disk.map(|disk| disk.stats.data.resizes.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_max_size",
-                    disk.map(|disk| { disk.stats.data.max_size.swap(0, Ordering::Relaxed) })
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_new_file_us",
-                    disk.map(|disk| disk.stats.data.new_file_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_resize_us",
-                    disk.map(|disk| disk.stats.data.resize_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_flush_file_us",
-                    disk.map(|disk| disk.stats.data.flush_file_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "disk_data_flush_mmap_us",
-                    disk.map(|disk| disk.stats.data.mmap_us.swap(0, Ordering::Relaxed))
-                        .unwrap_or_default(),
-                    i64
-                ),
-                (
-                    "flush_entries_updated_on_disk",
-                    self.flush_entries_updated_on_disk
-                        .swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "flush_entries_evicted_from_mem",
-                    self.flush_entries_evicted_from_mem
-                        .swap(0, Ordering::Relaxed),
-                    i64
-                ),
-            );
-        } else {
-            datapoint_info!(
-                if startup || was_startup {
-                    thread_time_elapsed_ms *= 2; // more threads are allocated during startup
-                    "accounts_index_startup"
-                } else {
-                    "accounts_index"
-                },
-                (
-                    "estimate_mem_bytes",
-                    self.count_in_mem.load(Ordering::Relaxed)
-                        * InMemAccountsIndex::<T, U>::approx_size_of_one_entry(),
-                    i64
-                ),
-                (
-                    "count_in_mem",
-                    self.count_in_mem.load(Ordering::Relaxed),
-                    i64
-                ),
-                ("count", self.total_count(), i64),
-                (
-                    "bg_waiting_percent",
-                    Self::calc_percent(
-                        self.bg_waiting_us.swap(0, Ordering::Relaxed) / US_PER_MS,
-                        thread_time_elapsed_ms
-                    ),
-                    f64
-                ),
-                (
-                    "bg_throttling_wait_percent",
-                    Self::calc_percent(
-                        self.bg_throttling_wait_us.swap(0, Ordering::Relaxed) / US_PER_MS,
-                        thread_time_elapsed_ms
-                    ),
-                    f64
-                ),
-                ("min_in_bin_mem", in_mem_stats.0, i64),
-                ("max_in_bin_mem", in_mem_stats.1, i64),
-                ("count_from_bins_mem", in_mem_stats.2, i64),
-                ("median_from_bins_mem", in_mem_stats.3, i64),
-                (
-                    "gets_from_mem",
-                    self.gets_from_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_mem_us",
-                    self.get_mem_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "gets_missing",
-                    self.gets_missing.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_missing_us",
-                    self.get_missing_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entries_from_mem",
-                    self.entries_from_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entry_mem_us",
-                    self.entry_mem_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entries_missing",
-                    self.entries_missing.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "entry_missing_us",
-                    self.entry_missing_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "updates_in_mem",
-                    self.updates_in_mem.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                (
-                    "get_range_us",
-                    self.get_range_us.swap(0, Ordering::Relaxed),
-                    i64
-                ),
-                ("inserts", self.inserts.swap(0, Ordering::Relaxed), i64),
-                ("deletes", self.deletes.swap(0, Ordering::Relaxed), i64),
-                (
-                    "active_threads",
-                    self.active_threads.load(Ordering::Relaxed),
-                    i64
-                ),
-                ("items", self.items.swap(0, Ordering::Relaxed), i64),
-                ("items_us", self.items_us.swap(0, Ordering::Relaxed), i64),
-                ("keys", self.keys.swap(0, Ordering::Relaxed), i64),
-            );
+            //     if was_startup {
+            //         // these stats only apply at startup
+            //         datapoint_info!(
+            //             "accounts_index_startup",
+            //             (
+            //                 "entries_created",
+            //                 disk.map(|disk| disk
+            //                     .stats
+            //                     .index
+            //                     .startup
+            //                     .entries_created
+            //                     .swap(0, Ordering::Relaxed))
+            //                     .unwrap_or_default(),
+            //                 i64
+            //             ),
+            //             (
+            //                 "entries_reused",
+            //                 disk.map(|disk| disk
+            //                     .stats
+            //                     .index
+            //                     .startup
+            //                     .entries_reused
+            //                     .swap(0, Ordering::Relaxed))
+            //                     .unwrap_or_default(),
+            //                 i64
+            //             ),
+            //         );
+            //     }
+            //     let count_in_mem = self.count_in_mem.load(Ordering::Relaxed);
+            //     let held_in_mem_slot_list_len =
+            //         self.held_in_mem.slot_list_len.swap(0, Ordering::Relaxed);
+            //     // If an entry is held in-mem due to slot list length then it has (at least) two slot
+            //     // list entries.  Since `approx_size_of_one_entry()` already includes the ref count &
+            //     // metadata sizes, only add in a second slot list entry.
+            //     let estimate_mem_bytes = count_in_mem
+            //         * InMemAccountsIndex::<T, U>::approx_size_of_one_entry()
+            //         + held_in_mem_slot_list_len as usize * size_of::<(Slot, T)>();
+            //     datapoint_info!(
+            //         if startup || was_startup {
+            //             thread_time_elapsed_ms *= 2; // more threads are allocated during startup
+            //             "accounts_index_startup"
+            //         } else {
+            //             "accounts_index"
+            //         },
+            //         ("estimate_mem_bytes", estimate_mem_bytes, i64),
+            //         (
+            //             "flush_should_evict_us",
+            //             self.flush_should_evict_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("count_in_mem", count_in_mem, i64),
+            //         ("count", self.total_count(), i64),
+            //         (
+            //             "bg_waiting_percent",
+            //             Self::calc_percent(
+            //                 self.bg_waiting_us.swap(0, Ordering::Relaxed) / US_PER_MS,
+            //                 thread_time_elapsed_ms
+            //             ),
+            //             f64
+            //         ),
+            //         (
+            //             "bg_throttling_wait_percent",
+            //             Self::calc_percent(
+            //                 self.bg_throttling_wait_us.swap(0, Ordering::Relaxed) / US_PER_MS,
+            //                 thread_time_elapsed_ms
+            //             ),
+            //             f64
+            //         ),
+            //         ("slot_list_len", held_in_mem_slot_list_len, i64),
+            //         (
+            //             "ref_count",
+            //             self.held_in_mem.ref_count.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "slot_list_cached",
+            //             self.held_in_mem.slot_list_cached.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("min_in_bin_mem", in_mem_stats.0, i64),
+            //         ("max_in_bin_mem", in_mem_stats.1, i64),
+            //         ("count_from_bins_mem", in_mem_stats.2, i64),
+            //         ("median_from_bins_mem", in_mem_stats.3, i64),
+            //         ("min_in_bin_disk", disk_stats.0, i64),
+            //         ("max_in_bin_disk", disk_stats.1, i64),
+            //         ("count_from_bins_disk", disk_stats.2, i64),
+            //         ("median_from_bins_disk", disk_stats.3, i64),
+            //         (
+            //             "gets_from_mem",
+            //             self.gets_from_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_mem_us",
+            //             self.get_mem_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "gets_missing",
+            //             self.gets_missing.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_missing_us",
+            //             self.get_missing_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entries_from_mem",
+            //             self.entries_from_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entry_mem_us",
+            //             self.entry_mem_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "load_disk_found_count",
+            //             self.load_disk_found_count.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "load_disk_found_us",
+            //             self.load_disk_found_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "load_disk_missing_count",
+            //             self.load_disk_missing_count.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "load_disk_missing_us",
+            //             self.load_disk_missing_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entries_missing",
+            //             self.entries_missing.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entry_missing_us",
+            //             self.entry_missing_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "failed_to_evict",
+            //             self.failed_to_evict.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "updates_in_mem",
+            //             self.updates_in_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_range_us",
+            //             self.get_range_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("inserts", self.inserts.swap(0, Ordering::Relaxed), i64),
+            //         ("deletes", self.deletes.swap(0, Ordering::Relaxed), i64),
+            //         (
+            //             "active_threads",
+            //             self.active_threads.load(Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("items", self.items.swap(0, Ordering::Relaxed), i64),
+            //         ("keys", self.keys.swap(0, Ordering::Relaxed), i64),
+            //         ("ms_per_age", ms_per_age, i64),
+            //         (
+            //             "buckets_scanned",
+            //             self.buckets_scanned.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_scan_us",
+            //             self.flush_scan_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_update_us",
+            //             self.flush_update_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_grow_us",
+            //             self.flush_grow_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_evict_us",
+            //             self.flush_evict_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_resizes",
+            //             disk.map(|disk| disk.stats.index.resizes.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_failed_resizes",
+            //             disk.map(|disk| disk.stats.index.failed_resizes.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_max_size",
+            //             disk.map(|disk| { disk.stats.index.max_size.swap(0, Ordering::Relaxed) })
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_new_file_us",
+            //             disk.map(|disk| disk.stats.index.new_file_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_resize_us",
+            //             disk.map(|disk| disk.stats.index.resize_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_flush_file_us",
+            //             disk.map(|disk| disk.stats.index.flush_file_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_index_file_size",
+            //             disk.map(|disk| disk.stats.index.total_file_size.load(Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "index_exceptional_entry",
+            //             disk.map(|disk| disk
+            //                 .stats
+            //                 .index
+            //                 .index_uses_uncommon_slot_list_len_or_refcount
+            //                 .load(Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_data_file_size",
+            //             disk.map(|disk| disk.stats.data.total_file_size.load(Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_data_file_count",
+            //             disk.map(|disk| disk.stats.data.file_count.load(Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_find_index_entry_mut_us",
+            //             disk.map(|disk| disk
+            //                 .stats
+            //                 .index
+            //                 .find_index_entry_mut_us
+            //                 .swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_index_flush_mmap_us",
+            //             disk.map(|disk| disk.stats.index.mmap_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_resizes",
+            //             disk.map(|disk| disk.stats.data.resizes.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_max_size",
+            //             disk.map(|disk| { disk.stats.data.max_size.swap(0, Ordering::Relaxed) })
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_new_file_us",
+            //             disk.map(|disk| disk.stats.data.new_file_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_resize_us",
+            //             disk.map(|disk| disk.stats.data.resize_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_flush_file_us",
+            //             disk.map(|disk| disk.stats.data.flush_file_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "disk_data_flush_mmap_us",
+            //             disk.map(|disk| disk.stats.data.mmap_us.swap(0, Ordering::Relaxed))
+            //                 .unwrap_or_default(),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_entries_updated_on_disk",
+            //             self.flush_entries_updated_on_disk
+            //                 .swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "flush_entries_evicted_from_mem",
+            //             self.flush_entries_evicted_from_mem
+            //                 .swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //     );
+            // } else {
+            //     datapoint_info!(
+            //         if startup || was_startup {
+            //             thread_time_elapsed_ms *= 2; // more threads are allocated during startup
+            //             "accounts_index_startup"
+            //         } else {
+            //             "accounts_index"
+            //         },
+            //         (
+            //             "estimate_mem_bytes",
+            //             self.count_in_mem.load(Ordering::Relaxed)
+            //                 * InMemAccountsIndex::<T, U>::approx_size_of_one_entry(),
+            //             i64
+            //         ),
+            //         (
+            //             "count_in_mem",
+            //             self.count_in_mem.load(Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("count", self.total_count(), i64),
+            //         (
+            //             "bg_waiting_percent",
+            //             Self::calc_percent(
+            //                 self.bg_waiting_us.swap(0, Ordering::Relaxed) / US_PER_MS,
+            //                 thread_time_elapsed_ms
+            //             ),
+            //             f64
+            //         ),
+            //         (
+            //             "bg_throttling_wait_percent",
+            //             Self::calc_percent(
+            //                 self.bg_throttling_wait_us.swap(0, Ordering::Relaxed) / US_PER_MS,
+            //                 thread_time_elapsed_ms
+            //             ),
+            //             f64
+            //         ),
+            //         ("min_in_bin_mem", in_mem_stats.0, i64),
+            //         ("max_in_bin_mem", in_mem_stats.1, i64),
+            //         ("count_from_bins_mem", in_mem_stats.2, i64),
+            //         ("median_from_bins_mem", in_mem_stats.3, i64),
+            //         (
+            //             "gets_from_mem",
+            //             self.gets_from_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_mem_us",
+            //             self.get_mem_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "gets_missing",
+            //             self.gets_missing.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_missing_us",
+            //             self.get_missing_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entries_from_mem",
+            //             self.entries_from_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entry_mem_us",
+            //             self.entry_mem_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entries_missing",
+            //             self.entries_missing.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "entry_missing_us",
+            //             self.entry_missing_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "updates_in_mem",
+            //             self.updates_in_mem.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         (
+            //             "get_range_us",
+            //             self.get_range_us.swap(0, Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("inserts", self.inserts.swap(0, Ordering::Relaxed), i64),
+            //         ("deletes", self.deletes.swap(0, Ordering::Relaxed), i64),
+            //         (
+            //             "active_threads",
+            //             self.active_threads.load(Ordering::Relaxed),
+            //             i64
+            //         ),
+            //         ("items", self.items.swap(0, Ordering::Relaxed), i64),
+            //         ("items_us", self.items_us.swap(0, Ordering::Relaxed), i64),
+            //         ("keys", self.keys.swap(0, Ordering::Relaxed), i64),
+            //     );
         }
     }
 }

@@ -1,12 +1,5 @@
 use {
     agave_feature_set::FeatureSet,
-    openssl::{
-        bn::{BigNum, BigNumContext},
-        ec::{EcGroup, EcKey, EcPoint},
-        nid::Nid,
-        pkey::PKey,
-        sign::Verifier,
-    },
     solana_precompile_error::PrecompileError,
     solana_secp256r1_program::{
         Secp256r1SignatureOffsets, COMPRESSED_PUBKEY_SERIALIZED_SIZE, FIELD_SIZE,
@@ -15,11 +8,20 @@ use {
     },
 };
 
+#[cfg(not(target_arch = "riscv32"))]
 pub fn verify(
     data: &[u8],
     instruction_datas: &[&[u8]],
     _feature_set: &FeatureSet,
 ) -> Result<(), PrecompileError> {
+    use openssl::{
+        bn::{BigNum, BigNumContext},
+        ec::{EcGroup, EcKey, EcPoint},
+        nid::Nid,
+        pkey::PKey,
+        sign::Verifier,
+    };
+
     if data.len() < SIGNATURE_OFFSETS_START {
         return Err(PrecompileError::InvalidInstructionDataSize);
     }
@@ -139,6 +141,15 @@ pub fn verify(
     Ok(())
 }
 
+#[cfg(target_arch = "riscv32")]
+pub fn verify(
+    _data: &[u8],
+    _instruction_datas: &[&[u8]],
+    _feature_set: &FeatureSet,
+) -> Result<(), PrecompileError> {
+    Err(PrecompileError::InvalidInstructionDataSize)
+}
+
 fn get_data_slice<'a>(
     data: &'a [u8],
     instruction_datas: &'a [&[u8]],
@@ -171,6 +182,11 @@ mod tests {
         super::*,
         crate::test_verify_with_alignment,
         bytemuck::bytes_of,
+        openssl::{
+            bn::{BigNum, BigNumContext},
+            ec::{EcGroup, EcKey},
+            nid::Nid,
+        },
         solana_secp256r1_program::{
             new_secp256r1_instruction_with_signature, sign_message, DATA_START, SECP256R1_ORDER,
         },

@@ -34,7 +34,7 @@ frozen-abi = [
     "solana-hard-forks/frozen-abi",
     "solana-inflation/frozen-abi",
     "solana-instruction/frozen-abi",
-    "solana-perf/frozen-abi",
+    # "solana-perf/frozen-abi",
     "solana-program-runtime/frozen-abi",
     "solana-rent/frozen-abi",
     "solana-rent-collector/frozen-abi",
@@ -59,7 +59,7 @@ bincode = { workspace = true }
 blake3 = { workspace = true }
 bv = { workspace = true, features = ["serde"] }
 bytemuck = { workspace = true }
-bzip2 = { workspace = true }
+# bzip2 = { workspace = true }
 crossbeam-channel = { workspace = true }
 dashmap = { workspace = true, features = ["rayon", "raw-api"] }
 dir-diff = { workspace = true }
@@ -69,7 +69,7 @@ im = { workspace = true, features = ["rayon", "serde"] }
 itertools = { workspace = true }
 libc = { workspace = true }
 log = { workspace = true }
-lz4 = { workspace = true }
+# lz4 = { workspace = true }
 memmap2 = { workspace = true }
 mockall = { workspace = true }
 modular-bitfield = { workspace = true }
@@ -126,13 +126,14 @@ solana-loader-v3-interface = { workspace = true, features = ["bincode"] }
 solana-loader-v4-interface = { workspace = true, features = ["serde"] }
 solana-measure = { workspace = true }
 solana-message = { workspace = true }
-solana-metrics = { workspace = true }
+# solana-metrics = { workspace = true }
 solana-native-token = { workspace = true }
 solana-nohash-hasher = { workspace = true }
 solana-nonce = { workspace = true }
 solana-nonce-account = { workspace = true }
 solana-packet = { workspace = true }
-solana-perf = { workspace = true }
+# solana-perf = { workspace = true }
+solana-patches = { workspace = true }
 solana-poh-config = { workspace = true }
 solana-precompile-error = { workspace = true }
 solana-program-runtime = { workspace = true, features = ["metrics"] }
@@ -178,11 +179,11 @@ spl-generic-token = { workspace = true }
 static_assertions = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
 strum_macros = { workspace = true }
-symlink = { workspace = true }
-tar = { workspace = true }
+# symlink = { workspace = true }
+# tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
-zstd = { workspace = true }
+# zstd = { workspace = true }
 
 [dev-dependencies]
 agave-transaction-view = { workspace = true }
