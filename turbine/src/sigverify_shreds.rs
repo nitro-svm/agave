@@ -189,6 +189,8 @@ fn run_shred_sigverify<const K: usize>(
     stats.num_discards_post += count_discards(&packets);
     // Verify retransmitter's signature, and resign shreds
     // Merkle root as the retransmitter node.
+    // Verify retransmitter's signature, and resign shreds
+    // Merkle root as the retransmitter node.
     let resign_start = Instant::now();
     thread_pool.install(|| {
         packets
@@ -502,6 +504,16 @@ impl ShredSigVerifyStats {
                 i64
             ),
             ("num_retransmit_shreds", self.num_retransmit_shreds, i64),
+            (
+                "num_unknown_slot_leader",
+                self.num_unknown_slot_leader.load(Ordering::Relaxed),
+                i64
+            ),
+            (
+                "num_unknown_turbine_parent",
+                self.num_unknown_turbine_parent.load(Ordering::Relaxed),
+                i64
+            ),
             (
                 "num_unknown_slot_leader",
                 self.num_unknown_slot_leader.load(Ordering::Relaxed),

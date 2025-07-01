@@ -1420,7 +1420,14 @@ impl ReplayStage {
         let (root_bank, frozen_banks, duplicate_slot_hashes) = {
             let bank_forks = bank_forks.read().unwrap();
             let root_bank = bank_forks.root_bank();
+            let root_bank = bank_forks.root_bank();
             let duplicate_slots = blockstore
+                // It is important that the root bank is not marked as duplicate on initialization.
+                // Although this bank could contain a duplicate proof, the fact that it was rooted
+                // either during a previous run or artificially means that we should ignore any
+                // duplicate proofs for the root slot, thus we start consuming duplicate proofs
+                // from the root slot + 1
+                .duplicate_slots_iterator(root_bank.slot().saturating_add(1))
                 // It is important that the root bank is not marked as duplicate on initialization.
                 // Although this bank could contain a duplicate proof, the fact that it was rooted
                 // either during a previous run or artificially means that we should ignore any
@@ -2460,10 +2467,28 @@ impl ReplayStage {
         // `finalized` confirmation if a node is materially staked and servicing RPC requests at
         // the same time for development purposes.
         let node_vote_state = (*vote_account_pubkey, tower.vote_state.clone());
+        // Send (voted) bank along with the updated vote account state for this node, the vote
+        // state is always newer than the one in the bank by definition, because banks can't
+        // contain vote transactions which are voting on its own slot.
+        //
+        // It should be acceptable to aggressively use the vote for our own _local view_ of
+        // commitment aggregation, although it's not guaranteed that the new vote transaction is
+        // observed by other nodes at this point.
+        //
+        // The justification stems from the assumption of the sensible voting behavior from the
+        // consensus subsystem. That's because it means there would be a slashing possibility
+        // otherwise.
+        //
+        // This behavior isn't significant normally for mainnet-beta, because staked nodes aren't
+        // servicing RPC requests. However, this eliminates artificial 1-slot delay of the
+        // `finalized` confirmation if a node is materially staked and servicing RPC requests at
+        // the same time for development purposes.
+        let node_vote_state = (*vote_account_pubkey, tower.vote_state.clone());
         Self::update_commitment_cache(
             bank.clone(),
             bank_forks.read().unwrap().root(),
             progress.get_fork_stats(bank.slot()).unwrap().total_stake,
+            node_vote_state,
             node_vote_state,
             lockouts_sender,
         );
@@ -2833,6 +2858,12 @@ impl ReplayStage {
             total_stake,
             node_vote_state,
         )) {
+        if let Err(e) = lockouts_sender.send(CommitmentAggregationData::new(
+            bank,
+            root,
+            total_stake,
+            node_vote_state,
+        )) {
             trace!("lockouts_sender failed: {:?}", e);
         }
     }
@@ -3139,10 +3170,14 @@ impl ReplayStage {
 
                 let replay_stats = bank_progress.replay_stats.clone();
                 let mut is_unified_scheduler_enabled = false;
+                let mut is_unified_scheduler_enabled = false;
 
                 if let Some((result, completed_execute_timings)) =
                     bank.wait_for_completed_scheduler()
                 {
+                    // It's guaranteed that wait_for_completed_scheduler() returns Some(_), iff the
+                    // unified scheduler is enabled for the bank.
+                    is_unified_scheduler_enabled = true;
                     // It's guaranteed that wait_for_completed_scheduler() returns Some(_), iff the
                     // unified scheduler is enabled for the bank.
                     is_unified_scheduler_enabled = true;
@@ -3153,6 +3188,7 @@ impl ReplayStage {
                         .write()
                         .unwrap()
                         .batch_execute
+                        .accumulate(metrics, is_unified_scheduler_enabled);
                         .accumulate(metrics, is_unified_scheduler_enabled);
 
                     if let Err(err) = result {
@@ -3330,6 +3366,7 @@ impl ReplayStage {
                         bank.slot(),
                         &bank.last_blockhash().to_string(),
                         &bank.get_rewards_and_num_partitions(),
+                        &bank.get_rewards_and_num_partitions(),
                         Some(bank.clock().unix_timestamp),
                         Some(bank.block_height()),
                         bank.executed_transaction_count(),
@@ -3344,6 +3381,7 @@ impl ReplayStage {
                     r_replay_progress.num_entries,
                     r_replay_progress.num_shreds,
                     bank_complete_time.as_us(),
+                    is_unified_scheduler_enabled,
                     is_unified_scheduler_enabled,
                 );
                 execute_timings.accumulate(&r_replay_stats.batch_execute.totals);
@@ -4337,6 +4375,9 @@ pub(crate) mod tests {
         blockstore_processor::{
             confirm_full_slot, fill_blockstore_slot_with_ticks, process_bank_0, ProcessOptions,
         },
+        blockstore_processor::{
+            confirm_full_slot, fill_blockstore_slot_with_ticks, process_bank_0, ProcessOptions,
+        },
         crossbeam_channel::unbounded,
         itertools::Itertools,
         solana_client::connection_cache::ConnectionCache,
@@ -5158,6 +5199,7 @@ pub(crate) mod tests {
             let mut vote_state = vote_state::from(&leader_vote_account).unwrap();
             vote_state::process_slot_vote_unchecked(&mut vote_state, vote_slot);
             let versioned = VoteStateVersions::new_current(vote_state.clone());
+            let versioned = VoteStateVersions::new_current(vote_state.clone());
             vote_state::to(&versioned, &mut leader_vote_account).unwrap();
             bank.store_account(pubkey, &leader_vote_account);
             (*pubkey, TowerVoteState::from(vote_state))
@@ -5225,10 +5267,12 @@ pub(crate) mod tests {
 
             let arc_bank = bank_forks.read().unwrap().get(i).unwrap();
             let node_vote_state = leader_vote(i - 1, &arc_bank, &leader_voting_pubkey);
+            let node_vote_state = leader_vote(i - 1, &arc_bank, &leader_voting_pubkey);
             ReplayStage::update_commitment_cache(
                 arc_bank.clone(),
                 0,
                 leader_lamports,
+                node_vote_state,
                 node_vote_state,
                 &lockouts_sender,
             );

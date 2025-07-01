@@ -318,6 +318,12 @@ pub(crate) fn into_shreds(
             &shred2,
             shred_version,
         )?;
+        check_shreds(
+            Some(|_| Some(slot_leader).copied()),
+            &shred1,
+            &shred2,
+            shred_version,
+        )?;
         Ok((shred1, shred2))
     }
 }

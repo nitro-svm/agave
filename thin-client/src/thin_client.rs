@@ -466,6 +466,8 @@ where
             Ok(transaction_count) => {
                 self.optimizer
                     .report(index, now.elapsed().as_millis() as u64);
+                self.optimizer
+                    .report(index, now.elapsed().as_millis() as u64);
                 Ok(transaction_count)
             }
             Err(e) => {
@@ -486,6 +488,8 @@ where
             .get_transaction_count_with_commitment(commitment_config)
         {
             Ok(transaction_count) => {
+                self.optimizer
+                    .report(index, now.elapsed().as_millis() as u64);
                 self.optimizer
                     .report(index, now.elapsed().as_millis() as u64);
                 Ok(transaction_count)
@@ -528,6 +532,8 @@ where
         let now = Instant::now();
         match self.rpc_clients[index].get_latest_blockhash_with_commitment(commitment_config) {
             Ok((blockhash, last_valid_block_height)) => {
+                self.optimizer
+                    .report(index, now.elapsed().as_millis() as u64);
                 self.optimizer
                     .report(index, now.elapsed().as_millis() as u64);
                 Ok((blockhash, last_valid_block_height))

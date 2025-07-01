@@ -495,6 +495,7 @@ pub fn parse_token(
                     info: json!({
                         "mint": account_keys[instruction.accounts[0] as usize].to_string(),
                         "amount": amount.to_string(),
+                        "amount": amount.to_string(),
                     }),
                 })
             }
@@ -1743,6 +1744,7 @@ mod test {
                 instruction_type: "amountToUiAmount".to_string(),
                 info: json!({
                    "mint": mint_pubkey.to_string(),
+                   "amount": "4242",
                    "amount": "4242",
                 })
             }

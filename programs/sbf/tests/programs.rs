@@ -157,12 +157,14 @@ fn test_program_sbf_sanity() {
             ("solana_sbf_rust_iter", true),
             ("solana_sbf_rust_many_args", true),
             ("solana_sbf_rust_mem", true),
+            ("solana_sbf_rust_mem", true),
             ("solana_sbf_rust_membuiltins", true),
             ("solana_sbf_rust_noop", true),
             ("solana_sbf_rust_panic", false),
             ("solana_sbf_rust_param_passing", true),
             ("solana_sbf_rust_poseidon", true),
             ("solana_sbf_rust_rand", true),
+            ("solana_sbf_rust_remaining_compute_units", true),
             ("solana_sbf_rust_remaining_compute_units", true),
             ("solana_sbf_rust_sanity", true),
             ("solana_sbf_rust_secp256k1_recover", true),
@@ -2344,6 +2346,18 @@ fn test_program_sbf_realloc() {
                         Some(&mint_pubkey),
                     ),
                 )
+                .send_and_confirm_message(
+                    signer,
+                    Message::new(
+                        &[
+                            instruction,
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
+                        Some(&mint_pubkey),
+                    ),
+                )
                 .unwrap_err()
                 .unwrap(),
             TransactionError::InstructionError(0, InstructionError::ReadonlyDataModified)
@@ -2355,6 +2369,12 @@ fn test_program_sbf_realloc() {
                 .send_and_confirm_message(
                     signer,
                     Message::new(
+                        &[
+                            realloc(&program_id, &pubkey, usize::MAX, &mut bump),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
                         &[
                             realloc(&program_id, &pubkey, usize::MAX, &mut bump),
                             ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2374,6 +2394,12 @@ fn test_program_sbf_realloc() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        realloc(&program_id, &pubkey, 0, &mut bump),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     &[
                         realloc(&program_id, &pubkey, 0, &mut bump),
                         ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2403,6 +2429,17 @@ fn test_program_sbf_realloc() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                         ),
                     ],
+                    &[
+                        realloc_extend_and_undo(
+                            &program_id,
+                            &pubkey,
+                            MAX_PERMITTED_DATA_INCREASE,
+                            &mut bump,
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 ),
             )
@@ -2416,6 +2453,17 @@ fn test_program_sbf_realloc() {
                 .send_and_confirm_message(
                     signer,
                     Message::new(
+                        &[
+                            realloc_extend_and_undo(
+                                &program_id,
+                                &pubkey,
+                                MAX_PERMITTED_DATA_INCREASE + 1,
+                                &mut bump,
+                            ),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
                         &[
                             realloc_extend_and_undo(
                                 &program_id,
@@ -2452,6 +2500,17 @@ fn test_program_sbf_realloc() {
                                 LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                             ),
                         ],
+                        &[
+                            realloc(
+                                &program_id,
+                                &pubkey,
+                                MAX_PERMITTED_DATA_INCREASE + 1,
+                                &mut bump
+                            ),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
                         Some(&mint_pubkey),
                     ),
                 )
@@ -2467,6 +2526,18 @@ fn test_program_sbf_realloc() {
                 .send_and_confirm_message(
                     signer,
                     Message::new(
+                        &[
+                            realloc_extend_and_fill(
+                                &program_id,
+                                &pubkey,
+                                MAX_PERMITTED_DATA_INCREASE,
+                                1,
+                                &mut bump,
+                            ),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                            ),
+                        ],
                         &[
                             realloc_extend_and_fill(
                                 &program_id,
@@ -2507,6 +2578,17 @@ fn test_program_sbf_realloc() {
                                 LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                             ),
                         ],
+                        &[
+                            realloc_extend(
+                                &program_id,
+                                &pubkey,
+                                MAX_PERMITTED_DATA_INCREASE,
+                                &mut bump
+                            ),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
                         Some(&mint_pubkey),
                     )
                 )
@@ -2520,6 +2602,12 @@ fn test_program_sbf_realloc() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        realloc(&program_id, &pubkey, 6, &mut bump),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     &[
                         realloc(&program_id, &pubkey, 6, &mut bump),
                         ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2545,6 +2633,12 @@ fn test_program_sbf_realloc() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                         ),
                     ],
+                    &[
+                        extend_and_write_u64(&program_id, &pubkey, 0x1122334455667788),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 ),
             )
@@ -2558,6 +2652,12 @@ fn test_program_sbf_realloc() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        realloc(&program_id, &pubkey, 0, &mut bump),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     &[
                         realloc(&program_id, &pubkey, 0, &mut bump),
                         ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2586,6 +2686,16 @@ fn test_program_sbf_realloc() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                         ),
                     ],
+                    &[
+                        Instruction::new_with_bytes(
+                            program_id,
+                            &[REALLOC_AND_ASSIGN],
+                            vec![AccountMeta::new(pubkey, false)],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 ),
             )
@@ -2601,6 +2711,12 @@ fn test_program_sbf_realloc() {
                 .send_and_confirm_message(
                     signer,
                     Message::new(
+                        &[
+                            realloc(&program_id, &pubkey, 0, &mut bump),
+                            ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                                LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                            ),
+                        ],
                         &[
                             realloc(&program_id, &pubkey, 0, &mut bump),
                             ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2680,6 +2796,12 @@ fn test_program_sbf_realloc() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                         ),
                     ],
+                    &[
+                        realloc(&program_id, &pubkey, 0, &mut bump),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 ),
             )
@@ -2692,6 +2814,16 @@ fn test_program_sbf_realloc() {
             .send_and_confirm_message(
                 &[&mint_keypair, &keypair],
                 Message::new(
+                    &[
+                        Instruction::new_with_bytes(
+                            program_id,
+                            &[ZERO_INIT],
+                            vec![AccountMeta::new(pubkey, true)],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     &[
                         Instruction::new_with_bytes(
                             program_id,
@@ -2772,6 +2904,19 @@ fn test_program_sbf_realloc_invoke() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                         ),
                     ],
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_ZERO_RO],
+                            vec![
+                                AccountMeta::new_readonly(pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 )
             )
@@ -2793,6 +2938,12 @@ fn test_program_sbf_realloc_invoke() {
                         LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                     ),
                 ],
+                &[
+                    realloc(&realloc_program_id, &pubkey, 0, &mut bump),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 Some(&mint_pubkey),
             ),
         )
@@ -2808,6 +2959,19 @@ fn test_program_sbf_realloc_invoke() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_MAX_PLUS_ONE],
+                            vec![
+                                AccountMeta::new(pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     &[
                         Instruction::new_with_bytes(
                             realloc_invoke_program_id,
@@ -2848,6 +3012,19 @@ fn test_program_sbf_realloc_invoke() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                         ),
                     ],
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_MAX_TWICE],
+                            vec![
+                                AccountMeta::new(pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 )
             )
@@ -2861,6 +3038,12 @@ fn test_program_sbf_realloc_invoke() {
         .send_and_confirm_message(
             signer,
             Message::new(
+                &[
+                    realloc(&realloc_program_id, &pubkey, 0, &mut bump),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 &[
                     realloc(&realloc_program_id, &pubkey, 0, &mut bump),
                     ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2894,6 +3077,19 @@ fn test_program_sbf_realloc_invoke() {
                         LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                     ),
                 ],
+                &[
+                    Instruction::new_with_bytes(
+                        realloc_invoke_program_id,
+                        &[INVOKE_REALLOC_AND_ASSIGN],
+                        vec![
+                            AccountMeta::new(pubkey, false),
+                            AccountMeta::new_readonly(realloc_program_id, false),
+                        ],
+                    ),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 Some(&mint_pubkey),
             ),
         )
@@ -2909,6 +3105,12 @@ fn test_program_sbf_realloc_invoke() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        realloc(&realloc_program_id, &pubkey, 0, &mut bump),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     &[
                         realloc(&realloc_program_id, &pubkey, 0, &mut bump),
                         ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
@@ -2996,6 +3198,12 @@ fn test_program_sbf_realloc_invoke() {
                         LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                     ),
                 ],
+                &[
+                    realloc(&realloc_program_id, &pubkey, 0, &mut bump),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 Some(&mint_pubkey),
             ),
         )
@@ -3010,6 +3218,19 @@ fn test_program_sbf_realloc_invoke() {
         .send_and_confirm_message(
             signer,
             Message::new(
+                &[
+                    Instruction::new_with_bytes(
+                        realloc_invoke_program_id,
+                        &[INVOKE_REALLOC_INVOKE_CHECK],
+                        vec![
+                            AccountMeta::new(invoke_pubkey, false),
+                            AccountMeta::new_readonly(realloc_program_id, false),
+                        ],
+                    ),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 &[
                     Instruction::new_with_bytes(
                         realloc_invoke_program_id,
@@ -3100,6 +3321,20 @@ fn test_program_sbf_realloc_invoke() {
                         LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
                     ),
                 ],
+                &[
+                    Instruction::new_with_bytes(
+                        realloc_invoke_program_id,
+                        &instruction_data,
+                        vec![
+                            AccountMeta::new(invoke_pubkey, false),
+                            AccountMeta::new_readonly(realloc_invoke_program_id, false),
+                            AccountMeta::new_readonly(realloc_program_id, false),
+                        ],
+                    ),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 Some(&mint_pubkey),
             ),
         )
@@ -3121,6 +3356,19 @@ fn test_program_sbf_realloc_invoke() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_MAX_INVOKE_MAX],
+                            vec![
+                                AccountMeta::new(invoke_pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     &[
                         Instruction::new_with_bytes(
                             realloc_invoke_program_id,
@@ -3160,6 +3408,19 @@ fn test_program_sbf_realloc_invoke() {
         let result = bank_client.send_and_confirm_message(
             signer,
             Message::new(
+                &[
+                    Instruction::new_with_bytes(
+                        realloc_invoke_program_id,
+                        &instruction_data,
+                        vec![
+                            AccountMeta::new(invoke_pubkey, false),
+                            AccountMeta::new_readonly(realloc_invoke_program_id, false),
+                        ],
+                    ),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 &[
                     Instruction::new_with_bytes(
                         realloc_invoke_program_id,
@@ -3214,6 +3475,20 @@ fn test_program_sbf_realloc_invoke() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                         ),
                     ],
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_INVOKE_MAX_TWICE],
+                            vec![
+                                AccountMeta::new(invoke_pubkey, false),
+                                AccountMeta::new_readonly(realloc_invoke_program_id, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 )
             )
@@ -3241,6 +3516,19 @@ fn test_program_sbf_realloc_invoke() {
             .send_and_confirm_message(
                 signer,
                 Message::new(
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_EXTEND_MAX, 1, i as u8, (i / 255) as u8],
+                            vec![
+                                AccountMeta::new(pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                        ),
+                    ],
                     &[
                         Instruction::new_with_bytes(
                             realloc_invoke_program_id,
@@ -3284,6 +3572,19 @@ fn test_program_sbf_realloc_invoke() {
                             LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
                         ),
                     ],
+                    &[
+                        Instruction::new_with_bytes(
+                            realloc_invoke_program_id,
+                            &[INVOKE_REALLOC_EXTEND_MAX, 2, 1, 1],
+                            vec![
+                                AccountMeta::new(pubkey, false),
+                                AccountMeta::new_readonly(realloc_program_id, false),
+                            ],
+                        ),
+                        ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                            LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST
+                        ),
+                    ],
                     Some(&mint_pubkey),
                 )
             )
@@ -3304,6 +3605,19 @@ fn test_program_sbf_realloc_invoke() {
         .send_and_confirm_message(
             signer,
             Message::new(
+                &[
+                    Instruction::new_with_bytes(
+                        realloc_invoke_program_id,
+                        &instruction_data,
+                        vec![
+                            AccountMeta::new(invoke_pubkey, false),
+                            AccountMeta::new_readonly(realloc_invoke_program_id, false),
+                        ],
+                    ),
+                    ComputeBudgetInstruction::set_loaded_accounts_data_size_limit(
+                        LOADED_ACCOUNTS_DATA_SIZE_LIMIT_FOR_TEST,
+                    ),
+                ],
                 &[
                     Instruction::new_with_bytes(
                         realloc_invoke_program_id,
@@ -5160,7 +5474,7 @@ fn test_mem_syscalls_overlap_account_begin_or_end() {
 
         bank.feature_set = Arc::new(feature_set);
         let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
-        let mut bank_client = BankClient::new_shared(bank);
+        let mut bank_client = BankClient::new_shared(bank.clone());
         let authority_keypair = Keypair::new();
 
         let (bank, loader_v4_program_id) = load_program_of_loader_v4(

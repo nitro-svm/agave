@@ -46,30 +46,30 @@ impl Drop for SlotCache {
 
 impl SlotCache {
     pub fn report_slot_store_metrics(&self) {
-        datapoint_info!(
-            "slot_repeated_writes",
-            (
-                "same_account_writes",
-                self.same_account_writes.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "same_account_writes_size",
-                self.same_account_writes_size.load(Ordering::Relaxed),
-                i64
-            ),
-            (
-                "unique_account_writes_size",
-                self.unique_account_writes_size.load(Ordering::Relaxed),
-                i64
-            ),
-            ("size", self.size.load(Ordering::Relaxed), i64),
-            (
-                "accounts_count",
-                self.accounts_count.load(Ordering::Relaxed),
-                i64
-            )
-        );
+        // datapoint_info!(
+        //     "slot_repeated_writes",
+        //     (
+        //         "same_account_writes",
+        //         self.same_account_writes.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "same_account_writes_size",
+        //         self.same_account_writes_size.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     (
+        //         "unique_account_writes_size",
+        //         self.unique_account_writes_size.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        //     ("size", self.size.load(Ordering::Relaxed), i64),
+        //     (
+        //         "accounts_count",
+        //         self.accounts_count.load(Ordering::Relaxed),
+        //         i64
+        //     )
+        // );
     }
 
     pub fn insert(&self, pubkey: &Pubkey, account: AccountSharedData) -> Arc<CachedAccount> {
@@ -192,21 +192,21 @@ impl AccountsCache {
         self.total_size.load(Ordering::Relaxed)
     }
     pub fn report_size(&self) {
-        datapoint_info!(
-            "accounts_cache_size",
-            (
-                "num_roots",
-                self.maybe_unflushed_roots.read().unwrap().len(),
-                i64
-            ),
-            ("num_slots", self.cache.len(), i64),
-            ("total_size", self.size(), i64),
-            (
-                "total_accounts_count",
-                self.total_accounts_counts.load(Ordering::Relaxed),
-                i64
-            ),
-        );
+        // datapoint_info!(
+        //     "accounts_cache_size",
+        //     (
+        //         "num_roots",
+        //         self.maybe_unflushed_roots.read().unwrap().len(),
+        //         i64
+        //     ),
+        //     ("num_slots", self.cache.len(), i64),
+        //     ("total_size", self.size(), i64),
+        //     (
+        //         "total_accounts_count",
+        //         self.total_accounts_counts.load(Ordering::Relaxed),
+        //         i64
+        //     ),
+        // );
     }
 
     pub fn store(

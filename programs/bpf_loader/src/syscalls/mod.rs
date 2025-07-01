@@ -13,7 +13,6 @@ pub use self::{
 #[allow(deprecated)]
 use {
     crate::syscalls::mem_ops::is_nonoverlapping,
-    solana_account_info::AccountInfo,
     solana_big_mod_exp::{big_mod_exp, BigModExpParams},
     solana_blake3_hasher as blake3,
     solana_bn254::prelude::{
@@ -22,6 +21,7 @@ use {
         ALT_BN128_MULTIPLICATION_OUTPUT_LEN, ALT_BN128_PAIRING_ELEMENT_LEN,
         ALT_BN128_PAIRING_OUTPUT_LEN,
     },
+    solana_clock::Epoch,
     solana_cpi::MAX_RETURN_DATA,
     solana_hash::Hash,
     solana_instruction::{error::InstructionError, AccountMeta, ProcessedSiblingInstruction},
@@ -51,13 +51,13 @@ use {
     solana_sysvar_id::SysvarId,
     solana_timings::ExecuteTimings,
     solana_transaction_context::{IndexOfAccount, InstructionAccount},
-    solana_type_overrides::sync::Arc,
     std::{
         alloc::Layout,
         marker::PhantomData,
         mem::{align_of, size_of},
         slice::from_raw_parts_mut,
         str::{from_utf8, Utf8Error},
+        sync::Arc,
     },
     thiserror::Error as ThisError,
 };
@@ -232,7 +232,7 @@ impl HasherImpl for Keccak256Hasher {
 // map to the physical address.
 // This class must consist only of 16 bytes: a u64 ptr and a u64 len, to match the 64-bit
 // implementation of a slice in Rust. The PhantomData entry takes up 0 bytes.
-
+#[derive(Clone)]
 #[repr(C)]
 pub struct VmSlice<T> {
     ptr: u64,
@@ -274,6 +274,59 @@ impl<T> VmSlice<T> {
     ) -> Result<&'a [T], Error> {
         translate_slice::<T>(memory_mapping, self.ptr, self.len, check_aligned)
     }
+
+    pub fn translate_mut<'a>(
+        &mut self,
+        memory_mapping: &'a MemoryMapping<'a>,
+        check_aligned: bool,
+    ) -> Result<&'a mut [T], Error> {
+        translate_slice_mut::<T>(memory_mapping, self.ptr, self.len, check_aligned)
+    }
+}
+
+// Structs to allow the AccountInfo translation to properly reference elements within
+// the 64-bit virtual address space even when built in 32-bit mode.
+#[derive(Clone)]
+#[repr(C)]
+pub struct VmNonNull<T> {
+    pub addr: u64,
+    resource_type: PhantomData<T>,
+}
+
+#[derive(Clone)]
+#[repr(C)]
+pub struct VmBoxOfRefCell<T> {
+    _strong_addr: u64,
+    _weak_addr: u64,
+    _borrow_flag: u64,
+    pub value: T,
+}
+
+/// Account information, in the virtual address space. Note: Since the addresses are u64,
+/// there is no lifetime on this struct, and the borrow checker cannot properly reason
+/// about references to the virtual memory via these addresses.
+#[derive(Clone)]
+#[repr(C)]
+pub struct VmAccountInfo<'a> {
+    /// Public key of the account (&'a Pubkey)
+    pub key: u64,
+    /// The address to the lamports in the account.  Modifiable by programs. (in `AccountInfo`: &'a mut u64)
+    pub lamports: VmNonNull<VmBoxOfRefCell<u64>>,
+    /// The data slice held in this account.  Modifiable by programs. (In `AccountInfo`: &'a mut [u8])
+    pub data: VmNonNull<VmBoxOfRefCell<VmSlice<u8>>>,
+    /// Program that owns this account (in `AccountInfo`: &'a Pubkey)
+    pub owner: u64,
+    /// The epoch at which this account will next owe rent
+    pub rent_epoch: Epoch,
+
+    /// Was the transaction signed by this account's public key?
+    pub is_signer: bool,
+    /// Is the account writable?
+    pub is_writable: bool,
+    /// This account's data contains a loaded program (and is now read-only)
+    pub executable: bool,
+
+    phantom: PhantomData<&'a u8>,
 }
 
 fn consume_compute_meter(invoke_context: &InvokeContext, amount: u64) -> Result<(), Error> {
@@ -2131,6 +2184,7 @@ declare_builtin_function!(
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::indexing_slicing)]
 mod tests {
+    use solana_account_info::AccountInfo;
     #[allow(deprecated)]
     use solana_sysvar::fees::Fees;
     use {

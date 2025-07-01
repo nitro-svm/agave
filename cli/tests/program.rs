@@ -140,6 +140,7 @@ fn test_cli_program_deploy_non_upgradeable() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let response = process_command(&config);
@@ -189,6 +190,7 @@ fn test_cli_program_deploy_non_upgradeable() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     process_command(&config).unwrap();
@@ -249,6 +251,7 @@ fn test_cli_program_deploy_non_upgradeable() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     expect_command_failure(
         &config,
@@ -275,6 +278,7 @@ fn test_cli_program_deploy_non_upgradeable() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     expect_command_failure(
@@ -349,6 +353,7 @@ fn test_cli_program_deploy_no_authority() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let response = process_command(&config);
@@ -379,6 +384,7 @@ fn test_cli_program_deploy_no_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     expect_command_failure(
@@ -733,6 +739,7 @@ fn test_cli_program_deploy_with_authority() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let response = process_command(&config);
@@ -786,6 +793,7 @@ fn test_cli_program_deploy_with_authority() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     let response = process_command(&config);
     let json: Value = serde_json::from_str(&response.unwrap()).unwrap();
@@ -832,6 +840,7 @@ fn test_cli_program_deploy_with_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     process_command(&config).unwrap();
@@ -911,6 +920,7 @@ fn test_cli_program_deploy_with_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     process_command(&config).unwrap();
@@ -995,6 +1005,7 @@ fn test_cli_program_deploy_with_authority() {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     expect_command_failure(
         &config,
@@ -1019,6 +1030,7 @@ fn test_cli_program_deploy_with_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     let response = process_command(&config);
@@ -1141,6 +1153,7 @@ fn test_cli_program_upgrade_auto_extend(skip_preflight: bool) {
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     config.send_transaction_config.skip_preflight = skip_preflight;
@@ -1205,6 +1218,7 @@ fn test_cli_program_upgrade_auto_extend(skip_preflight: bool) {
         max_sign_attempts: 5,
         auto_extend: true, // --no-auto-extend flag is absent
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     let response = process_command(&config);
@@ -1296,6 +1310,7 @@ fn test_cli_program_close_program() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -1421,6 +1436,7 @@ fn test_cli_program_extend_program() {
         auto_extend: false,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     process_command(&config).unwrap();
@@ -1472,6 +1488,7 @@ fn test_cli_program_extend_program() {
         max_sign_attempts: 5,
         auto_extend: false,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
 
@@ -1669,6 +1686,7 @@ fn test_cli_program_write_buffer() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let response = process_command(&config);
@@ -1708,6 +1726,7 @@ fn test_cli_program_write_buffer() {
         compute_unit_price: None,
         max_sign_attempts: 5,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     let response = process_command(&config);
@@ -1776,6 +1795,7 @@ fn test_cli_program_write_buffer() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     let response = process_command(&config);
     let json: Value = serde_json::from_str(&response.unwrap()).unwrap();
@@ -1818,6 +1838,7 @@ fn test_cli_program_write_buffer() {
         compute_unit_price: None,
         max_sign_attempts: 5,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     let response = process_command(&config);
@@ -1902,6 +1923,7 @@ fn test_cli_program_write_buffer() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let response = process_command(&config);
@@ -1952,6 +1974,7 @@ fn test_cli_program_write_buffer() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     process_command(&config).unwrap();
     config.signers = vec![&keypair, &buffer_keypair];
@@ -1970,6 +1993,7 @@ fn test_cli_program_write_buffer() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2142,6 +2166,7 @@ fn test_cli_program_set_buffer_authority() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     process_command(&config).unwrap();
     let buffer_account = rpc_client.get_account(&buffer_keypair.pubkey()).unwrap();
@@ -2197,6 +2222,7 @@ fn test_cli_program_set_buffer_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2254,6 +2280,7 @@ fn test_cli_program_set_buffer_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2315,6 +2342,7 @@ fn test_cli_program_mismatch_buffer_authority() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     process_command(&config).unwrap();
     let buffer_account = rpc_client.get_account(&buffer_keypair.pubkey()).unwrap();
@@ -2342,6 +2370,7 @@ fn test_cli_program_mismatch_buffer_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     expect_command_failure(
@@ -2371,6 +2400,7 @@ fn test_cli_program_mismatch_buffer_authority() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     process_command(&config).unwrap();
@@ -2459,6 +2489,7 @@ fn test_cli_program_deploy_with_offline_signing(use_offline_signer_as_fee_payer:
         auto_extend: true,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     process_command(&config).unwrap();
@@ -2490,6 +2521,7 @@ fn test_cli_program_deploy_with_offline_signing(use_offline_signer_as_fee_payer:
         dump_transaction_message: false,
         blockhash_query: BlockhashQuery::new(Some(blockhash), true, None),
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let sig_response = process_command(&config).unwrap();
@@ -2511,6 +2543,7 @@ fn test_cli_program_deploy_with_offline_signing(use_offline_signer_as_fee_payer:
         sign_only: false,
         dump_transaction_message: false,
         blockhash_query: BlockhashQuery::new(Some(blockhash), true, None),
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2537,6 +2570,7 @@ fn test_cli_program_deploy_with_offline_signing(use_offline_signer_as_fee_payer:
         dump_transaction_message: false,
         blockhash_query: BlockhashQuery::new(Some(blockhash), true, None),
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
     let sig_response = process_command(&config).unwrap();
@@ -2558,6 +2592,7 @@ fn test_cli_program_deploy_with_offline_signing(use_offline_signer_as_fee_payer:
         sign_only: false,
         dump_transaction_message: false,
         blockhash_query: BlockhashQuery::new(Some(blockhash), true, None),
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2637,6 +2672,7 @@ fn test_cli_program_show() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     process_command(&config).unwrap();
 
@@ -2701,6 +2737,7 @@ fn test_cli_program_show() {
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;
@@ -2834,6 +2871,7 @@ fn test_cli_program_dump() {
         max_sign_attempts: 5,
         use_rpc: false,
         skip_feature_verification: true,
+        skip_feature_verification: true,
     });
     process_command(&config).unwrap();
 
@@ -2880,6 +2918,7 @@ fn create_buffer_with_offline_authority<'a>(
         compute_unit_price: None,
         max_sign_attempts: 5,
         use_rpc: false,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     process_command(config).unwrap();
@@ -2981,6 +3020,7 @@ fn test_cli_program_deploy_with_args(compute_unit_price: Option<u64>, use_rpc: b
         max_sign_attempts: 5,
         auto_extend: true,
         use_rpc,
+        skip_feature_verification: true,
         skip_feature_verification: true,
     });
     config.output_format = OutputFormat::JsonCompact;

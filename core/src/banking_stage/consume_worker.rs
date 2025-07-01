@@ -337,6 +337,7 @@ impl ConsumeWorkerMetrics {
             invalid_account_index,
             invalid_program_for_execution,
             invalid_compute_budget,
+            invalid_compute_budget,
             not_allowed_during_cluster_maintenance,
             invalid_writable_account,
             invalid_rent_paying_account,
@@ -593,6 +594,7 @@ struct ConsumeWorkerTransactionErrorMetrics {
     invalid_account_index: AtomicUsize,
     invalid_program_for_execution: AtomicUsize,
     invalid_compute_budget: AtomicUsize,
+    invalid_compute_budget: AtomicUsize,
     not_allowed_during_cluster_maintenance: AtomicUsize,
     invalid_writable_account: AtomicUsize,
     invalid_rent_paying_account: AtomicUsize,
@@ -683,6 +685,12 @@ impl ConsumeWorkerTransactionErrorMetrics {
                 i64
             ),
             (
+                "invalid_compute_budget",
+                self.invalid_compute_budget
+                    .swap(0, Ordering::Relaxed),
+                i64
+            ),
+            (
                 "not_allowed_during_cluster_maintenance",
                 self.not_allowed_during_cluster_maintenance
                     .swap(0, Ordering::Relaxed),
@@ -749,8 +757,10 @@ mod tests {
         solana_poh_config::PohConfig,
         solana_pubkey::Pubkey,
         solana_runtime::{
-            bank_forks::BankForks, prioritization_fee_cache::PrioritizationFeeCache,
-            vote_sender_types::ReplayVoteReceiver,
+            bank_forks::BankForks, bank_forks::BankForks,
+            prioritization_fee_cache::PrioritizationFeeCache,
+            prioritization_fee_cache::PrioritizationFeeCache,
+            vote_sender_types::ReplayVoteReceiver, vote_sender_types::ReplayVoteReceiver,
         },
         solana_runtime_transaction::runtime_transaction::RuntimeTransaction,
         solana_signer::Signer,
@@ -777,6 +787,7 @@ mod tests {
         mint_keypair: Keypair,
         genesis_config: GenesisConfig,
         bank: Arc<Bank>,
+        _bank_forks: Arc<RwLock<BankForks>>,
         _bank_forks: Arc<RwLock<BankForks>>,
         _ledger_path: TempDir,
         _entry_receiver: Receiver<WorkingBankEntry>,
@@ -853,6 +864,7 @@ mod tests {
                 mint_keypair,
                 genesis_config,
                 bank,
+                _bank_forks: bank_forks,
                 _bank_forks: bank_forks,
                 _ledger_path: ledger_path,
                 _entry_receiver: entry_receiver,

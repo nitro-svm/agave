@@ -781,6 +781,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
 
             if let Some((key, program)) = program_to_store {
                 loaded_programs_for_txs.as_mut().unwrap().loaded_missing = true;
+                loaded_programs_for_txs.as_mut().unwrap().loaded_missing = true;
                 let mut program_cache = self.program_cache.write().unwrap();
                 // Submit our last completed loading task.
                 if program_cache.finish_cooperative_loading_task(self.slot, key, program)
@@ -1551,12 +1552,17 @@ mod tests {
                 loaded_missing += 1;
             }
 
+            if result.loaded_missing {
+                loaded_missing += 1;
+            }
+
             let program = result.find(&key).unwrap();
             assert!(matches!(
                 program.program,
                 ProgramCacheEntryType::FailedVerification(_)
             ));
         }
+        assert!(loaded_missing > 0);
         assert!(loaded_missing > 0);
     }
 
@@ -2180,6 +2186,7 @@ mod tests {
             )
             .lamports();
         assert!(fee_payer_rent_debit > 0);
+        assert!(fee_payer_rent_debit > 0);
 
         let mut mock_accounts = HashMap::new();
         mock_accounts.insert(*fee_payer_address, fee_payer_account.clone());
@@ -2209,6 +2216,7 @@ mod tests {
         let post_validation_fee_payer_account = {
             let mut account = fee_payer_account.clone();
             account.set_rent_epoch(1);
+            account.set_lamports(starting_balance - transaction_fee - fee_payer_rent_debit);
             account.set_lamports(starting_balance - transaction_fee - fee_payer_rent_debit);
             account
         };

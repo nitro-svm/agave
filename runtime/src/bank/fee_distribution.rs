@@ -137,12 +137,12 @@ impl Bank {
                     "Burned {} lamport tx fee instead of sending to {} due to {}",
                     deposit, self.collector_id, err
                 );
-                datapoint_warn!(
-                    "bank-burned_fee",
-                    ("slot", self.slot(), i64),
-                    ("num_lamports", deposit, i64),
-                    ("error", err.to_string(), String),
-                );
+                // datapoint_warn!(
+                //     "bank-burned_fee",
+                //     ("slot", self.slot(), i64),
+                //     ("num_lamports", deposit, i64),
+                //     ("error", err.to_string(), String),
+                // );
                 deposit
             }
         }
@@ -293,11 +293,11 @@ impl Bank {
 
         if rent_to_burn > 0 {
             self.capitalization.fetch_sub(rent_to_burn, Relaxed);
-            datapoint_warn!(
-                "bank-burned_rent",
-                ("slot", self.slot(), i64),
-                ("num_lamports", rent_to_burn, i64)
-            );
+            // datapoint_warn!(
+            //     "bank-burned_rent",
+            //     ("slot", self.slot(), i64),
+            //     ("num_lamports", rent_to_burn, i64)
+            // );
         }
 
         assert_eq!(leftover_lamports, 0);

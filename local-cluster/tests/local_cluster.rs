@@ -231,6 +231,7 @@ fn test_local_cluster_signature_subscribe() {
         .unwrap();
 
     let mut transaction = system_transaction::transfer(
+    let mut transaction = system_transaction::transfer(
         &cluster.funding_keypair,
         &solana_pubkey::new_rand(),
         10,
@@ -1921,6 +1922,7 @@ fn test_validator_saves_tower() {
         if let Ok(root) = validator_client
             .rpc_client()
             .get_slot_with_commitment(CommitmentConfig::finalized())
+            .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!("current root: {}", root);
             if root > 0 {
@@ -1951,6 +1953,7 @@ fn test_validator_saves_tower() {
     let new_root = loop {
         if let Ok(root) = validator_client
             .rpc_client()
+            .get_slot_with_commitment(CommitmentConfig::finalized())
             .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!(
@@ -1986,6 +1989,7 @@ fn test_validator_saves_tower() {
     let new_root = loop {
         if let Ok(root) = validator_client
             .rpc_client()
+            .get_slot_with_commitment(CommitmentConfig::finalized())
             .get_slot_with_commitment(CommitmentConfig::finalized())
         {
             trace!("current root: {}, last tower root: {}", root, tower3_root);

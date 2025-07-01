@@ -9326,6 +9326,7 @@ fn test_epoch_schedule_from_genesis_config() {
     ));
 
     assert_eq!(bank.epoch_schedule(), &genesis_config.epoch_schedule);
+    assert_eq!(bank.epoch_schedule(), &genesis_config.epoch_schedule);
 }
 
 fn check_stake_vote_account_validity<F>(check_owner_change: bool, load_vote_and_stake_accounts: F)
@@ -13213,8 +13214,8 @@ fn test_filter_program_errors_and_collect_fee_details() {
     let priority_fee = 1000;
     let fee_details = FeeDetails::new(tx_fee, priority_fee);
     let expected_collected_fee_details = CollectorFeeDetails {
-        transaction_fee: 3 * tx_fee,
-        priority_fee: 3 * priority_fee,
+        transaction_fee: 2 * tx_fee,
+        priority_fee: 2 * priority_fee,
     };
 
     let GenesisConfigInfo {

@@ -1847,6 +1847,7 @@ impl RpcClient {
     ///     commitment: Some(commitment_config),
     ///     filter: Some(RpcLargestAccountsFilter::Circulating),
     ///     sort_results: None,
+    ///     sort_results: None,
     /// };
     /// let accounts = rpc_client.get_largest_accounts_with_config(
     ///     config,
@@ -2134,6 +2135,7 @@ impl RpcClient {
     /// # RPC Reference
     ///
     /// This method corresponds directly to the [`getBlocks`] RPC method.
+    /// This method corresponds directly to the [`getBlocks`] RPC method.
     ///
     /// [`getBlocks`]: https://solana.com/docs/rpc/http/getblocks
     ///
@@ -2181,6 +2183,7 @@ impl RpcClient {
     ///
     /// # RPC Reference
     ///
+    /// This method corresponds directly to the [`getBlocks`] RPC method.
     /// This method corresponds directly to the [`getBlocks`] RPC method.
     ///
     /// [`getBlocks`]: https://solana.com/docs/rpc/http/getblocks
@@ -2232,6 +2235,7 @@ impl RpcClient {
     ///
     /// This method corresponds directly to the [`getBlocksWithLimit`] RPC
     /// method.
+    /// method.
     ///
     /// [`getBlocksWithLimit`]: https://solana.com/docs/rpc/http/getblockswithlimit
     ///
@@ -2266,6 +2270,7 @@ impl RpcClient {
     /// # RPC Reference
     ///
     /// This method corresponds directly to the [`getBlocksWithLimit`] RPC
+    /// method.
     /// method.
     ///
     /// [`getBlocksWithLimit`]: https://solana.com/docs/rpc/http/getblockswithlimit
@@ -2406,6 +2411,7 @@ impl RpcClient {
     /// # RPC Reference
     ///
     /// This method corresponds directly to the [`getTransaction`] RPC method.
+    /// This method corresponds directly to the [`getTransaction`] RPC method.
     ///
     /// [`getTransaction`]: https://solana.com/docs/rpc/http/gettransaction
     ///
@@ -2452,6 +2458,7 @@ impl RpcClient {
     ///
     /// # RPC Reference
     ///
+    /// This method corresponds directly to the [`getTransaction`] RPC method.
     /// This method corresponds directly to the [`getTransaction`] RPC method.
     ///
     /// [`getTransaction`]: https://solana.com/docs/rpc/http/gettransaction

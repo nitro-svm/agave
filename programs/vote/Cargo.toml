@@ -24,7 +24,9 @@ frozen-abi = [
     "solana-program-runtime/frozen-abi",
     "solana-vote-interface/frozen-abi",
 ]
-metrics = ["dep:solana-metrics"]
+metrics = [
+    # "dep:solana-metrics"
+]
 
 [dependencies]
 agave-feature-set = { workspace = true }
@@ -47,7 +49,7 @@ solana-frozen-abi-macro = { workspace = true, optional = true, features = [
 solana-hash = { workspace = true }
 solana-instruction = { workspace = true }
 solana-keypair = { workspace = true }
-solana-metrics = { workspace = true, optional = true }
+# solana-metrics = { workspace = true, optional = true }
 solana-packet = { workspace = true }
 solana-program-runtime = { workspace = true }
 solana-pubkey = { workspace = true, features = ["curve25519"] }

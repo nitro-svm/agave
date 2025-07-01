@@ -130,6 +130,7 @@ pub(super) struct EpochRewardCalculateParamInfo<'a> {
 /// This struct exists so we can have a function which does all the calculation with no
 /// side effects.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub(super) struct PartitionedRewardsCalculation {
     pub(super) vote_account_rewards: VoteRewardsAccounts,
     pub(super) stake_rewards: StakeRewardCalculation,
@@ -814,6 +815,7 @@ mod tests {
 
     /// Test that program execution that attempts to mutate a stake account
     /// incorrectly should fail during reward period. A credit should succeed,
+    /// but a withdrawal should fail.
     /// but a withdrawal should fail.
     #[test]
     fn test_program_execution_restricted_for_stake_account_in_reward_period() {

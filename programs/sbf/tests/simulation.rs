@@ -40,6 +40,9 @@ fn test_no_panic_banks_client() {
     );
     bank.freeze();
 
+    let instruction = Instruction::new_with_bincode();
+    bank.freeze();
+
     let instruction = Instruction::new_with_bincode(
         program_id,
         &[0u8; 0],
@@ -73,9 +76,14 @@ fn test_no_panic_rpc_client() {
             accounts: vec![
                 AccountMeta::new_readonly(slot_history::id(), false),
                 AccountMeta::new_readonly(clock::id(), false),
+                AccountMeta::new_readonly(slot_history::id(), false),
+                AccountMeta::new_readonly(clock::id(), false),
             ],
             data: vec![],
         }],
+        Some(&payer.pubkey()),
+        &[&payer],
+        blockhash,
         Some(&payer.pubkey()),
         &[&payer],
         blockhash,

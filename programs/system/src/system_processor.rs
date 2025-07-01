@@ -1587,6 +1587,10 @@ mod tests {
                 IterItem(0u64, &blockhash, 0);
                 sysvar::recent_blockhashes::MAX_ENTRIES
             ]);
+        let new_recent_blockhashes_account = create_recent_blockhashes_account_for_test(vec![
+                IterItem(0u64, &blockhash, 0);
+                sysvar::recent_blockhashes::MAX_ENTRIES
+            ]);
         mock_process_instruction(
             &system_program::id(),
             Vec::new(),
@@ -1821,6 +1825,7 @@ mod tests {
         let blockhash_id = sysvar::recent_blockhashes::id();
         #[allow(deprecated)]
         let new_recent_blockhashes_account = create_recent_blockhashes_account_for_test(vec![]);
+        let new_recent_blockhashes_account = create_recent_blockhashes_account_for_test(vec![]);
         process_instruction(
             &serialize(&SystemInstruction::InitializeNonceAccount(nonce_address)).unwrap(),
             vec![
@@ -1882,6 +1887,7 @@ mod tests {
             Ok(()),
         );
         #[allow(deprecated)]
+        let new_recent_blockhashes_account = create_recent_blockhashes_account_for_test(vec![]);
         let new_recent_blockhashes_account = create_recent_blockhashes_account_for_test(vec![]);
         mock_process_instruction(
             &system_program::id(),

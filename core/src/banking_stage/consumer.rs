@@ -202,6 +202,9 @@ impl Consumer {
         // were not included in the block should have their cost removed, the rest
         // should update with their actually consumed units.
         QosService::remove_or_update_costs(
+        // were not included in the block should have their cost removed, the rest
+        // should update with their actually consumed units.
+        QosService::remove_or_update_costs(
             transaction_qos_cost_results.iter(),
             commit_transactions_result.as_ref().ok(),
             bank,
@@ -1310,6 +1313,7 @@ mod tests {
             ..
         } = create_slow_genesis_config(lamports);
         let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
+        let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
         // set cost tracker limits to MAX so it will not filter out TXs
         bank.write_cost_tracker()
             .unwrap()
@@ -1456,6 +1460,7 @@ mod tests {
             mint_keypair,
             ..
         } = create_slow_genesis_config(10_000);
+        let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
         let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
 
         let pubkey = solana_pubkey::new_rand();

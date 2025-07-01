@@ -21,10 +21,10 @@ pub const TAR_EXTENSION: &str = "tar";
 /// The different archive formats used for snapshots
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Display)]
 pub enum ArchiveFormat {
-    TarBzip2,
+    // TarBzip2, // Unsupproted in svm-rollup
     TarGzip,
-    TarZstd { config: ZstdConfig },
-    TarLz4,
+    // TarZstd { config: ZstdConfig }, // Unsupproted in svm-rollup
+    // TarLz4, // Unsupproted in svm-rollup
     Tar,
 }
 
@@ -32,22 +32,16 @@ impl ArchiveFormat {
     /// Get the file extension for the ArchiveFormat
     pub fn extension(&self) -> &str {
         match self {
-            ArchiveFormat::TarBzip2 => TAR_BZIP2_EXTENSION,
+            // ArchiveFormat::TarBzip2 => TAR_BZIP2_EXTENSION,
             ArchiveFormat::TarGzip => TAR_GZIP_EXTENSION,
-            ArchiveFormat::TarZstd { .. } => TAR_ZSTD_EXTENSION,
-            ArchiveFormat::TarLz4 => TAR_LZ4_EXTENSION,
+            // ArchiveFormat::TarZstd { .. } => TAR_ZSTD_EXTENSION,
+            // ArchiveFormat::TarLz4 => TAR_LZ4_EXTENSION,
             ArchiveFormat::Tar => TAR_EXTENSION,
         }
     }
 
-    pub fn from_cli_arg(archive_format_str: &str) -> Option<ArchiveFormat> {
-        match archive_format_str {
-            "zstd" => Some(ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            }),
-            "lz4" => Some(ArchiveFormat::TarLz4),
-            _ => None,
-        }
+    pub fn from_cli_arg(_archive_format_str: &str) -> Option<ArchiveFormat> {
+        None
     }
 }
 
@@ -58,12 +52,12 @@ impl TryFrom<&str> for ArchiveFormat {
 
     fn try_from(extension: &str) -> Result<Self, Self::Error> {
         match extension {
-            TAR_BZIP2_EXTENSION => Ok(ArchiveFormat::TarBzip2),
+            // TAR_BZIP2_EXTENSION => Ok(ArchiveFormat::TarBzip2),
             TAR_GZIP_EXTENSION => Ok(ArchiveFormat::TarGzip),
-            TAR_ZSTD_EXTENSION => Ok(ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            }),
-            TAR_LZ4_EXTENSION => Ok(ArchiveFormat::TarLz4),
+            // TAR_ZSTD_EXTENSION => Ok(ArchiveFormat::TarZstd {
+            //     config: ZstdConfig::default(),
+            // }),
+            // TAR_LZ4_EXTENSION => Ok(ArchiveFormat::TarLz4),
             TAR_EXTENSION => Ok(ArchiveFormat::Tar),
             _ => Err(ParseError::InvalidExtension(extension.to_string())),
         }
@@ -102,44 +96,44 @@ pub struct ZstdConfig {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, std::iter::zip};
+    use super::*;
     const INVALID_EXTENSION: &str = "zip";
 
     #[test]
     fn test_extension() {
-        assert_eq!(ArchiveFormat::TarBzip2.extension(), TAR_BZIP2_EXTENSION);
+        // assert_eq!(ArchiveFormat::TarBzip2.extension(), TAR_BZIP2_EXTENSION);
         assert_eq!(ArchiveFormat::TarGzip.extension(), TAR_GZIP_EXTENSION);
-        assert_eq!(
-            ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            }
-            .extension(),
-            TAR_ZSTD_EXTENSION
-        );
-        assert_eq!(ArchiveFormat::TarLz4.extension(), TAR_LZ4_EXTENSION);
+        // assert_eq!(
+        //     ArchiveFormat::TarZstd {
+        //         config: ZstdConfig::default(),
+        //     }
+        //     .extension(),
+        //     TAR_ZSTD_EXTENSION
+        // );
+        // assert_eq!(ArchiveFormat::TarLz4.extension(), TAR_LZ4_EXTENSION);
         assert_eq!(ArchiveFormat::Tar.extension(), TAR_EXTENSION);
     }
 
     #[test]
     fn test_try_from() {
-        assert_eq!(
-            ArchiveFormat::try_from(TAR_BZIP2_EXTENSION),
-            Ok(ArchiveFormat::TarBzip2)
-        );
+        // assert_eq!(
+        //     ArchiveFormat::try_from(TAR_BZIP2_EXTENSION),
+        //     Ok(ArchiveFormat::TarBzip2)
+        // );
         assert_eq!(
             ArchiveFormat::try_from(TAR_GZIP_EXTENSION),
             Ok(ArchiveFormat::TarGzip)
         );
-        assert_eq!(
-            ArchiveFormat::try_from(TAR_ZSTD_EXTENSION),
-            Ok(ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            })
-        );
-        assert_eq!(
-            ArchiveFormat::try_from(TAR_LZ4_EXTENSION),
-            Ok(ArchiveFormat::TarLz4)
-        );
+        // assert_eq!(
+        //     ArchiveFormat::try_from(TAR_ZSTD_EXTENSION),
+        //     Ok(ArchiveFormat::TarZstd {
+        //        config: ZstdConfig::default(),
+        //    })
+        // );
+        // assert_eq!(
+        //     ArchiveFormat::try_from(TAR_LZ4_EXTENSION),
+        //     Ok(ArchiveFormat::TarLz4)
+        // );
         assert_eq!(
             ArchiveFormat::try_from(TAR_EXTENSION),
             Ok(ArchiveFormat::Tar)
@@ -152,24 +146,24 @@ mod tests {
 
     #[test]
     fn test_from_str() {
-        assert_eq!(
-            ArchiveFormat::from_str(TAR_BZIP2_EXTENSION),
-            Ok(ArchiveFormat::TarBzip2)
-        );
+        // assert_eq!(
+        //     ArchiveFormat::from_str(TAR_BZIP2_EXTENSION),
+        //     Ok(ArchiveFormat::TarBzip2)
+        // );
         assert_eq!(
             ArchiveFormat::from_str(TAR_GZIP_EXTENSION),
             Ok(ArchiveFormat::TarGzip)
         );
-        assert_eq!(
-            ArchiveFormat::from_str(TAR_ZSTD_EXTENSION),
-            Ok(ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            })
-        );
-        assert_eq!(
-            ArchiveFormat::from_str(TAR_LZ4_EXTENSION),
-            Ok(ArchiveFormat::TarLz4)
-        );
+        // assert_eq!(
+        //     ArchiveFormat::from_str(TAR_ZSTD_EXTENSION),
+        //     Ok(ArchiveFormat::TarZstd {
+        //         config: ZstdConfig::default(),
+        //     })
+        // );
+        // assert_eq!(
+        //     ArchiveFormat::from_str(TAR_LZ4_EXTENSION),
+        //     Ok(ArchiveFormat::TarLz4)
+        // );
         assert_eq!(
             ArchiveFormat::from_str(TAR_EXTENSION),
             Ok(ArchiveFormat::Tar)
@@ -180,19 +174,19 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_from_cli_arg() {
-        let golden = [
-            Some(ArchiveFormat::TarZstd {
-                config: ZstdConfig::default(),
-            }),
-            Some(ArchiveFormat::TarLz4),
-        ];
+    // #[test]
+    // fn test_from_cli_arg() {
+    //     let golden = [
+    //         Some(ArchiveFormat::TarZstd {
+    //             config: ZstdConfig::default(),
+    //         }),
+    //         Some(ArchiveFormat::TarLz4),
+    //     ];
 
-        for (arg, expected) in zip(SUPPORTED_ARCHIVE_COMPRESSION.iter(), golden.into_iter()) {
-            assert_eq!(ArchiveFormat::from_cli_arg(arg), expected);
-        }
+    //     for (arg, expected) in zip(SUPPORTED_ARCHIVE_COMPRESSION.iter(), golden.into_iter()) {
+    //         assert_eq!(ArchiveFormat::from_cli_arg(arg), expected);
+    //     }
 
-        assert_eq!(ArchiveFormat::from_cli_arg("bad"), None);
-    }
+    //     assert_eq!(ArchiveFormat::from_cli_arg("bad"), None);
+    // }
 }

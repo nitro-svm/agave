@@ -95,6 +95,8 @@ fn parse_matches() -> ArgMatches<'static> {
                 .arg(&shred_version_arg)
                 .arg(&gossip_port_arg)
                 .arg(&gossip_host_arg)
+                .arg(&gossip_port_arg)
+                .arg(&gossip_host_arg)
                 .setting(AppSettings::DisableVersion),
         )
         .subcommand(
@@ -147,6 +149,8 @@ fn parse_matches() -> ArgMatches<'static> {
                         .help("Public key of a specific node to wait for"),
                 )
                 .arg(&shred_version_arg)
+                .arg(&gossip_port_arg)
+                .arg(&gossip_host_arg)
                 .arg(&gossip_port_arg)
                 .arg(&gossip_host_arg)
                 .arg(

@@ -118,8 +118,53 @@ mod real {
                 }
                 Less => unreachable!(),
             };
+            let next_index = self.expected_next_index(*current_index);
+            let should_change = match anchored_index.cmp(&next_index) {
+                Equal => true,
+                Greater => {
+                    trace!("Blocked on {} at {:?}", anchored_check_point, current());
+                    // anchor is one of future check points; block the current thread until
+                    // that happens
+                    current_index = self
+                        .condvar
+                        .wait_while(current_index, |&mut current_index| {
+                            let Some(anchored_index) =
+                                self.anchored_index(current_index, &anchored_check_point)
+                            else {
+                                // don't wait. seems the progress is made by other threads
+                                // anchored to the same checkpoint.
+                                return false;
+                            };
+                            let next_index = self.expected_next_index(current_index);
+
+                            // determine we should wait further or not
+                            match anchored_index.cmp(&next_index) {
+                                Equal => false,
+                                Greater => {
+                                    trace!(
+                                        "Re-blocked on {} ({} != {}) at {:?}",
+                                        anchored_check_point,
+                                        anchored_index,
+                                        next_index,
+                                        current()
+                                    );
+                                    true
+                                }
+                                Less => unreachable!(),
+                            }
+                        })
+                        .unwrap();
+                    true
+                }
+                Less => unreachable!(),
+            };
 
             if should_change {
+                if *current_index != anchored_index {
+                    trace!("Progressed to: {} at {:?}", anchored_check_point, current());
+                    *current_index = anchored_index;
+                }
+
                 if *current_index != anchored_index {
                     trace!("Progressed to: {} at {:?}", anchored_check_point, current());
                     *current_index = anchored_index;
@@ -167,6 +212,13 @@ mod real {
         }
 
         fn deactivate(&self) {
+            if !panicking() {
+                assert_eq!(
+                    self.0.check_points.len().checked_sub(1).unwrap(),
+                    *self.0.current_index.lock().unwrap(),
+                    "unfinished progress"
+                );
+            }
             if !panicking() {
                 assert_eq!(
                     self.0.check_points.len().checked_sub(1).unwrap(),

@@ -293,6 +293,7 @@ mod tests {
             &[
                 Instruction::new_with_bincode(Pubkey::new_unique(), &0_u8, vec![]),
                 ComputeBudgetInstruction::request_heap_frame(MIN_HEAP_FRAME_BYTES),
+                ComputeBudgetInstruction::request_heap_frame(MIN_HEAP_FRAME_BYTES),
                 ComputeBudgetInstruction::request_heap_frame(MAX_HEAP_FRAME_BYTES),
             ],
             Err(TransactionError::DuplicateInstruction(2))

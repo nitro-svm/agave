@@ -237,7 +237,9 @@ impl AncientSlotInfos {
 
             // if the remaining uncombined storages and the # of resulting
             // combined ancient storages are less than the threshold, then
+            // combined ancient storages are less than the threshold, then
             // we've gone too far, so get rid of this entry and all after it.
+            // Every storage after this one is larger than the ones we've chosen.
             // Every storage after this one is larger than the ones we've chosen.
             // if we ever get to more than `max_resulting_storages` required ancient storages, that is enough to stop for now.
             // It will take a lot of time for the pack algorithm to create that many, and that is bad for system performance.
@@ -457,12 +459,12 @@ impl AccountsDb {
             &accounts_to_combine.target_slots_sorted,
             &tuning,
         ) {
-            datapoint_info!("shrink_ancient_stats", ("high_slot", 1, i64));
-            log::info!(
-                "unable to ancient pack: highest available slot: {:?}, lowest required slot: {:?}",
-                accounts_to_combine.target_slots_sorted.last(),
-                many_refs_newest.last().map(|accounts| accounts.slot)
-            );
+            // datapoint_info!("shrink_ancient_stats", ("high_slot", 1, i64));
+            // log::info!(
+            //     "unable to ancient pack: highest available slot: {:?}, lowest required slot: {:?}",
+            //     accounts_to_combine.target_slots_sorted.last(),
+            //     many_refs_newest.last().map(|accounts| accounts.slot)
+            // );
             return;
         }
 
@@ -1119,6 +1121,7 @@ pub mod tests {
         std::{collections::HashSet, ops::Range},
         strum::IntoEnumIterator,
         strum_macros::EnumIter,
+        // test_case::test_case,
     };
 
     fn get_sample_storages(

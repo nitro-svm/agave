@@ -696,6 +696,7 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
     // Scan accounts and return latest version of each account that is either:
     // 1) rooted or
     // 2) present in ancestors
+    #[allow(unused_variables)]
     fn do_scan_accounts<F, R>(
         &self,
         metric_name: &'static str,
@@ -750,15 +751,15 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
 
         total_elapsed_timer.stop();
         if !metric_name.is_empty() {
-            datapoint_info!(
-                metric_name,
-                ("total_elapsed", total_elapsed_timer.as_us(), i64),
-                ("latest_slot_elapsed", latest_slot_elapsed, i64),
-                ("read_lock_elapsed", read_lock_elapsed, i64),
-                ("load_account_elapsed", load_account_elapsed, i64),
-                ("iterator_elapsed", iterator_elapsed, i64),
-                ("num_keys_iterated", num_keys_iterated, i64),
-            )
+            // datapoint_info!(
+            //     metric_name,
+            //     ("total_elapsed", total_elapsed_timer.as_us(), i64),
+            //     ("latest_slot_elapsed", latest_slot_elapsed, i64),
+            //     ("read_lock_elapsed", read_lock_elapsed, i64),
+            //     ("load_account_elapsed", load_account_elapsed, i64),
+            //     ("iterator_elapsed", iterator_elapsed, i64),
+            //     ("num_keys_iterated", num_keys_iterated, i64),
+            // )
         }
     }
 
@@ -1162,11 +1163,11 @@ impl<T: IndexValue, U: DiskIndexValue + From<T> + Into<T>> AccountsIndex<T, U> {
                                 let old_ref = locked_entry.unref();
                                 if old_ref != 1 {
                                     info!("Unexpected unref {pubkey} with {old_ref} {:?}, expect old_ref to be 1", locked_entry.slot_list.read().unwrap());
-                                    datapoint_warn!(
-                                        "accounts_db-unexpected-unref-zero",
-                                        ("old_ref", old_ref, i64),
-                                        ("pubkey", pubkey.to_string(), String),
-                                    );
+                                    // datapoint_warn!(
+                                    //     "accounts_db-unexpected-unref-zero",
+                                    //     ("old_ref", old_ref, i64),
+                                    //     ("pubkey", pubkey.to_string(), String),
+                                    // );
                                 }
                                 true
                             }

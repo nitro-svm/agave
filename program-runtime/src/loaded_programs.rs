@@ -290,14 +290,14 @@ impl LoadProgramMetrics {
         timings.create_executor_load_elf_us += self.load_elf_us;
         timings.create_executor_verify_code_us += self.verify_code_us;
         timings.create_executor_jit_compile_us += self.jit_compile_us;
-        datapoint_trace!(
-            "create_executor_trace",
-            ("program_id", self.program_id, String),
-            ("register_syscalls_us", self.register_syscalls_us, i64),
-            ("load_elf_us", self.load_elf_us, i64),
-            ("verify_code_us", self.verify_code_us, i64),
-            ("jit_compile_us", self.jit_compile_us, i64),
-        );
+        // datapoint_trace!(
+        //     "create_executor_trace",
+        //     ("program_id", self.program_id, String),
+        //     ("register_syscalls_us", self.register_syscalls_us, i64),
+        //     ("load_elf_us", self.load_elf_us, i64),
+        //     ("verify_code_us", self.verify_code_us, i64),
+        //     ("jit_compile_us", self.jit_compile_us, i64),
+        // );
     }
 }
 
@@ -1160,6 +1160,7 @@ impl<FG: ForkGraph> ProgramCache<FG> {
                 loading_entries, ..
             } => {
                 let loading_thread = loading_entries.get_mut().unwrap().remove(&key);
+                debug_assert_eq!(loading_thread, Some((slot, thread::current().id())));
                 debug_assert_eq!(loading_thread, Some((slot, thread::current().id())));
                 // Check that it will be visible to our own fork once inserted
                 if loaded_program.deployment_slot > self.latest_root_slot
@@ -2027,6 +2028,7 @@ mod tests {
         }));
 
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         cache.prune(0, 0);
         assert!(cache.get_flattened_entries_for_tests().is_empty());
@@ -2039,6 +2041,7 @@ mod tests {
             relation: BlockRelation::Ancestor,
         }));
 
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         cache.prune(0, 0);
@@ -2053,6 +2056,7 @@ mod tests {
         }));
 
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         cache.prune(0, 0);
         assert!(cache.get_flattened_entries_for_tests().is_empty());
@@ -2064,6 +2068,7 @@ mod tests {
         let fork_graph = Arc::new(RwLock::new(TestForkGraph {
             relation: BlockRelation::Unknown,
         }));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         cache.prune(0, 0);
@@ -2081,6 +2086,7 @@ mod tests {
             relation: BlockRelation::Ancestor,
         }));
 
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
@@ -2240,6 +2246,7 @@ mod tests {
         fork_graph.insert_fork(&[0, 5, 11, 25, 27]);
 
         let fork_graph = Arc::new(RwLock::new(fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
@@ -2436,6 +2443,7 @@ mod tests {
 
         let fork_graph = Arc::new(RwLock::new(fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
         cache.assign_program(program1, new_test_entry(0, 1));
@@ -2493,6 +2501,7 @@ mod tests {
 
         let fork_graph = Arc::new(RwLock::new(fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
         cache.assign_program(program1, new_test_entry(0, 1));
@@ -2548,6 +2557,7 @@ mod tests {
         let mut cache = new_mock_cache::<TestForkGraphSpecific>();
         let fork_graph = TestForkGraphSpecific::default();
         let fork_graph = Arc::new(RwLock::new(fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
@@ -2621,6 +2631,7 @@ mod tests {
         fork_graph.insert_fork(&[0, 5]);
         let fork_graph = Arc::new(RwLock::new(fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();
         cache.assign_program(program1, new_test_entry(0, 1));
@@ -2660,6 +2671,7 @@ mod tests {
         fork_graph.insert_fork(&[0, 10, 20]);
         fork_graph.insert_fork(&[0, 5, 6]);
         let fork_graph = Arc::new(RwLock::new(fork_graph));
+        cache.set_fork_graph(Arc::downgrade(&fork_graph));
         cache.set_fork_graph(Arc::downgrade(&fork_graph));
 
         let program1 = Pubkey::new_unique();

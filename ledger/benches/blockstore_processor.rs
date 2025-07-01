@@ -76,6 +76,7 @@ fn create_transactions(bank: &Bank, num: usize) -> Vec<RuntimeTransaction<Saniti
 struct BenchFrame {
     bank: Arc<Bank>,
     _bank_forks: Arc<RwLock<BankForks>>,
+    _bank_forks: Arc<RwLock<BankForks>>,
     prioritization_fee_cache: PrioritizationFeeCache,
 }
 
@@ -99,9 +100,11 @@ fn setup() -> BenchFrame {
         .unwrap()
         .set_limits(u64::MAX, u64::MAX, u64::MAX);
     let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
+    let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
     let prioritization_fee_cache = PrioritizationFeeCache::default();
     BenchFrame {
         bank,
+        _bank_forks: bank_forks,
         _bank_forks: bank_forks,
         prioritization_fee_cache,
     }
@@ -119,6 +122,7 @@ fn bench_execute_batch(bencher: &mut Bencher, batch_size: usize) {
 
     let BenchFrame {
         bank,
+        _bank_forks,
         _bank_forks,
         prioritization_fee_cache,
     } = setup();

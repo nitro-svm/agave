@@ -5,6 +5,7 @@
 use log::*;
 use {
     crate::{cluster::QuicTpuClient, local_cluster::LocalCluster},
+    crate::{cluster::QuicTpuClient, local_cluster::LocalCluster},
     rand::{thread_rng, Rng},
     rayon::{prelude::*, ThreadPool},
     solana_client::connection_cache::ConnectionCache,
@@ -94,6 +95,7 @@ pub fn spend_and_verify_all_nodes<S: ::std::hash::BuildHasher + Sync + Send>(
             .get_latest_blockhash_with_commitment(CommitmentConfig::confirmed())
             .unwrap();
         let mut transaction =
+        let mut transaction =
             system_transaction::transfer(funding_keypair, &random_keypair.pubkey(), 1, blockhash);
         LocalCluster::send_transaction_with_retries(
             &client,
@@ -154,6 +156,7 @@ pub fn send_many_transactions(
             .unwrap();
         let transfer_amount = thread_rng().gen_range(1..max_tokens_per_transfer);
 
+        let mut transaction = system_transaction::transfer(
         let mut transaction = system_transaction::transfer(
             funding_keypair,
             &random_keypair.pubkey(),
@@ -294,6 +297,7 @@ pub fn kill_entry_and_spend_and_verify_rest(
                 .get_latest_blockhash_with_commitment(CommitmentConfig::processed())
                 .unwrap();
             let mut transaction = system_transaction::transfer(
+            let mut transaction = system_transaction::transfer(
                 funding_keypair,
                 &random_keypair.pubkey(),
                 1,
@@ -332,6 +336,7 @@ pub fn kill_entry_and_spend_and_verify_rest(
     }
 }
 
+#[cfg(feature = "dev-context-only-utils")]
 #[cfg(feature = "dev-context-only-utils")]
 pub fn apply_votes_to_tower(node_keypair: &Keypair, votes: Vec<(Slot, Hash)>, tower_path: PathBuf) {
     let tower_storage = FileTowerStorage::new(tower_path);
