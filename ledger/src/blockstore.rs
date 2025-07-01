@@ -33,7 +33,6 @@ use {
     rayon::iter::{IntoParallelIterator, ParallelIterator},
     rocksdb::{DBRawIterator, LiveFile},
     solana_account::ReadableAccount,
-    solana_accounts_db::hardened_unpack::unpack_genesis_archive,
     solana_address_lookup_table_interface::state::AddressLookupTable,
     solana_clock::{Slot, UnixTimestamp, DEFAULT_TICKS_PER_SECOND},
     solana_entry::entry::{create_ticks, Entry},
@@ -67,7 +66,6 @@ use {
             HashSet, VecDeque,
         },
         convert::TryInto,
-        fmt::Write,
         fs::{self, File},
         io::{Error as IoError, ErrorKind},
         ops::{Bound, Range},
@@ -4856,7 +4854,7 @@ fn slot_has_updates(slot_meta: &SlotMeta, slot_meta_backup: &Option<SlotMeta>) -
 pub fn create_new_ledger(
     ledger_path: &Path,
     genesis_config: &GenesisConfig,
-    max_genesis_archive_unpacked_size: u64,
+    _max_genesis_archive_unpacked_size: u64,
     column_options: LedgerColumnOptions,
 ) -> Result<Hash> {
     Blockstore::destroy(ledger_path)?;
@@ -4909,54 +4907,54 @@ pub fn create_new_ledger(
     // ensure the genesis archive can be unpacked and it is under
     // max_genesis_archive_unpacked_size, immediately after creating it above.
     {
-        let temp_dir = tempfile::tempdir_in(ledger_path).unwrap();
+        let _temp_dir = tempfile::tempdir_in(ledger_path).unwrap();
         // unpack into a temp dir, while completely discarding the unpacked files
-        let unpack_check = unpack_genesis_archive(
-            &archive_path,
-            temp_dir.path(),
-            max_genesis_archive_unpacked_size,
-        );
-        if let Err(unpack_err) = unpack_check {
-            // stash problematic original archived genesis related files to
-            // examine them later and to prevent validator and ledger-tool from
-            // naively consuming them
-            let mut error_messages = String::new();
-
-            fs::rename(
-                ledger_path.join(DEFAULT_GENESIS_ARCHIVE),
-                ledger_path.join(format!("{DEFAULT_GENESIS_ARCHIVE}.failed")),
-            )
-            .unwrap_or_else(|e| {
-                let _ = write!(
-                    &mut error_messages,
-                    "/failed to stash problematic {DEFAULT_GENESIS_ARCHIVE}: {e}"
-                );
-            });
-            fs::rename(
-                ledger_path.join(DEFAULT_GENESIS_FILE),
-                ledger_path.join(format!("{DEFAULT_GENESIS_FILE}.failed")),
-            )
-            .unwrap_or_else(|e| {
-                let _ = write!(
-                    &mut error_messages,
-                    "/failed to stash problematic {DEFAULT_GENESIS_FILE}: {e}"
-                );
-            });
-            fs::rename(
-                ledger_path.join(blockstore_dir),
-                ledger_path.join(format!("{blockstore_dir}.failed")),
-            )
-            .unwrap_or_else(|e| {
-                let _ = write!(
-                    &mut error_messages,
-                    "/failed to stash problematic {blockstore_dir}: {e}"
-                );
-            });
-
-            return Err(BlockstoreError::Io(IoError::other(format!(
-                "Error checking to unpack genesis archive: {unpack_err}{error_messages}"
-            ))));
-        }
+        // let unpack_check = unpack_genesis_archive(
+        //     &archive_path,
+        //     temp_dir.path(),
+        //     max_genesis_archive_unpacked_size,
+        // );
+        // if let Err(unpack_err) = unpack_check {
+        //     // stash problematic original archived genesis related files to
+        //     // examine them later and to prevent validator and ledger-tool from
+        //     // naively consuming them
+        //     let mut error_messages = String::new();
+        //
+        //     fs::rename(
+        //         ledger_path.join(DEFAULT_GENESIS_ARCHIVE),
+        //         ledger_path.join(format!("{DEFAULT_GENESIS_ARCHIVE}.failed")),
+        //     )
+        //     .unwrap_or_else(|e| {
+        //         let _ = write!(
+        //             &mut error_messages,
+        //             "/failed to stash problematic {DEFAULT_GENESIS_ARCHIVE}: {e}"
+        //         );
+        //     });
+        //     fs::rename(
+        //         ledger_path.join(DEFAULT_GENESIS_FILE),
+        //         ledger_path.join(format!("{DEFAULT_GENESIS_FILE}.failed")),
+        //     )
+        //     .unwrap_or_else(|e| {
+        //         let _ = write!(
+        //             &mut error_messages,
+        //             "/failed to stash problematic {DEFAULT_GENESIS_FILE}: {e}"
+        //         );
+        //     });
+        //     fs::rename(
+        //         ledger_path.join(blockstore_dir),
+        //         ledger_path.join(format!("{blockstore_dir}.failed")),
+        //     )
+        //     .unwrap_or_else(|e| {
+        //         let _ = write!(
+        //             &mut error_messages,
+        //             "/failed to stash problematic {blockstore_dir}: {e}"
+        //         );
+        //     });
+        //
+        //     return Err(BlockstoreError::Io(IoError::other(format!(
+        //         "Error checking to unpack genesis archive: {unpack_err}{error_messages}"
+        //     ))));
+        // }
     }
 
     Ok(last_hash)

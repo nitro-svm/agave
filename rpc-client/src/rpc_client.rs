@@ -2267,6 +2267,7 @@ impl RpcClient {
     ///
     /// This method corresponds directly to the [`getBlocksWithLimit`] RPC
     /// method.
+    /// method.
     ///
     /// [`getBlocksWithLimit`]: https://solana.com/docs/rpc/http/getblockswithlimit
     ///

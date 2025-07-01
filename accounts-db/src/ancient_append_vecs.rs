@@ -457,12 +457,12 @@ impl AccountsDb {
             &accounts_to_combine.target_slots_sorted,
             &tuning,
         ) {
-            datapoint_info!("shrink_ancient_stats", ("high_slot", 1, i64));
-            log::info!(
-                "unable to ancient pack: highest available slot: {:?}, lowest required slot: {:?}",
-                accounts_to_combine.target_slots_sorted.last(),
-                many_refs_newest.last().map(|accounts| accounts.slot)
-            );
+            // datapoint_info!("shrink_ancient_stats", ("high_slot", 1, i64));
+            // log::info!(
+            //     "unable to ancient pack: highest available slot: {:?}, lowest required slot: {:?}",
+            //     accounts_to_combine.target_slots_sorted.last(),
+            //     many_refs_newest.last().map(|accounts| accounts.slot)
+            // );
             return;
         }
 
@@ -1119,6 +1119,7 @@ pub mod tests {
         std::{collections::HashSet, ops::Range},
         strum::IntoEnumIterator,
         strum_macros::EnumIter,
+        // test_case::test_case,
     };
 
     fn get_sample_storages(

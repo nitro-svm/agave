@@ -90,6 +90,7 @@ pub(crate) struct ReadOnlyAccountsCache {
     /// To the evictor goes the spoiled [sic]
     ///
     /// Evict from the cache in the background.
+    #[cfg(not(target_os = "zkvm"))]
     evictor_thread_handle: ManuallyDrop<thread::JoinHandle<()>>,
     /// Flag to stop the evictor
     evictor_exit_flag: Arc<AtomicBool>,
@@ -109,6 +110,7 @@ impl ReadOnlyAccountsCache {
         let stats = Arc::new(AtomicReadOnlyCacheStats::default());
         let timer = Instant::now();
         let evictor_exit_flag = Arc::new(AtomicBool::new(false));
+        #[cfg(not(target_os = "zkvm"))]
         let evictor_thread_handle = Self::spawn_evictor(
             evictor_exit_flag.clone(),
             max_data_size_lo,
@@ -127,6 +129,7 @@ impl ReadOnlyAccountsCache {
             data_size,
             stats,
             timer,
+            #[cfg(not(target_os = "zkvm"))]
             evictor_thread_handle: ManuallyDrop::new(evictor_thread_handle),
             evictor_exit_flag,
         }
@@ -239,6 +242,7 @@ impl ReadOnlyAccountsCache {
         self.cache.len()
     }
 
+    #[allow(dead_code)]
     pub(crate) fn data_size(&self) -> usize {
         self.data_size.load(Ordering::Relaxed)
     }

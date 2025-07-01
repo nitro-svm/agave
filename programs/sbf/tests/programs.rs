@@ -5160,7 +5160,7 @@ fn test_mem_syscalls_overlap_account_begin_or_end() {
 
         bank.feature_set = Arc::new(feature_set);
         let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
-        let mut bank_client = BankClient::new_shared(bank);
+        let mut bank_client = BankClient::new_shared(bank.clone());
         let authority_keypair = Keypair::new();
 
         let (bank, loader_v4_program_id) = load_program_of_loader_v4(

@@ -142,6 +142,8 @@ members = [
     "zk-keygen",
     "zk-sdk",
     "zk-token-sdk",
+    # Patches to make this code run under the SP1 prover (time support)
+    "patches",
 ]
 
 exclude = ["programs/sbf", "svm/examples", "svm/tests/example-programs"]
@@ -463,6 +465,7 @@ solana-nonce-account = "2.2.1"
 solana-notifier = { path = "notifier", version = "=3.0.0" }
 solana-offchain-message = "2.2.1"
 solana-packet = "2.2.1"
+solana-patches = { path = "patches", version = "=3.0.0" }
 solana-perf = { path = "perf", version = "=3.0.0" }
 solana-poh = { path = "poh", version = "=3.0.0" }
 solana-poh-config = "2.2.1"
@@ -539,7 +542,10 @@ solana-tps-client = { path = "tps-client", version = "=3.0.0" }
 solana-tpu-client = { path = "tpu-client", version = "=3.0.0", default-features = false }
 solana-tpu-client-next = { path = "tpu-client-next", version = "=3.0.0" }
 solana-transaction = "2.2.3"
-solana-transaction-context = { path = "transaction-context", version = "=3.0.0", features = ["bincode", "debug-signature"] }
+solana-transaction-context = { path = "transaction-context", version = "=3.0.0", features = [
+    "bincode",
+    "debug-signature",
+] }
 solana-transaction-error = "2.2.1"
 solana-transaction-metrics-tracker = { path = "transaction-metrics-tracker", version = "=3.0.0" }
 solana-transaction-status = { path = "transaction-status", version = "=3.0.0" }

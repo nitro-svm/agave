@@ -73,6 +73,8 @@ impl BgThreads {
 
         // stop signal used for THIS batch of bg threads
         let local_exit = Arc::new(AtomicBool::default());
+
+        #[cfg(not(target_os = "zkvm"))]
         let handles = Some(
             (0..num_threads)
                 .map(|idx| {
@@ -97,6 +99,15 @@ impl BgThreads {
                 })
                 .collect(),
         );
+        #[cfg(target_os = "zkvm")]
+        let handles = {
+            (0..threads).map(|idx| {
+                let storage_ = Arc::clone(storage);
+                let in_mem_ = in_mem.to_vec();
+                storage_.foreground(in_mem_);
+            });
+            None
+        };
 
         BgThreads {
             exit: local_exit,

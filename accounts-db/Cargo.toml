@@ -42,13 +42,13 @@ blake3 = { workspace = true }
 bv = { workspace = true, features = ["serde"] }
 bytemuck = { workspace = true }
 bytemuck_derive = { workspace = true }
-bzip2 = { workspace = true }
+# bzip2 = { workspace = true }
 crossbeam-channel = { workspace = true }
 dashmap = { workspace = true, features = ["rayon", "raw-api"] }
 indexmap = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
-lz4 = { workspace = true }
+# lz4 = { workspace = true }
 memmap2 = { workspace = true }
 modular-bitfield = { workspace = true }
 num_cpus = { workspace = true }
@@ -81,9 +81,10 @@ solana-keypair = { workspace = true, optional = true }
 solana-lattice-hash = { workspace = true }
 solana-measure = { workspace = true }
 solana-message = { workspace = true }
-solana-metrics = { workspace = true }
+# solana-metrics = { workspace = true }
 solana-nohash-hasher = { workspace = true }
 solana-pubkey = { workspace = true }
+solana-patches = { workspace = true }
 solana-rayon-threadlimit = { workspace = true }
 solana-rent = { workspace = true, optional = true }
 solana-rent-collector = { workspace = true }
@@ -102,7 +103,7 @@ solana-transaction-error = { workspace = true }
 solana-vote-program = { workspace = true, optional = true }
 spl-generic-token = { workspace = true }
 static_assertions = { workspace = true }
-tar = { workspace = true }
+# tar = { workspace = true }
 tempfile = { workspace = true }
 thiserror = { workspace = true }
 

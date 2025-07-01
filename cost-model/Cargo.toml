@@ -52,7 +52,7 @@ solana-frozen-abi-macro = { workspace = true, optional = true, features = [
 ] }
 solana-hash = { workspace = true, optional = true }
 solana-message = { workspace = true, optional = true }
-solana-metrics = { workspace = true }
+# solana-metrics = { workspace = true }
 solana-packet = { workspace = true }
 solana-pubkey = { workspace = true }
 solana-runtime-transaction = { workspace = true }

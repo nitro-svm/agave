@@ -124,6 +124,22 @@ impl Display for SlotBankHash {
     }
 }
 
+#[derive(Serialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotBankHash {
+    pub slot: Slot,
+    pub hash: String,
+}
+
+impl VerboseDisplay for SlotBankHash {}
+impl QuietDisplay for SlotBankHash {}
+
+impl Display for SlotBankHash {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(f, "Bank hash for slot {}: {}", self.slot, self.hash)
+    }
+}
+
 fn writeln_entry(f: &mut dyn fmt::Write, i: usize, entry: &CliEntry, prefix: &str) -> fmt::Result {
     writeln!(
         f,

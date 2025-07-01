@@ -3767,7 +3767,7 @@ fn setup_scan(
                                 if exit_.load(Ordering::Relaxed) {
                                     break;
                                 } else {
-                                    sleep(Duration::from_millis(10));
+                                    // sleep(Duration::from_millis(10));
                                 }
                             }
                         }
@@ -3781,7 +3781,7 @@ fn setup_scan(
 
     // Wait for scan to start
     while !ready.load(Ordering::Relaxed) {
-        sleep(Duration::from_millis(10));
+        // sleep(Duration::from_millis(10));
     }
 
     ScanTracker { t_scan, exit }
@@ -4665,7 +4665,7 @@ define_accounts_db_test!(test_partial_clean, |db| {
 });
 
 const RACY_SLEEP_MS: u64 = 10;
-const RACE_TIME: u64 = 5;
+// const RACE_TIME: u64 = 5;
 
 fn start_load_thread(
     with_retry: bool,
@@ -4753,7 +4753,7 @@ fn do_test_load_account_and_cache_flush_race(with_retry: bool) {
                     account.set_lamports(slot + 1);
                     db.store_cached((slot, &[(pubkey.as_ref(), &account)][..]), None);
                     db.add_root(slot);
-                    sleep(Duration::from_millis(RACY_SLEEP_MS));
+                    // sleep(Duration::from_millis(RACY_SLEEP_MS));
                     db.flush_accounts_cache(true, None);
                     slot += 1;
                 }
@@ -4770,7 +4770,7 @@ fn do_test_load_account_and_cache_flush_race(with_retry: bool) {
         |(_, slot)| slot + 1,
     );
 
-    sleep(Duration::from_secs(RACE_TIME));
+    // sleep(Duration::from_secs(RACE_TIME));
     exit.store(true, Ordering::Relaxed);
     t_flush_accounts_cache.join().unwrap();
     t_do_load.join().map_err(std::panic::resume_unwind).unwrap()
@@ -4830,7 +4830,7 @@ fn do_test_load_account_and_shrink_race(with_retry: bool) {
         move |_| lamports,
     );
 
-    sleep(Duration::from_secs(RACE_TIME));
+    // sleep(Duration::from_secs(RACE_TIME));
     exit.store(true, Ordering::Relaxed);
     t_shrink_accounts.join().unwrap();
     t_do_load.join().map_err(std::panic::resume_unwind).unwrap()

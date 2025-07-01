@@ -35,8 +35,8 @@ mod transaction_address_lookup_table_scanner;
 pub mod transaction_balances;
 pub mod use_snapshot_archives_at_startup;
 
-#[macro_use]
-extern crate eager;
+// #[macro_use]
+// extern crate eager;
 
 #[macro_use]
 extern crate solana_metrics;

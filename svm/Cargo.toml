@@ -59,6 +59,7 @@ solana-measure = { workspace = true }
 solana-message = { workspace = true }
 solana-nonce = { workspace = true }
 solana-nonce-account = { workspace = true }
+solana-patches = { workspace = true }
 solana-program-entrypoint = { workspace = true }
 solana-program-pack = { workspace = true }
 solana-program-runtime = { workspace = true, features = ["metrics"] }
@@ -104,22 +105,29 @@ solana-keypair = { workspace = true }
 solana-logger = { workspace = true }
 solana-native-token = { workspace = true }
 solana-precompile-error = { workspace = true }
-solana-program-runtime = { workspace = true, features = ["dev-context-only-utils"] }
-solana-pubkey = { workspace = true, features = [ "rand" ] }
+solana-program-runtime = { workspace = true, features = [
+    "dev-context-only-utils",
+] }
+solana-pubkey = { workspace = true, features = ["rand"] }
 solana-rent = { workspace = true }
 solana-sbpf = { workspace = true }
 solana-secp256k1-program = { workspace = true }
 solana-secp256r1-program = { workspace = true, features = ["openssl-vendored"] }
-solana-signature = { workspace = true, features = [ "rand" ] }
+solana-signature = { workspace = true, features = ["rand"] }
 solana-signer = { workspace = true }
 # See order-crates-for-publishing.py for using this unusual `path = "."`
-solana-svm = { path = ".", features = ["dev-context-only-utils", "svm-internal"] }
+solana-svm = { path = ".", features = [
+    "dev-context-only-utils",
+    "svm-internal",
+] }
 solana-svm-conformance = { workspace = true }
 solana-system-program = { workspace = true }
 solana-system-transaction = { workspace = true }
 solana-sysvar = { workspace = true }
 solana-transaction = { workspace = true, features = ["dev-context-only-utils"] }
-solana-transaction-context = { workspace = true, features = ["dev-context-only-utils"] }
+solana-transaction-context = { workspace = true, features = [
+    "dev-context-only-utils",
+] }
 spl-token = { workspace = true }
 test-case = { workspace = true }
 

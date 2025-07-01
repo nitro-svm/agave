@@ -1,6 +1,6 @@
 //! The utility structs and functions for writing byte blocks for the
 //! accounts db tiered storage.
-
+#[allow(unused_imports)]
 use {
     crate::tiered_storage::{footer::AccountBlockFormat, meta::AccountMetaOptionalFields},
     std::{
@@ -13,7 +13,7 @@ use {
 #[derive(Debug)]
 pub enum ByteBlockEncoder {
     Raw(Cursor<Vec<u8>>),
-    Lz4(lz4::Encoder<Vec<u8>>),
+    // Lz4(lz4::Encoder<Vec<u8>>), // not supported in svm-rollup
 }
 
 /// The byte block writer.
@@ -37,12 +37,12 @@ impl ByteBlockWriter {
         Self {
             encoder: match encoding {
                 AccountBlockFormat::AlignedRaw => ByteBlockEncoder::Raw(Cursor::new(Vec::new())),
-                AccountBlockFormat::Lz4 => ByteBlockEncoder::Lz4(
-                    lz4::EncoderBuilder::new()
-                        .level(0)
-                        .build(Vec::new())
-                        .unwrap(),
-                ),
+                // AccountBlockFormat::Lz4 => ByteBlockEncoder::Lz4(
+                //     lz4::EncoderBuilder::new()
+                //         .level(0)
+                //         .build(Vec::new())
+                //         .unwrap(),
+                // ),
             },
             len: 0,
         }
@@ -106,7 +106,7 @@ impl ByteBlockWriter {
     pub fn write(&mut self, buf: &[u8]) -> IoResult<()> {
         match &mut self.encoder {
             ByteBlockEncoder::Raw(cursor) => cursor.write_all(buf)?,
-            ByteBlockEncoder::Lz4(lz4_encoder) => lz4_encoder.write_all(buf)?,
+            // ByteBlockEncoder::Lz4(lz4_encoder) => lz4_encoder.write_all(buf)?,
         };
         self.len += buf.len();
         Ok(())
@@ -117,11 +117,11 @@ impl ByteBlockWriter {
     pub fn finish(self) -> IoResult<Vec<u8>> {
         match self.encoder {
             ByteBlockEncoder::Raw(cursor) => Ok(cursor.into_inner()),
-            ByteBlockEncoder::Lz4(lz4_encoder) => {
-                let (compressed_block, result) = lz4_encoder.finish();
-                result?;
-                Ok(compressed_block)
-            }
+            // ByteBlockEncoder::Lz4(lz4_encoder) => {
+            //     let (compressed_block, result) = lz4_encoder.finish();
+            //     result?;
+            //     Ok(compressed_block)
+            // }
         }
     }
 }
@@ -173,14 +173,14 @@ impl ByteBlockReader {
     ///
     /// Note that calling this function with AccountBlockFormat::AlignedRaw encoding
     /// will result in panic as the input is already decoded.
-    pub fn decode(encoding: AccountBlockFormat, input: &[u8]) -> IoResult<Vec<u8>> {
+    pub fn decode(encoding: AccountBlockFormat, _input: &[u8]) -> IoResult<Vec<u8>> {
         match encoding {
-            AccountBlockFormat::Lz4 => {
-                let mut decoder = lz4::Decoder::new(input).unwrap();
-                let mut output = vec![];
-                decoder.read_to_end(&mut output)?;
-                Ok(output)
-            }
+            // AccountBlockFormat::Lz4 => {
+            //     let mut decoder = lz4::Decoder::new(input).unwrap();
+            //     let mut output = vec![];
+            //     decoder.read_to_end(&mut output)?;
+            //     Ok(output)
+            // }
             AccountBlockFormat::AlignedRaw => panic!("the input buffer is already decoded"),
         }
     }
@@ -230,10 +230,10 @@ mod tests {
         write_single(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_single_encoded_format() {
-        write_single(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_single_encoded_format() {
+    //     write_single(AccountBlockFormat::Lz4);
+    // }
 
     #[derive(Debug, PartialEq)]
     struct TestMetaStruct {
@@ -334,10 +334,10 @@ mod tests {
         write_multiple(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_multiple_lz4_format() {
-        write_multiple(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_multiple_lz4_format() {
+    //     write_multiple(AccountBlockFormat::Lz4);
+    // }
 
     fn write_optional_fields(format: AccountBlockFormat) {
         let mut test_epoch = 5432312;
@@ -395,8 +395,8 @@ mod tests {
         write_optional_fields(AccountBlockFormat::AlignedRaw);
     }
 
-    #[test]
-    fn test_write_optional_fields_lz4_format() {
-        write_optional_fields(AccountBlockFormat::Lz4);
-    }
+    // #[test]
+    // fn test_write_optional_fields_lz4_format() {
+    //     write_optional_fields(AccountBlockFormat::Lz4);
+    // }
 }

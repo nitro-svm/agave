@@ -607,6 +607,8 @@ mod tests {
         let working_bank = bank_forks.read().unwrap().working_bank();
         let vote_state = get_vote_state(vote_pubkey, &working_bank);
         let root = vote_state.root_slot.unwrap();
+        let vote_state = get_vote_state(vote_pubkey, &working_bank);
+        let root = vote_state.root_slot.unwrap();
         let ancestors = working_bank.status_cache_ancestors();
         let _ = AggregateCommitmentService::update_commitment_cache(
             &block_commitment_cache,
