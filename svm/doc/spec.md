@@ -82,7 +82,6 @@ The interface to SVM is represented by the
 `transaction_processor::TransactionBatchProcessor` struct.  To create
 a `TransactionBatchProcessor` object the client need to specify the
 `slot`, `epoch`, and `program_cache`.
-`slot`, `epoch`, and `program_cache`.
 
 - `slot: Slot` is a u64 value representing the ordinal number of a
     particular blockchain state in context of which the transactions
@@ -112,18 +111,6 @@ following arguments:
 - `check_results`: A mutable slice of transaction check results.
 - `environment`: The runtime environment for transaction batch processing.
 - `config`: Configurations for customizing transaction processing behavior.
-following arguments:
-
-- `callbacks`: A `TransactionProcessingCallback` trait instance which allows
-  the transaction processor to summon information about accounts, most
-  importantly loading them for transaction execution.
-- `sanitized_txs`: A slice of sanitized transactions.
-- `check_results`: A mutable slice of transaction check results.
-- `environment`: The runtime environment for transaction batch processing.
-- `config`: Configurations for customizing transaction processing behavior.
-
-The method returns a `LoadAndExecuteSanitizedTransactionsOutput`, which is
-defined below in more detail.
 The method returns a `LoadAndExecuteSanitizedTransactionsOutput`, which is
 defined below in more detail.
 
@@ -264,10 +251,7 @@ Steps of `load_and_execute_sanitized_transactions`
             - Validate the programs accounts that have been loaded and checks if they are builtin programs.
             - Return `struct LoadedTransaction` containing the accounts (pubkey and data),
               indices to the executable accounts in `TransactionContext` (or `InstructionContext`),
-              indices to the executable accounts in `TransactionContext` (or `InstructionContext`),
               the transaction rent, and the `struct RentDebit`.
-            - Generate a `RollbackAccounts` struct which holds fee-subtracted fee payer account and pre-execution nonce state used for rolling back account state on execution failure.
-    - Returns `TransactionLoadedResult`, containing the `LoadTransaction` we obtained from `loaded_transaction_accounts`
             - Generate a `RollbackAccounts` struct which holds fee-subtracted fee payer account and pre-execution nonce state used for rolling back account state on execution failure.
     - Returns `TransactionLoadedResult`, containing the `LoadTransaction` we obtained from `loaded_transaction_accounts`
 

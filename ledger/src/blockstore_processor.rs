@@ -1155,7 +1155,6 @@ fn verify_ticks(
 
 #[allow(clippy::too_many_arguments)]
 #[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
-#[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
 fn confirm_full_slot(
     blockstore: &Blockstore,
     bank: &BankWithScheduler,
@@ -1213,15 +1212,11 @@ pub struct ConfirmationTiming {
     /// includes failed cases, when `confirm_slot_entries` exist with an error.  In microseconds.
     /// When unified scheduler is enabled, replay excludes the transaction execution, only
     /// accounting for task creation and submission to the scheduler.
-    /// When unified scheduler is enabled, replay excludes the transaction execution, only
-    /// accounting for task creation and submission to the scheduler.
     pub confirmation_elapsed: u64,
 
     /// Wall clock time used by the entry replay code.  Does not include the PoH or the transaction
     /// signature/precompiles verification, but can overlap with the PoH and signature verification.
     /// In microseconds.
-    /// When unified scheduler is enabled, replay excludes the transaction execution, only
-    /// accounting for task creation and submission to the scheduler.
     /// When unified scheduler is enabled, replay excludes the transaction execution, only
     /// accounting for task creation and submission to the scheduler.
     pub replay_elapsed: u64,
@@ -1777,7 +1772,6 @@ fn confirm_slot_entries(
 }
 
 // Special handling required for processing the entries in slot 0
-#[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
 #[cfg_attr(feature = "dev-context-only-utils", qualifiers(pub))]
 fn process_bank_0(
     bank0: &BankWithScheduler,

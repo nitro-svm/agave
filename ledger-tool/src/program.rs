@@ -1,7 +1,6 @@
 use {
     crate::{args::*, canonicalize_ledger_path, ledger_utils::*},
     clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
-    clap::{App, AppSettings, Arg, ArgMatches, SubCommand},
     log::*,
     serde_derive::{Deserialize, Serialize},
     serde_json::Result,
@@ -36,7 +35,6 @@ use {
         fmt::{self, Debug, Formatter},
         fs::File,
         io::{Read, Seek, Write},
-        path::Path,
         path::Path,
         process::exit,
         sync::Arc,
@@ -82,7 +80,6 @@ fn load_blockstore(ledger_path: &Path, arg_matches: &ArgMatches<'_>) -> Arc<Bank
     info!("genesis hash: {}", genesis_config.hash());
     let blockstore = open_blockstore(ledger_path, arg_matches, AccessType::Secondary);
     let LoadAndProcessLedgerOutput { bank_forks, .. } = load_and_process_ledger_or_exit(
-    let LoadAndProcessLedgerOutput { bank_forks, .. } = load_and_process_ledger_or_exit(
         arg_matches,
         &genesis_config,
         Arc::new(blockstore),
@@ -106,9 +103,6 @@ impl ProgramSubCommand for App<'_, '_> {
             )
             .required(true)
             .index(1);
-
-        let load_genesis_config_arg = load_genesis_arg();
-        let snapshot_config_args = snapshot_args();
 
         let load_genesis_config_arg = load_genesis_arg();
         let snapshot_config_args = snapshot_args();
@@ -163,8 +157,6 @@ and the following fields are required
                         .takes_value(true)
                         .default_value("0"),
                 )
-                .arg(&load_genesis_config_arg)
-                .args(&snapshot_config_args)
                 .arg(&load_genesis_config_arg)
                 .args(&snapshot_config_args)
                 .arg(
@@ -566,7 +558,6 @@ pub fn program(ledger_path: &Path, matches: &ArgMatches<'_>) {
         account_lengths,
         &mut invoke_context,
     );
-    let (mut vm, _, _) = vm.unwrap();
     let (mut vm, _, _) = vm.unwrap();
     let start_time = Instant::now();
     if matches.value_of("mode").unwrap() == "debugger" {

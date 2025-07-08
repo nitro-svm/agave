@@ -1717,13 +1717,6 @@ impl<S: SpawnableScheduler<TH>, TH: TaskHandler> ThreadManager<S, TH> {
                 // 1. Initial result_with_timing is propagated implicitly by the moved variable.
                 // 2. Subsequent result_with_timings are propagated explicitly from
                 //    the new_task_receiver.recv() invocation located at the end of loop.
-
-                // The following loop maintains and updates ResultWithTimings as its
-                // externally-provided mutable state for each session in this way:
-                //
-                // 1. Initial result_with_timing is propagated implicitly by the moved variable.
-                // 2. Subsequent result_with_timings are propagated explicitly from
-                //    the new_task_receiver.recv() invocation located at the end of loop.
                 'nonaborted_main_loop: loop {
                     while !is_finished {
                         // ALL recv selectors are eager-evaluated ALWAYS by current crossbeam impl,
@@ -2645,14 +2638,6 @@ mod tests {
             &CheckPoint::TimeoutListenerTriggered(0),
             &CheckPoint::TimeoutListenerTriggered(1),
             &TestCheckPoint::AfterTimeoutListenerTriggered,
-            &TestCheckPoint::BeforeTimeoutListenerTriggered,
-            &CheckPoint::TimeoutListenerTriggered(0),
-            &CheckPoint::TimeoutListenerTriggered(1),
-            &TestCheckPoint::AfterTimeoutListenerTriggered,
-            &TestCheckPoint::BeforeTimeoutListenerTriggered,
-            &CheckPoint::TimeoutListenerTriggered(0),
-            &CheckPoint::TimeoutListenerTriggered(1),
-            &TestCheckPoint::AfterTimeoutListenerTriggered,
         ]);
 
         let ignored_prioritization_fee_cache = Arc::new(PrioritizationFeeCache::new(0u64));
@@ -2718,11 +2703,6 @@ mod tests {
             ));
         bank.schedule_transaction_executions([(tx_after_stale, 1)].into_iter())
             .unwrap();
-
-        // Observe second occurrence of TimeoutListenerTriggered(1), which indicates a new timeout
-        // lister is registered correctly again for reactivated scheduler.
-        sleepless_testing::at(TestCheckPoint::BeforeTimeoutListenerTriggered);
-        sleepless_testing::at(TestCheckPoint::AfterTimeoutListenerTriggered);
 
         // Observe second occurrence of TimeoutListenerTriggered(1), which indicates a new timeout
         // lister is registered correctly again for reactivated scheduler.

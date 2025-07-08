@@ -138,7 +138,6 @@ fn find_installed_platform_tools() -> Vec<String> {
 
 fn get_latest_platform_tools_version() -> Result<String, String> {
     let url = "https://github.com/anza-xyz/platform-tools/releases/latest";
-    let url = "https://github.com/anza-xyz/platform-tools/releases/latest";
     let resp = reqwest::blocking::get(url).map_err(|err| format!("Failed to GET {url}: {err}"))?;
     let path = std::path::Path::new(resp.url().path());
     let version = path.file_name().unwrap().to_string_lossy().to_string();

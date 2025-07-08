@@ -1116,7 +1116,6 @@ mod tests {
             ..
         } = create_genesis_config(10_000);
         let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
-        let (bank, _bank_forks) = Bank::new_no_wallclock_throttle_for_tests(&genesis_config);
         let ledger_path = get_tmp_ledger_path_auto_delete!();
         let blockstore = Blockstore::open(ledger_path.path())
             .expect("Expected to be able to open database ledger");

@@ -66,19 +66,6 @@ pub struct LoadAndProcessLedgerOutput {
     pub accounts_background_service: AccountsBackgroundService,
 }
 
-pub struct LoadAndProcessLedgerOutput {
-    pub bank_forks: Arc<RwLock<BankForks>>,
-    pub starting_snapshot_hashes: Option<StartingSnapshotHashes>,
-    // Typically, we would want to join all threads before returning. However,
-    // AccountsBackgroundService (ABS) performs several long running operations
-    // that don't respond to the exit flag. Blocking on these operations could
-    // significantly delay getting results that do not need ABS to finish. So,
-    // skip joining ABS and instead let the caller decide whether to block or
-    // not. It is safe to let ABS continue in the background, and ABS will stop
-    // if/when it finally checks the exit flag
-    pub accounts_background_service: AccountsBackgroundService,
-}
-
 const PROCESS_SLOTS_HELP_STRING: &str =
     "The starting slot is either the latest found snapshot slot, or genesis (slot 0) if the \
      --no-snapshot flag was specified or if no snapshots were found. \
@@ -125,7 +112,6 @@ pub fn load_and_process_ledger_or_exit(
     process_options: ProcessOptions,
     transaction_status_sender: Option<TransactionStatusSender>,
 ) -> LoadAndProcessLedgerOutput {
-) -> LoadAndProcessLedgerOutput {
     load_and_process_ledger(
         arg_matches,
         genesis_config,
@@ -146,7 +132,6 @@ pub fn load_and_process_ledger(
     process_options: ProcessOptions,
     transaction_status_sender: Option<TransactionStatusSender>,
 ) -> Result<LoadAndProcessLedgerOutput, LoadAndProcessLedgerError> {
-) -> Result<LoadAndProcessLedgerOutput, LoadAndProcessLedgerError> {
     let bank_snapshots_dir = if blockstore.is_primary_access() {
         blockstore.ledger_path().join("snapshot")
     } else {
@@ -163,10 +148,6 @@ pub fn load_and_process_ledger(
             .map(PathBuf::from)
             .unwrap_or_else(|| blockstore.ledger_path().to_path_buf());
         let incremental_snapshot_archives_dir =
-            value_t!(arg_matches, "incremental_snapshot_archive_path", String)
-                .ok()
-                .map(PathBuf::from)
-                .unwrap_or_else(|| full_snapshot_archives_dir.clone());
             value_t!(arg_matches, "incremental_snapshot_archive_path", String)
                 .ok()
                 .map(PathBuf::from)
@@ -442,11 +423,6 @@ pub fn load_and_process_ledger(
         None, // entry_notification_sender
         Some(&snapshot_controller),
     )
-    .map(|_| LoadAndProcessLedgerOutput {
-        bank_forks,
-        starting_snapshot_hashes,
-        accounts_background_service,
-    })
     .map(|_| LoadAndProcessLedgerOutput {
         bank_forks,
         starting_snapshot_hashes,

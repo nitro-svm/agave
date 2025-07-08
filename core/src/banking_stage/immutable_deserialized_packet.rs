@@ -21,7 +21,6 @@ use {
         versioned::{sanitized::SanitizedVersionedTransaction, VersionedTransaction},
     },
     std::{cmp::Ordering, collections::HashSet, mem::size_of},
-    std::{cmp::Ordering, collections::HashSet, mem::size_of},
     thiserror::Error,
 };
 

@@ -216,15 +216,6 @@ impl LocalCluster {
                 Arc::new(stakes),
                 HashMap::<Pubkey, u64>::default(), // overrides
             )));
-            let total_stake = config.node_stakes.iter().sum::<u64>();
-            let stakes = HashMap::from([
-                (client_keypair.pubkey(), stake),
-                (Pubkey::new_unique(), total_stake.saturating_sub(stake)),
-            ]);
-            let staked_nodes = Arc::new(RwLock::new(StakedNodes::new(
-                Arc::new(stakes),
-                HashMap::<Pubkey, u64>::default(), // overrides
-            )));
 
             QuicConnectionCacheConfig {
                 client_keypair,
@@ -786,7 +777,6 @@ impl LocalCluster {
             .get_latest_blockhash_with_commitment(CommitmentConfig::processed())
             .unwrap();
         let mut tx = system_transaction::transfer(source_keypair, dest_pubkey, lamports, blockhash);
-        let mut tx = system_transaction::transfer(source_keypair, dest_pubkey, lamports, blockhash);
         info!(
             "executing transfer of {} from {} to {}",
             lamports,
@@ -838,7 +828,6 @@ impl LocalCluster {
             );
             let message = Message::new(&instructions, Some(&from_account.pubkey()));
             let mut transaction = Transaction::new(
-            let mut transaction = Transaction::new(
                 &[from_account.as_ref(), vote_account],
                 message,
                 client
@@ -872,7 +861,6 @@ impl LocalCluster {
                 amount,
             );
             let message = Message::new(&instructions, Some(&from_account.pubkey()));
-            let mut transaction = Transaction::new(
             let mut transaction = Transaction::new(
                 &[from_account.as_ref(), &stake_account_keypair],
                 message,

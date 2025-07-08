@@ -72,14 +72,12 @@ fn test_sysvar_syscalls() {
         "solana_sbf_rust_sysvar",
     );
     bank.freeze();
-    bank.freeze();
 
     for ix_discriminator in 0..4 {
         let instruction = Instruction::new_with_bincode(
             program_id,
             &[ix_discriminator],
             vec![
-                AccountMeta::new(mint_keypair.pubkey(), true),
                 AccountMeta::new(mint_keypair.pubkey(), true),
                 AccountMeta::new(Pubkey::new_unique(), false),
                 AccountMeta::new_readonly(clock::id(), false),

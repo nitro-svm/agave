@@ -483,7 +483,6 @@ mod tests {
         pubkeys.insert(clock::id());
         pubkeys.insert(epoch_schedule::id());
         pubkeys.insert(stake_history::id());
-        pubkeys.insert(stake_history::id());
         #[allow(deprecated)]
         pubkeys
             .iter()
@@ -676,26 +675,6 @@ mod tests {
                 &Pubkey::new_unique(),
                 &invalid_vote_state_pubkey(),
                 &invalid_vote_state_pubkey(),
-            ),
-            Err(InstructionError::InvalidAccountData),
-        );
-        process_instruction_as_one_arg(
-            Arc::clone(&feature_set),
-            &instruction::move_stake(
-                &Pubkey::new_unique(),
-                &Pubkey::new_unique(),
-                &Pubkey::new_unique(),
-                100,
-            ),
-            Err(InstructionError::InvalidAccountData),
-        );
-        process_instruction_as_one_arg(
-            Arc::clone(&feature_set),
-            &instruction::move_lamports(
-                &Pubkey::new_unique(),
-                &Pubkey::new_unique(),
-                &Pubkey::new_unique(),
-                100,
             ),
             Err(InstructionError::InvalidAccountData),
         );

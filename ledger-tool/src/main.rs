@@ -31,7 +31,6 @@ use {
         input_parsers::{cluster_type_of, pubkey_of, pubkeys_of},
         input_validators::{
             is_parsable, is_pubkey, is_pubkey_or_keypair, is_slot, is_valid_percentage,
-            is_parsable, is_pubkey, is_pubkey_or_keypair, is_slot, is_valid_percentage,
             is_within_range,
         },
     },
@@ -823,10 +822,6 @@ fn main() {
     let accounts_db_config_args = accounts_db_args();
     let snapshot_config_args = snapshot_args();
 
-    let load_genesis_config_arg = load_genesis_arg();
-    let accounts_db_config_args = accounts_db_args();
-    let snapshot_config_args = snapshot_args();
-
     let accounts_db_test_hash_calculation_arg = Arg::with_name("accounts_db_test_hash_calculation")
         .long("accounts-db-test-hash-calculation")
         .help("Enable hash calculation test");
@@ -933,10 +928,6 @@ fn main() {
         .global_setting(AppSettings::InferSubcommands)
         .global_setting(AppSettings::UnifiedHelpMessage)
         .global_setting(AppSettings::VersionlessSubcommands)
-        .global_setting(AppSettings::ColoredHelp)
-        .global_setting(AppSettings::InferSubcommands)
-        .global_setting(AppSettings::UnifiedHelpMessage)
-        .global_setting(AppSettings::VersionlessSubcommands)
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(
             Arg::with_name("ledger_path")
@@ -1033,7 +1024,6 @@ fn main() {
             SubCommand::with_name("genesis")
                 .about("Prints the ledger's genesis config")
                 .arg(&load_genesis_config_arg)
-                .arg(&load_genesis_config_arg)
                 .arg(
                     Arg::with_name("accounts")
                         .long("accounts")
@@ -1053,12 +1043,10 @@ fn main() {
             SubCommand::with_name("genesis-hash")
                 .about("Prints the ledger's genesis hash")
                 .arg(&load_genesis_config_arg)
-                .arg(&load_genesis_config_arg)
         )
         .subcommand(
             SubCommand::with_name("modify-genesis")
                 .about("Modifies genesis parameters")
-                .arg(&load_genesis_config_arg)
                 .arg(&load_genesis_config_arg)
                 .arg(&hashes_per_tick)
                 .arg(
@@ -1082,9 +1070,6 @@ fn main() {
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&hard_forks_arg)
         )
         .subcommand(
@@ -1093,17 +1078,11 @@ fn main() {
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&halt_at_slot_arg)
         )
         .subcommand(
             SubCommand::with_name("verify")
                 .about("Verify the ledger")
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
@@ -1241,9 +1220,6 @@ fn main() {
         .subcommand(
             SubCommand::with_name("graph")
                 .about("Create a Graphviz rendering of the ledger")
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
@@ -1541,9 +1517,6 @@ fn main() {
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&halt_at_slot_arg)
                 .arg(&hard_forks_arg)
                 .arg(&geyser_plugin_args)
@@ -1595,9 +1568,6 @@ fn main() {
         .subcommand(
             SubCommand::with_name("capitalization")
                 .about("Print capitalization (aka, total supply) while checksumming it")
-                .arg(&load_genesis_config_arg)
-                .args(&accounts_db_config_args)
-                .args(&snapshot_config_args)
                 .arg(&load_genesis_config_arg)
                 .args(&accounts_db_config_args)
                 .args(&snapshot_config_args)
@@ -1794,14 +1764,6 @@ fn main() {
                             process_options,
                             None,
                         );
-                    let LoadAndProcessLedgerOutput { bank_forks, .. } =
-                        load_and_process_ledger_or_exit(
-                            arg_matches,
-                            &genesis_config,
-                            Arc::new(blockstore),
-                            process_options,
-                            None,
-                        );
 
                     println!(
                         "{}",
@@ -1846,12 +1808,9 @@ fn main() {
 
                     let output_format =
                         OutputFormat::from_matches(arg_matches, "output_format", false);
-                    let output_format =
-                        OutputFormat::from_matches(arg_matches, "output_format", false);
                     let print_accounts_stats = arg_matches.is_present("print_accounts_stats");
                     let print_bank_hash = arg_matches.is_present("print_bank_hash");
                     let write_bank_file = arg_matches.is_present("write_bank_file");
-
 
                     let genesis_config = open_genesis_config_by(&ledger_path, arg_matches);
                     info!("genesis hash: {}", genesis_config.hash());
@@ -1869,25 +1828,12 @@ fn main() {
                             process_options,
                             transaction_status_sender,
                         );
-                    let LoadAndProcessLedgerOutput { bank_forks, .. } =
-                        load_and_process_ledger_or_exit(
-                            arg_matches,
-                            &genesis_config,
-                            Arc::new(blockstore),
-                            process_options,
-                            transaction_status_sender,
-                        );
 
                     let working_bank = bank_forks.read().unwrap().working_bank();
                     if print_accounts_stats {
                         working_bank.print_accounts_stats();
                     }
                     if print_bank_hash {
-                        let slot_bank_hash = SlotBankHash {
-                            slot: working_bank.slot(),
-                            hash: working_bank.hash().to_string(),
-                        };
-                        println!("{}", output_format.formatted_string(&slot_bank_hash));
                         let slot_bank_hash = SlotBankHash {
                             slot: working_bank.slot(),
                             hash: working_bank.hash().to_string(),
@@ -1945,14 +1891,6 @@ fn main() {
                         arg_matches,
                         get_access_type(&process_options),
                     );
-                    let LoadAndProcessLedgerOutput { bank_forks, .. } =
-                        load_and_process_ledger_or_exit(
-                            arg_matches,
-                            &genesis_config,
-                            Arc::new(blockstore),
-                            process_options,
-                            None,
-                        );
                     let LoadAndProcessLedgerOutput { bank_forks, .. } =
                         load_and_process_ledger_or_exit(
                             arg_matches,
@@ -2147,11 +2085,6 @@ fn main() {
                         output_directory.display()
                     );
 
-                    let LoadAndProcessLedgerOutput {
-                        bank_forks,
-                        starting_snapshot_hashes,
-                        accounts_background_service,
-                    } = load_and_process_ledger_or_exit(
                     let LoadAndProcessLedgerOutput {
                         bank_forks,
                         starting_snapshot_hashes,
@@ -2647,14 +2580,6 @@ fn main() {
                             process_options,
                             None,
                         );
-                    let LoadAndProcessLedgerOutput { bank_forks, .. } =
-                        load_and_process_ledger_or_exit(
-                            arg_matches,
-                            &genesis_config,
-                            Arc::new(blockstore),
-                            process_options,
-                            None,
-                        );
                     let bank = bank_forks.read().unwrap().working_bank();
 
                     let include_sysvars = arg_matches.is_present("include_sysvars");
@@ -2700,14 +2625,6 @@ fn main() {
                         arg_matches,
                         get_access_type(&process_options),
                     );
-                    let LoadAndProcessLedgerOutput { bank_forks, .. } =
-                        load_and_process_ledger_or_exit(
-                            arg_matches,
-                            &genesis_config,
-                            Arc::new(blockstore),
-                            process_options,
-                            None,
-                        );
                     let LoadAndProcessLedgerOutput { bank_forks, .. } =
                         load_and_process_ledger_or_exit(
                             arg_matches,

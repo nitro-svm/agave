@@ -237,9 +237,7 @@ impl AncientSlotInfos {
 
             // if the remaining uncombined storages and the # of resulting
             // combined ancient storages are less than the threshold, then
-            // combined ancient storages are less than the threshold, then
             // we've gone too far, so get rid of this entry and all after it.
-            // Every storage after this one is larger than the ones we've chosen.
             // Every storage after this one is larger than the ones we've chosen.
             // if we ever get to more than `max_resulting_storages` required ancient storages, that is enough to stop for now.
             // It will take a lot of time for the pack algorithm to create that many, and that is bad for system performance.

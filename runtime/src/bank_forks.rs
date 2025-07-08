@@ -131,7 +131,6 @@ impl BankForks {
         }));
 
         root_bank.set_fork_graph_in_program_cache(Arc::downgrade(&bank_forks));
-        root_bank.set_fork_graph_in_program_cache(Arc::downgrade(&bank_forks));
         bank_forks
     }
 
@@ -229,7 +228,6 @@ impl BankForks {
         mut bank: Bank,
     ) -> BankWithScheduler {
         if self.root.load(Ordering::Relaxed) < self.highest_slot_at_startup {
-            bank.set_check_program_modification_slot(true);
             bank.set_check_program_modification_slot(true);
         }
 

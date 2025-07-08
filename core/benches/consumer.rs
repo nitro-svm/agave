@@ -89,7 +89,6 @@ fn create_consumer(transaction_recorder: TransactionRecorder) -> Consumer {
 struct BenchFrame {
     bank: Arc<Bank>,
     _bank_forks: Arc<RwLock<BankForks>>,
-    _bank_forks: Arc<RwLock<BankForks>>,
     ledger_path: TempDir,
     exit: Arc<AtomicBool>,
     transaction_recorder: TransactionRecorder,
@@ -97,7 +96,6 @@ struct BenchFrame {
     signal_receiver: Receiver<(Arc<Bank>, (Entry, u64))>,
 }
 
-fn setup() -> BenchFrame {
 fn setup() -> BenchFrame {
     let mint_total = u64::MAX;
     let GenesisConfigInfo {
@@ -118,7 +116,6 @@ fn setup() -> BenchFrame {
         .unwrap()
         .set_limits(u64::MAX, u64::MAX, u64::MAX);
     let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
-    let (bank, bank_forks) = bank.wrap_with_bank_forks_for_tests();
 
     let ledger_path = TempDir::new().unwrap();
     let blockstore = Arc::new(
@@ -130,7 +127,6 @@ fn setup() -> BenchFrame {
     BenchFrame {
         bank,
         _bank_forks: bank_forks,
-        _bank_forks: bank_forks,
         ledger_path,
         exit,
         transaction_recorder,
@@ -139,7 +135,6 @@ fn setup() -> BenchFrame {
     }
 }
 
-fn bench_process_and_record_transactions(bencher: &mut Bencher, batch_size: usize) {
 fn bench_process_and_record_transactions(bencher: &mut Bencher, batch_size: usize) {
     const TRANSACTIONS_PER_ITERATION: usize = 64;
     assert_eq!(
@@ -152,7 +147,6 @@ fn bench_process_and_record_transactions(bencher: &mut Bencher, batch_size: usiz
 
     let BenchFrame {
         bank,
-        _bank_forks,
         _bank_forks,
         ledger_path: _ledger_path,
         exit,
@@ -182,17 +176,14 @@ fn bench_process_and_record_transactions(bencher: &mut Bencher, batch_size: usiz
 #[bench]
 fn bench_process_and_record_transactions_unbatched(bencher: &mut Bencher) {
     bench_process_and_record_transactions(bencher, 1);
-    bench_process_and_record_transactions(bencher, 1);
 }
 
 #[bench]
 fn bench_process_and_record_transactions_half_batch(bencher: &mut Bencher) {
     bench_process_and_record_transactions(bencher, 32);
-    bench_process_and_record_transactions(bencher, 32);
 }
 
 #[bench]
 fn bench_process_and_record_transactions_full_batch(bencher: &mut Bencher) {
-    bench_process_and_record_transactions(bencher, 64);
     bench_process_and_record_transactions(bencher, 64);
 }

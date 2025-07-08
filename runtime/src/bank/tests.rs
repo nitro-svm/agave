@@ -9326,7 +9326,6 @@ fn test_epoch_schedule_from_genesis_config() {
     ));
 
     assert_eq!(bank.epoch_schedule(), &genesis_config.epoch_schedule);
-    assert_eq!(bank.epoch_schedule(), &genesis_config.epoch_schedule);
 }
 
 fn check_stake_vote_account_validity<F>(check_owner_change: bool, load_vote_and_stake_accounts: F)

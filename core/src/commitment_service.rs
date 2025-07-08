@@ -43,7 +43,6 @@ impl CommitmentAggregationData {
             root,
             total_stake,
             node_vote_state,
-            node_vote_state,
         }
     }
 }
@@ -154,11 +153,6 @@ impl AggregateCommitmentService {
             &aggregation_data.bank,
             &aggregation_data.node_vote_state,
         );
-        let (block_commitment, rooted_stake) = Self::aggregate_commitment(
-            &ancestors,
-            &aggregation_data.bank,
-            &aggregation_data.node_vote_state,
-        );
 
         let highest_super_majority_root =
             get_highest_super_majority_root(rooted_stake, aggregation_data.total_stake);
@@ -202,7 +196,6 @@ impl AggregateCommitmentService {
 
         let mut commitment = HashMap::new();
         let mut rooted_stake: Vec<(Slot, u64)> = Vec::new();
-        for (pubkey, (lamports, account)) in bank.vote_accounts().iter() {
         for (pubkey, (lamports, account)) in bank.vote_accounts().iter() {
             if *lamports == 0 {
                 continue;
@@ -408,7 +401,6 @@ mod tests {
     }
 
     fn do_test_aggregate_commitment_validity(with_node_vote_state: bool) {
-    fn do_test_aggregate_commitment_validity(with_node_vote_state: bool) {
         let ancestors = vec![3, 4, 5, 7, 9, 10, 11];
         let GenesisConfigInfo {
             mut genesis_config, ..
@@ -469,11 +461,6 @@ mod tests {
         let mut vote_state1 = vote_state::from(&vote_account1).unwrap();
         process_slot_vote_unchecked(&mut vote_state1, 3);
         process_slot_vote_unchecked(&mut vote_state1, 5);
-        if !with_node_vote_state {
-            let versioned = VoteStateVersions::new_current(vote_state1.clone());
-            vote_state::to(&versioned, &mut vote_account1).unwrap();
-            bank.store_account(&pk1, &vote_account1);
-        }
         if !with_node_vote_state {
             let versioned = VoteStateVersions::new_current(vote_state1.clone());
             vote_state::to(&versioned, &mut vote_account1).unwrap();
@@ -549,16 +536,6 @@ mod tests {
     }
 
     #[test]
-    fn test_aggregate_commitment_validity_with_node_vote_state() {
-        do_test_aggregate_commitment_validity(true)
-    }
-
-    #[test]
-    fn test_aggregate_commitment_validity_without_node_vote_state() {
-        do_test_aggregate_commitment_validity(false);
-    }
-
-    #[test]
     fn test_highest_super_majority_root_advance() {
         fn get_vote_state(vote_pubkey: Pubkey, bank: &Bank) -> TowerVoteState {
             let vote_account = bank.get_vote_account(&vote_pubkey).unwrap();
@@ -604,10 +581,6 @@ mod tests {
         let root = get_vote_state(vote_pubkey, &working_bank)
             .root_slot
             .unwrap();
-        let vote_pubkey = validator_vote_keypairs.vote_keypair.pubkey();
-        let root = get_vote_state(vote_pubkey, &working_bank)
-            .root_slot
-            .unwrap();
         for x in 0..root {
             bank_forks.write().unwrap().set_root(x, None, None).unwrap();
         }
@@ -644,7 +617,6 @@ mod tests {
                 root: 0,
                 total_stake: 100,
                 node_vote_state: (vote_pubkey, vote_state.clone()),
-                node_vote_state: (vote_pubkey, vote_state.clone()),
             },
             ancestors,
         );
@@ -679,7 +651,6 @@ mod tests {
                 bank: working_bank,
                 root: 1,
                 total_stake: 100,
-                node_vote_state: (vote_pubkey, vote_state),
                 node_vote_state: (vote_pubkey, vote_state),
             },
             ancestors,
@@ -722,9 +693,6 @@ mod tests {
         let vote_state =
             get_vote_state(validator_vote_keypairs.vote_keypair.pubkey(), &working_bank);
         let root = vote_state.root_slot.unwrap();
-        let vote_state =
-            get_vote_state(validator_vote_keypairs.vote_keypair.pubkey(), &working_bank);
-        let root = vote_state.root_slot.unwrap();
         let ancestors = working_bank.status_cache_ancestors();
         let _ = AggregateCommitmentService::update_commitment_cache(
             &block_commitment_cache,
@@ -732,7 +700,6 @@ mod tests {
                 bank: working_bank,
                 root: 0,
                 total_stake: 100,
-                node_vote_state: (vote_pubkey, vote_state),
                 node_vote_state: (vote_pubkey, vote_state),
             },
             ancestors,

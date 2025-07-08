@@ -231,7 +231,6 @@ impl QosService {
                 }
             });
         cost_tracker.sub_transactions_in_flight(num_included);
-        cost_tracker.sub_transactions_in_flight(num_included);
     }
 
     /// Remove reserved units for transaction batch that unsuccessfully recorded.
@@ -779,11 +778,6 @@ mod tests {
                 Some(&committed_status),
                 &bank,
             );
-            QosService::remove_or_update_costs(
-                qos_cost_results.iter(),
-                Some(&committed_status),
-                &bank,
-            );
             assert_eq!(
                 final_txs_cost,
                 bank.read_cost_tracker().unwrap().block_cost()
@@ -835,7 +829,6 @@ mod tests {
                 bank.read_cost_tracker().unwrap().block_cost()
             );
 
-            QosService::remove_or_update_costs(qos_cost_results.iter(), None, &bank);
             QosService::remove_or_update_costs(qos_cost_results.iter(), None, &bank);
             assert_eq!(0, bank.read_cost_tracker().unwrap().block_cost());
             assert_eq!(0, bank.read_cost_tracker().unwrap().transaction_count());

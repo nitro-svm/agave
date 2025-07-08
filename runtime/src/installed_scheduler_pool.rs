@@ -629,8 +629,6 @@ impl BankWithSchedulerInner {
                 // Otherwise, the listener would again put scheduler into Stale before the read
                 // lock under an extremely-rare race condition, causing panic below in
                 // active_scheduler().
-                // lock under an extremely-rare race condition, causing panic below in
-                // active_scheduler().
                 pool.register_timeout_listener(self.do_create_timeout_listener());
                 f(scheduler.active_scheduler())
             }

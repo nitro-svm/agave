@@ -165,11 +165,6 @@ mod real {
                     *current_index = anchored_index;
                 }
 
-                if *current_index != anchored_index {
-                    trace!("Progressed to: {} at {:?}", anchored_check_point, current());
-                    *current_index = anchored_index;
-                }
-
                 self.condvar.notify_all();
             }
         }
