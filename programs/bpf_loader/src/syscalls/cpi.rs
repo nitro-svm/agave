@@ -2930,33 +2930,28 @@ mod tests {
         fn into_region(self, vm_addr: u64) -> (Vec<u8>, MemoryRegion, SerializedAccountMetadata) {
             let size = mem::size_of::<AccountInfo>()
                 + mem::size_of::<Pubkey>() * 2
-                + mem::size_of::<RcBox<RefCell<&mut u64>>>()
-                + mem::size_of::<u64>()
-                + mem::size_of::<RcBox<RefCell<&mut [u8]>>>()
+                + mem::size_of::<VmBoxOfRefCell<&mut u64>>()
+                + mem::size_of::<VmBoxOfRefCell<VmSlice<u8>>>()
                 + self.data.len();
             let mut data = vec![0; size];
 
             let vm_addr = vm_addr as usize;
-            let key_addr = vm_addr + mem::size_of::<AccountInfo>();
+            let key_addr = vm_addr + mem::size_of::<VmAccountInfo>();
             let lamports_cell_addr = key_addr + mem::size_of::<Pubkey>();
-            let lamports_addr = lamports_cell_addr + mem::size_of::<RcBox<RefCell<&mut u64>>>();
-            let owner_addr = lamports_addr + mem::size_of::<u64>();
+            let owner_addr = lamports_cell_addr + mem::size_of::<VmBoxOfRefCell<&mut u64>>();
             let data_cell_addr = owner_addr + mem::size_of::<Pubkey>();
-            let data_addr = data_cell_addr + mem::size_of::<RcBox<RefCell<&mut [u8]>>>();
+            let data_addr = data_cell_addr +  mem::size_of::<VmBoxOfRefCell<VmSlice<u8>>>();
 
-            let info = AccountInfo {
-                key: unsafe { (key_addr as *const Pubkey).as_ref() }.unwrap(),
+            let info = VmAccountInfo {
+                key: key_addr as u64,
                 is_signer: self.is_signer,
                 is_writable: self.is_writable,
-                lamports: unsafe {
-                    Rc::from_raw((lamports_cell_addr + RcBox::<&mut u64>::VALUE_OFFSET) as *const _)
-                },
-                data: unsafe {
-                    Rc::from_raw((data_cell_addr + RcBox::<&mut [u8]>::VALUE_OFFSET) as *const _)
-                },
-                owner: unsafe { (owner_addr as *const Pubkey).as_ref() }.unwrap(),
+                lamports: VmNonNull::from_addr(lamports_cell_addr as u64),
+                data: VmNonNull::from_addr(data_cell_addr as u64),
+                owner: owner_addr as u64,
                 executable: self.executable,
                 rent_epoch: self.rent_epoch,
+                phantom: PhantomData,
             };
 
             unsafe {
@@ -2967,11 +2962,7 @@ mod tests {
                 );
                 ptr::write_unaligned(
                     (data.as_mut_ptr() as usize + lamports_cell_addr - vm_addr) as *mut _,
-                    RcBox::new(RefCell::new((lamports_addr as *mut u64).as_mut().unwrap())),
-                );
-                ptr::write_unaligned(
-                    (data.as_mut_ptr() as usize + lamports_addr - vm_addr) as *mut _,
-                    self.lamports,
+                    VmBoxOfRefCell::new(self.lamports),
                 );
                 ptr::write_unaligned(
                     (data.as_mut_ptr() as usize + owner_addr - vm_addr) as *mut _,
@@ -2979,10 +2970,7 @@ mod tests {
                 );
                 ptr::write_unaligned(
                     (data.as_mut_ptr() as usize + data_cell_addr - vm_addr) as *mut _,
-                    RcBox::new(RefCell::new(slice::from_raw_parts_mut(
-                        data_addr as *mut u8,
-                        self.data.len(),
-                    ))),
+                    VmBoxOfRefCell::new(VmSlice::new(data_addr as u64, self.data.len() as u64)),
                 );
                 data[data_addr - vm_addr..].copy_from_slice(self.data);
             }
