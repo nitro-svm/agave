@@ -21,6 +21,7 @@ use {
         ALT_BN128_MULTIPLICATION_OUTPUT_LEN, ALT_BN128_PAIRING_ELEMENT_LEN,
         ALT_BN128_PAIRING_OUTPUT_LEN,
     },
+    solana_clock::Epoch,
     solana_cpi::MAX_RETURN_DATA,
     solana_hash::Hash,
     solana_instruction::{error::InstructionError, AccountMeta, ProcessedSiblingInstruction},
@@ -336,7 +337,7 @@ pub struct VmAccountInfo<'a> {
     /// Program that owns this account (in `AccountInfo`: &'a Pubkey)
     pub owner: u64,
     /// The epoch at which this account will next owe rent
-    pub rent_epoch: u64,
+    pub rent_epoch: Epoch,
 
     /// Was the transaction signed by this account's public key?
     pub is_signer: bool,
