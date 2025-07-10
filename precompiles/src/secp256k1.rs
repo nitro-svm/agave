@@ -3,7 +3,7 @@ use {
     digest::Digest,
     solana_precompile_error::PrecompileError,
     solana_secp256k1_program::{
-        construct_eth_pubkey, SecpSignatureOffsets, HASHED_PUBKEY_SERIALIZED_SIZE,
+        eth_address_from_pubkey, SecpSignatureOffsets, HASHED_PUBKEY_SERIALIZED_SIZE,
         SIGNATURE_OFFSETS_SERIALIZED_SIZE, SIGNATURE_SERIALIZED_SIZE,
     },
 };
@@ -97,7 +97,7 @@ pub fn verify(
             &recovery_id,
         )
         .map_err(|_| PrecompileError::InvalidSignature)?;
-        let eth_address = construct_eth_pubkey(&pubkey);
+        let eth_address = eth_address_from_pubkey(&pubkey.serialize()[1..].try_into().unwrap());
 
         if eth_address_slice != eth_address {
             return Err(PrecompileError::InvalidSignature);
@@ -334,7 +334,7 @@ pub mod tests {
 
         let secret_key = libsecp256k1::SecretKey::random(&mut thread_rng());
         let public_key = libsecp256k1::PublicKey::from_secret_key(&secret_key);
-        let eth_address = construct_eth_pubkey(&public_key);
+        let eth_address = eth_address_from_pubkey(&public_key.serialize()[1..].try_into().unwrap());
 
         let message = b"hello";
         let message_hash = {

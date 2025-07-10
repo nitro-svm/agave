@@ -210,23 +210,6 @@ impl QosService {
                         CommitTransactionDetails::NotCommitted => {
                             cost_tracker.remove(tx_cost);
                         }
-                    match transaction_committed_details {
-                        CommitTransactionDetails::Committed {
-                            compute_units,
-                            loaded_accounts_data_size,
-                        } => {
-                            cost_tracker.update_execution_cost(
-                                tx_cost,
-                                *compute_units,
-                                CostModel::calculate_loaded_accounts_data_size_cost(
-                                    *loaded_accounts_data_size,
-                                    &bank.feature_set,
-                                ),
-                            );
-                        }
-                        CommitTransactionDetails::NotCommitted => {
-                            cost_tracker.remove(tx_cost);
-                        }
                     }
                 }
             });
