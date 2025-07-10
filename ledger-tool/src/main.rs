@@ -2005,17 +2005,17 @@ fn main() {
                     let snapshot_archive_format = {
                         let archive_format_str =
                             value_t_or_exit!(arg_matches, "snapshot_archive_format", String);
-                        let mut archive_format = ArchiveFormat::from_cli_arg(&archive_format_str)
+                        let archive_format = ArchiveFormat::from_cli_arg(&archive_format_str)
                             .unwrap_or_else(|| {
                                 panic!("Archive format not recognized: {archive_format_str}")
                             });
-                        if let ArchiveFormat::TarZstd { config } = &mut archive_format {
-                            config.compression_level = value_t_or_exit!(
-                                arg_matches,
-                                "snapshot_zstd_compression_level",
-                                i32
-                            );
-                        }
+                        // if let ArchiveFormat::TarZstd { config } = &mut archive_format {
+                        //     config.compression_level = value_t_or_exit!(
+                        //         arg_matches,
+                        //         "snapshot_zstd_compression_level",
+                        //         i32
+                        //     );
+                        // }
                         archive_format
                     };
 
