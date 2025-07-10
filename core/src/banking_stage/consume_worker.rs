@@ -755,9 +755,9 @@ mod tests {
         solana_poh_config::PohConfig,
         solana_pubkey::Pubkey,
         solana_runtime::{
-            bank_forks::BankForks, bank_forks::BankForks,
+            bank_forks::BankForks,
             prioritization_fee_cache::PrioritizationFeeCache,
-            vote_sender_types::ReplayVoteReceiver, vote_sender_types::ReplayVoteReceiver,
+            vote_sender_types::ReplayVoteReceiver,
         },
         solana_runtime_transaction::runtime_transaction::RuntimeTransaction,
         solana_signer::Signer,
