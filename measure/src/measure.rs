@@ -82,7 +82,7 @@ impl fmt::Display for Measure {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, std::thread::sleep};
+    use {super::*};
 
     // #[test]
     // fn test_measure() {
