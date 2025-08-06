@@ -6,10 +6,10 @@ use {
     solana_clock::Epoch,
     solana_pubkey::Pubkey,
     solana_rent::{Rent, RentDue},
-    solana_rent_collector::CollectedInfo,
     solana_transaction_context::{IndexOfAccount, TransactionContext},
     solana_transaction_error::{TransactionError, TransactionResult},
 };
+use crate::svm_rent_collector::rent_collector::CollectedInfo;
 
 mod rent_collector;
 
