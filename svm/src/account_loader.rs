@@ -22,7 +22,7 @@ use {
     },
     solana_pubkey::Pubkey,
     solana_rent::RentDue,
-    solana_rent_collector::{CollectedInfo, RENT_EXEMPT_RENT_EPOCH},
+    solana_svm_rent_collector::{CollectedInfo, RENT_EXEMPT_RENT_EPOCH},
     solana_rent_debits::RentDebits,
     solana_sdk_ids::{
         bpf_loader_upgradeable, native_loader,
@@ -933,7 +933,7 @@ mod tests {
         },
         solana_pubkey::Pubkey,
         solana_rent::Rent,
-        solana_rent_collector::{RentCollector, RENT_EXEMPT_RENT_EPOCH},
+        solana_svm_rent_collector::{RentCollector, RENT_EXEMPT_RENT_EPOCH},
         solana_rent_debits::RentDebits,
         solana_sdk_ids::{
             bpf_loader, bpf_loader_upgradeable, native_loader, system_program, sysvar,
