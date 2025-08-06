@@ -11,7 +11,7 @@ use {
 };
 use crate::svm_rent_collector::rent_collector::CollectedInfo;
 
-mod rent_collector;
+pub mod rent_collector;
 
 /// Rent collector trait. Represents an entity that can evaluate the rent state
 /// of an account, determine rent due, and collect rent.
