@@ -25,4 +25,5 @@ serde_derive = { workspace = true }
 serde_json = { workspace = true }
 solana-account = { workspace = true }
 solana-pubkey = { workspace = true }
+[target.'cfg(not(target_arch = "riscv32"))'.dependencies]
 zstd = { workspace = true, optional = true }
