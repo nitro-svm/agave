@@ -105,7 +105,7 @@ impl RentCollector {
     /// true if it is easy to determine this account should consider having rent collected from it
     pub fn should_collect_rent(&self, address: &Pubkey, executable: bool) -> bool {
         !(executable // executable accounts must be rent-exempt balance
-            || *address == incinerator::id())
+            || *address == solana_sdk_ids::incinerator::id())
     }
 
     /// given an account that 'should_collect_rent'
