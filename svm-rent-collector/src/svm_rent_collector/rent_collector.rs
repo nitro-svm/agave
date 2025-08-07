@@ -1,11 +1,11 @@
 //! Implementation of `SVMRentCollector` for `RentCollector` from the Solana
 //! SDK.
 
-use solana_epoch_schedule::EpochSchedule;
 use {
     crate::svm_rent_collector::SVMRentCollector,
     solana_account::{AccountSharedData, ReadableAccount, WritableAccount},
     solana_clock::Epoch,
+    solana_epoch_schedule::EpochSchedule,
     solana_pubkey::Pubkey,
     solana_rent::{Rent, RentDue},
 };

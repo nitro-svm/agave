@@ -73,7 +73,9 @@ pub fn encode_ui_account<T: ReadableAccount>(
                     .write_all(slice_data(account.data(), data_slice_config))
                     .and_then(|()| encoder.finish())
                 {
-                    Ok(zstd_data) => UiAccountData::Binary(BASE64_STANDARD.encode(zstd_data), encoding),
+                    Ok(zstd_data) => {
+                        UiAccountData::Binary(BASE64_STANDARD.encode(zstd_data), encoding)
+                    }
                     Err(_) => UiAccountData::Binary(
                         BASE64_STANDARD.encode(slice_data(account.data(), data_slice_config)),
                         UiAccountEncoding::Base64,

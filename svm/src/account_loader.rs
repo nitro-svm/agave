@@ -22,7 +22,6 @@ use {
     },
     solana_pubkey::Pubkey,
     solana_rent::RentDue,
-    solana_svm_rent_collector::{CollectedInfo, RENT_EXEMPT_RENT_EPOCH},
     solana_rent_debits::RentDebits,
     solana_sdk_ids::{
         bpf_loader_upgradeable, native_loader,
@@ -30,7 +29,9 @@ use {
     },
     solana_svm_callback::{AccountState, TransactionProcessingCallback},
     solana_svm_feature_set::SVMFeatureSet,
-    solana_svm_rent_collector::svm_rent_collector::SVMRentCollector,
+    solana_svm_rent_collector::{
+        svm_rent_collector::SVMRentCollector, CollectedInfo, RENT_EXEMPT_RENT_EPOCH,
+    },
     solana_svm_transaction::svm_message::SVMMessage,
     solana_transaction_context::{IndexOfAccount, TransactionAccount},
     solana_transaction_error::{TransactionError, TransactionResult as Result},
@@ -933,7 +934,6 @@ mod tests {
         },
         solana_pubkey::Pubkey,
         solana_rent::Rent,
-        solana_svm_rent_collector::{RentCollector, RENT_EXEMPT_RENT_EPOCH},
         solana_rent_debits::RentDebits,
         solana_sdk_ids::{
             bpf_loader, bpf_loader_upgradeable, native_loader, system_program, sysvar,
@@ -941,6 +941,7 @@ mod tests {
         solana_signature::Signature,
         solana_signer::Signer,
         solana_svm_callback::{InvokeContextCallback, TransactionProcessingCallback},
+        solana_svm_rent_collector::{RentCollector, RENT_EXEMPT_RENT_EPOCH},
         solana_system_transaction::transfer,
         solana_transaction::{sanitized::SanitizedTransaction, Transaction},
         solana_transaction_context::{TransactionAccount, TransactionContext},

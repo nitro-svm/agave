@@ -29,7 +29,8 @@ fn decompress_reader<'a, R: Read + 'a>(
             Box::new(buf_reader)
         }
         CompressionMethod::NoCompression => Box::new(buf_reader),
-    };    Ok(decompress_reader)
+    };
+    Ok(decompress_reader)
 }
 
 pub fn decompress(data: &[u8]) -> Result<Vec<u8>, io::Error> {

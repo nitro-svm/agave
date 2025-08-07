@@ -1,7 +1,7 @@
 //! Plugin trait for rent collection within the Solana SVM.
 
 use {
-    crate::rent_state::RentState,
+    crate::{rent_state::RentState, svm_rent_collector::rent_collector::CollectedInfo},
     solana_account::{AccountSharedData, ReadableAccount},
     solana_clock::Epoch,
     solana_pubkey::Pubkey,
@@ -9,7 +9,6 @@ use {
     solana_transaction_context::{IndexOfAccount, TransactionContext},
     solana_transaction_error::{TransactionError, TransactionResult},
 };
-use crate::svm_rent_collector::rent_collector::CollectedInfo;
 
 pub mod rent_collector;
 

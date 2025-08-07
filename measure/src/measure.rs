@@ -82,7 +82,7 @@ impl fmt::Display for Measure {
 
 #[cfg(test)]
 mod tests {
-    use {super::*};
+    use super::*;
 
     // #[test]
     // fn test_measure() {

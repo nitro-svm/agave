@@ -402,7 +402,7 @@ mod tests {
             &[&instruction.data],
             &feature_set
         )
-            .is_ok());
+        .is_ok());
 
         // The message is the last field in the instruction data so
         // changing its last byte will also change the signature validity
@@ -416,7 +416,7 @@ mod tests {
             &[&instruction.data],
             &feature_set
         )
-            .is_err());
+        .is_err());
     }
 
     #[test]
@@ -522,7 +522,7 @@ mod tests {
                     &[&instruction.data],
                     &feature_set
                 )
-                    .is_ok());
+                .is_ok());
                 break;
             }
         }
