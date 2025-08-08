@@ -2940,7 +2940,7 @@ mod tests {
             let lamports_cell_addr = key_addr + mem::size_of::<Pubkey>();
             let owner_addr = lamports_cell_addr + mem::size_of::<VmBoxOfRefCell<&mut u64>>();
             let data_cell_addr = owner_addr + mem::size_of::<Pubkey>();
-            let data_addr = data_cell_addr +  mem::size_of::<VmBoxOfRefCell<VmSlice<u8>>>();
+            let data_addr = data_cell_addr + mem::size_of::<VmBoxOfRefCell<VmSlice<u8>>>();
 
             let info = VmAccountInfo {
                 key: key_addr as u64,

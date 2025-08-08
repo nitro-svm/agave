@@ -133,7 +133,9 @@ pub mod tests {
         crate::test_verify_with_alignment,
         rand0_7::{thread_rng, Rng},
         solana_keccak_hasher as keccak,
-        solana_secp256k1_program::{new_secp256k1_instruction_with_signature, sign_message, DATA_START},
+        solana_secp256k1_program::{
+            new_secp256k1_instruction_with_signature, sign_message, DATA_START,
+        },
     };
 
     fn test_case(
@@ -316,7 +318,8 @@ pub mod tests {
             &signature,
             recovery_id,
             &eth_address,
-        );        let feature_set = FeatureSet::all_enabled();
+        );
+        let feature_set = FeatureSet::all_enabled();
         assert!(test_verify_with_alignment(
             verify,
             &instruction.data,

@@ -52,6 +52,7 @@ solana-transaction-status = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tonic = { workspace = true, features = ["tls", "transport"] }
+[target.'cfg(not(target_arch = "riscv32"))'.dependencies]
 zstd = { workspace = true }
 
 [dev-dependencies]

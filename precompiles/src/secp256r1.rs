@@ -147,7 +147,7 @@ pub fn verify(
     _instruction_datas: &[&[u8]],
     _feature_set: &FeatureSet,
 ) -> Result<(), PrecompileError> {
-     Err(PrecompileError::InvalidInstructionDataSize)
+    Err(PrecompileError::InvalidInstructionDataSize)
 }
 
 fn get_data_slice<'a>(
