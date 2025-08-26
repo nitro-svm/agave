@@ -1,8 +1,8 @@
 [package]
-name = "agave-precompiles"
+name = "solana-precompiles"
 description = "Solana precompiled programs."
 documentation = "https://docs.rs/agave-precompiles"
-version = { workspace = true }
+version = "2.2.2"
 authors = { workspace = true }
 repository = { workspace = true }
 homepage = { workspace = true }
@@ -20,6 +20,7 @@ bincode = { workspace = true }
 digest = { workspace = true }
 ed25519-dalek = { workspace = true }
 libsecp256k1 = { workspace = true }
+[target.'cfg(not(target_arch = "riscv32"))'.dependencies]
 openssl = { workspace = true }
 sha3 = { workspace = true }
 solana-ed25519-program = { workspace = true }
@@ -28,7 +29,7 @@ solana-precompile-error = { workspace = true }
 solana-pubkey = { workspace = true }
 solana-sdk-ids = { workspace = true }
 solana-secp256k1-program = { workspace = true, features = ["serde"] }
-solana-secp256r1-program = { workspace = true, features = ["openssl-vendored"] }
+solana-secp256r1-program = { workspace = true }
 
 [dev-dependencies]
 bytemuck = { workspace = true }

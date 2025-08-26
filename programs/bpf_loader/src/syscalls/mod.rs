@@ -293,6 +293,15 @@ pub struct VmNonNull<T> {
     resource_type: PhantomData<T>,
 }
 
+impl<T> VmNonNull<T> {
+    pub fn from_addr(addr: u64) -> Self {
+        Self {
+            addr,
+            resource_type: PhantomData,
+        }
+    }
+}
+
 #[derive(Clone)]
 #[repr(C)]
 pub struct VmBoxOfRefCell<T> {
@@ -300,6 +309,17 @@ pub struct VmBoxOfRefCell<T> {
     _weak_addr: u64,
     _borrow_flag: u64,
     pub value: T,
+}
+
+impl<T> VmBoxOfRefCell<T> {
+    pub fn new(value: T) -> Self {
+        Self {
+            _strong_addr: 0,
+            _weak_addr: 0,
+            _borrow_flag: 0,
+            value,
+        }
+    }
 }
 
 /// Account information, in the virtual address space. Note: Since the addresses are u64,
@@ -653,7 +673,7 @@ macro_rules! translate_type_inner {
             size_of::<$T>() as u64
         )?;
         if !$check_aligned {
-            Ok(unsafe { std::mem::transmute::<u64, &mut $T>(host_addr) })
+            Ok(unsafe { &mut *(host_addr as *mut $T) })
         } else if !address_is_aligned::<$T>(host_addr) {
             Err(SyscallError::UnalignedPointer.into())
         } else {
@@ -2184,7 +2204,6 @@ declare_builtin_function!(
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::indexing_slicing)]
 mod tests {
-    use solana_account_info::AccountInfo;
     #[allow(deprecated)]
     use solana_sysvar::fees::Fees;
     use {
@@ -4470,7 +4489,7 @@ mod tests {
             META_OFFSET + std::mem::size_of::<ProcessedSiblingInstruction>();
         const DATA_OFFSET: usize = PROGRAM_ID_OFFSET + std::mem::size_of::<Pubkey>();
         const ACCOUNTS_OFFSET: usize = DATA_OFFSET + 0x100;
-        const END_OFFSET: usize = ACCOUNTS_OFFSET + std::mem::size_of::<AccountInfo>() * 4;
+        const END_OFFSET: usize = ACCOUNTS_OFFSET + std::mem::size_of::<VmAccountInfo>() * 4;
         let mut memory = [0u8; END_OFFSET];
         let config = Config::default();
         let mut memory_mapping = MemoryMapping::new(

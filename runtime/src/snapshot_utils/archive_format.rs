@@ -21,10 +21,10 @@ pub const TAR_EXTENSION: &str = "tar";
 /// The different archive formats used for snapshots
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Display)]
 pub enum ArchiveFormat {
-    // TarBzip2, // Unsupproted in svm-rollup
+    // TarBzip2, // Unsupported in svm-rollup
     TarGzip,
-    // TarZstd { config: ZstdConfig }, // Unsupproted in svm-rollup
-    // TarLz4, // Unsupproted in svm-rollup
+    // TarZstd { config: ZstdConfig }, // Unsupported in svm-rollup
+    // TarLz4, // Unsupported in svm-rollup
     Tar,
 }
 
