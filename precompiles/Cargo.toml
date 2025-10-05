@@ -1,5 +1,5 @@
 [package]
-name = "solana-precompiles"
+name = "agave-precompiles"
 description = "Solana precompiled programs."
 documentation = "https://docs.rs/agave-precompiles"
 version = "2.2.2"
