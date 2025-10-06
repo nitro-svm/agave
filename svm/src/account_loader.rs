@@ -249,6 +249,7 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
             // If lamports is 0, a previous transaction deallocated this account.
             // We return None instead of the account we found so it can be created fresh.
             // We *never* remove accounts, or else we would fetch stale state from accounts-db.
+            log::debug!("AccountLoader: found loaded account {account_key}");
             let option_account = if account.lamports() == 0 {
                 None
             } else {
@@ -257,8 +258,10 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
 
             (option_account, false)
         } else if let Some(account) = self.callbacks.get_account_shared_data(account_key) {
+            log::debug!("AccountLoader: loaded account {account_key}");
             (Some(account), true)
         } else {
+            log::debug!("AccountLoader: account not found {account_key}");
             (None, false)
         }
     }
@@ -663,7 +666,6 @@ fn load_transaction_accounts_simd186<CB: TransactionProcessingCallback>(
     for (program_id, instruction) in message.program_instructions_iter() {
         let Some(program_account) = account_loader.load_account(program_id) else {
             error_metrics.account_not_found += 1;
-            log::debug!("Program account not found: {program_id}");
             return Err(TransactionError::ProgramAccountNotFound);
         };
 
@@ -754,7 +756,6 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
 
             let Some(program_account) = account_loader.load_account(program_id) else {
                 error_metrics.account_not_found += 1;
-                log::debug!("Program account not found old: {program_id}");
                 return Err(TransactionError::ProgramAccountNotFound);
             };
 
@@ -793,7 +794,6 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
                     validated_loaders.insert(*owner_id);
                 } else {
                     error_metrics.account_not_found += 1;
-                    log::debug!("Program account not found validated: {program_id}");
                     return Err(TransactionError::ProgramAccountNotFound);
                 }
             }
