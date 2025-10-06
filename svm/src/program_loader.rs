@@ -217,7 +217,6 @@ pub(crate) fn get_program_modification_slot<CB: TransactionProcessingCallback>(
     callbacks: &CB,
     pubkey: &Pubkey,
 ) -> TransactionResult<Slot> {
-    log::debug!("Getting program modification slot for {pubkey}");
     let program = callbacks
         .get_account_shared_data(pubkey)
         .ok_or(TransactionError::ProgramAccountNotFound)?;
