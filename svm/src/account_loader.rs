@@ -249,7 +249,7 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
             // If lamports is 0, a previous transaction deallocated this account.
             // We return None instead of the account we found so it can be created fresh.
             // We *never* remove accounts, or else we would fetch stale state from accounts-db.
-            log::debug!("AccountLoader: found loaded account {account_key}");
+            log::debug!("AccountLoader: found loaded account {account_key}: {account}");
             let option_account = if account.lamports() == 0 {
                 None
             } else {
@@ -258,7 +258,7 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
 
             (option_account, false)
         } else if let Some(account) = self.callbacks.get_account_shared_data(account_key) {
-            log::debug!("AccountLoader: loaded account {account_key}");
+            log::debug!("AccountLoader: loaded account {account_key}: {account}");
             (Some(account), true)
         } else {
             log::debug!("AccountLoader: account not found {account_key}");
