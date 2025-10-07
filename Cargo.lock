@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "agave-precompiles"
-version = "3.0.0"
+version = "2.2.2"
 dependencies = [
  "agave-feature-set",
  "bincode",
