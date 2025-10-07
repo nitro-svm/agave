@@ -1,16 +1,17 @@
 //! Plugin trait for rent collection within the Solana SVM.
 
 use {
-    crate::{rent_state::RentState, svm_rent_collector::rent_collector::CollectedInfo},
+    crate::rent_state::RentState,
     solana_account::{AccountSharedData, ReadableAccount},
     solana_clock::Epoch,
     solana_pubkey::Pubkey,
     solana_rent::{Rent, RentDue},
+    solana_rent_collector::CollectedInfo,
     solana_transaction_context::{IndexOfAccount, TransactionContext},
     solana_transaction_error::{TransactionError, TransactionResult},
 };
 
-pub mod rent_collector;
+mod rent_collector;
 
 /// Rent collector trait. Represents an entity that can evaluate the rent state
 /// of an account, determine rent due, and collect rent.

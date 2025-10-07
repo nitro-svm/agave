@@ -12,9 +12,9 @@ edition = { workspace = true }
 [dependencies]
 solana-account = { workspace = true }
 solana-clock = { workspace = true }
-solana-epoch-schedule = { workspace = true }
 solana-pubkey = { workspace = true }
 solana-rent = { workspace = true }
+solana-rent-collector = { workspace = true }
 solana-sdk-ids = { workspace = true }
 solana-transaction-context = { workspace = true }
 solana-transaction-error = { workspace = true }
