@@ -441,6 +441,7 @@ impl TransactionContext {
         if let Some(index_in_transaction) = self.find_index_of_account(&instructions::id()) {
             let mut mut_account_ref = self.accounts.try_borrow_mut(index_in_transaction)?;
             if mut_account_ref.owner() != &solana_sdk_ids::sysvar::id() {
+                eprintln!("instructions sysvar has invalid owner: {:?}", mut_account_ref.owner());
                 return Err(InstructionError::InvalidAccountOwner);
             }
             instructions::store_current_index_checked(
