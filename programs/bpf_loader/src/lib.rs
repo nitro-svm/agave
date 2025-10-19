@@ -1536,6 +1536,9 @@ fn execute<'a, 'b: 'a>(
         match result {
             ProgramResult::Ok(status) if status != SUCCESS => {
                 let error: InstructionError = status.into();
+                if matches!(error, InstructionError::InvalidAccountOwner) {
+                    log::error!("BPF program {} returned InvalidAccountOwner (status={})", program_id, status);
+                }
                 Err(Box::new(error) as Box<dyn std::error::Error>)
             }
             ProgramResult::Err(mut error) => {
@@ -1617,11 +1620,20 @@ fn execute<'a, 'b: 'a>(
                         }
                     }
                 }
-                Err(if let EbpfError::SyscallError(err) = error {
+                let final_error = if let EbpfError::SyscallError(err) = error {
                     err
                 } else {
                     error.into()
-                })
+                };
+
+                // Check if it's InvalidAccountOwner
+                if let Some(instruction_err) = final_error.downcast_ref::<InstructionError>() {
+                    if matches!(instruction_err, InstructionError::InvalidAccountOwner) {
+                        log::error!("BPF program {} returned InvalidAccountOwner via Err path", program_id);
+                    }
+                }
+
+                Err(final_error)
             }
             _ => Ok(()),
         }

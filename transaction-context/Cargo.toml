@@ -20,6 +20,7 @@ dev-context-only-utils = ["bincode", "solana-account/dev-context-only-utils", "d
 serde = ["dep:serde", "dep:serde_derive"]
 
 [dependencies]
+log = { workspace = true }
 qualifier_attr = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_derive = { workspace = true, optional = true }

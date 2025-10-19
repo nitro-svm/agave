@@ -7424,6 +7424,7 @@ dependencies = [
  "assert_matches",
  "bincode",
  "criterion",
+ "log",
  "qualifier_attr",
  "rand 0.8.5",
  "solana-account",
@@ -11340,6 +11341,7 @@ name = "solana-transaction-context"
 version = "3.0.6"
 dependencies = [
  "bincode",
+ "log",
  "qualifier_attr",
  "serde",
  "serde_derive",

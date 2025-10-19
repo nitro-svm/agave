@@ -318,6 +318,7 @@ impl<FG: ForkGraph> TransactionBatchProcessor<FG> {
         environment: &TransactionProcessingEnvironment,
         config: &TransactionProcessingConfig,
     ) -> LoadAndExecuteSanitizedTransactionsOutput {
+        log::info!("TransactionBatchProcess::load_and_execute_sanitized_transactions called :)");
         // If `check_results` does not have the same length as `sanitized_txs`,
         // transactions could be truncated as a result of `.iter().zip()` in
         // many of the below methods.
