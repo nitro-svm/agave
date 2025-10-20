@@ -1535,6 +1535,39 @@ fn execute<'a, 'b: 'a>(
         if !return_data.is_empty() {
             stable_log::program_return(&log_collector, &program_id, return_data);
         }
+
+        // Log account hashes for ALPHA program (always, not just on errors)
+        if program_id.to_string() == "ALPHAQmeA7bjrVuccPsYPiCvsi428SNwte66Srvs4pHA" {
+            log::info!("ALPHA program {} execution completed", program_id);
+
+            // Hash the program account data
+            if let Some(program_account_index) = invoke_context.transaction_context.find_index_of_account(&program_id) {
+                if let Ok(program_account) = invoke_context.transaction_context.accounts().try_borrow(program_account_index) {
+                    let mut hasher = Sha256::new();
+                    hasher.update(program_account.data());
+                    let program_hash = hasher.finalize();
+                    log::info!("  Program {} data hash: {:x}", program_id, program_hash);
+                }
+            }
+
+            // Log all accounts in the instruction
+            if let Ok(instruction_context) = invoke_context.transaction_context.get_current_instruction_context() {
+                let num_accounts = instruction_context.get_number_of_instruction_accounts();
+                log::info!("  Instruction has {} accounts:", num_accounts);
+                for i in 0..num_accounts {
+                    if let Ok(key) = instruction_context.get_key_of_instruction_account(i) {
+                        if let Ok(account) = instruction_context.try_borrow_instruction_account(i) {
+                            let mut hasher = Sha256::new();
+                            hasher.update(account.get_data());
+                            let data_hash = hasher.finalize();
+                            log::info!("  Account[{}]: key={}, owner={}, data_len={}, data_hash={:x}, is_signer={}, is_writable={}",
+                                i, key, account.get_owner(), account.get_data().len(), data_hash, account.is_signer(), account.is_writable());
+                        }
+                    }
+                }
+            }
+        }
+
         match result {
             ProgramResult::Ok(status) if status != SUCCESS => {
                 let error: InstructionError = status.into();
@@ -1691,7 +1724,10 @@ fn execute<'a, 'b: 'a>(
 
                 Err(final_error)
             }
-            _ => Ok(()),
+            _ => {
+
+                Ok(())
+            },
         }
     };
 
