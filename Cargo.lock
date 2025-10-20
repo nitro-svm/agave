@@ -7427,6 +7427,7 @@ dependencies = [
  "log",
  "qualifier_attr",
  "rand 0.8.5",
+ "sha2 0.10.9",
  "solana-account",
  "solana-bincode",
  "solana-bpf-loader-program",

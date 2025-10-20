@@ -4,6 +4,8 @@
 #[cfg(feature = "svm-internal")]
 use qualifier_attr::qualifiers;
 use {
+    sha2::{Digest, Sha256},
+    solana_account::ReadableAccount,
     solana_bincode::limited_deserialize,
     solana_clock::Slot,
     solana_instruction::{error::InstructionError, AccountMeta},
@@ -1538,6 +1540,33 @@ fn execute<'a, 'b: 'a>(
                 let error: InstructionError = status.into();
                 if matches!(error, InstructionError::InvalidAccountOwner) {
                     log::error!("BPF program {} returned InvalidAccountOwner (status={})", program_id, status);
+
+                    // Hash the program account data
+                    if let Some(program_account_index) = invoke_context.transaction_context.find_index_of_account(&program_id) {
+                        if let Ok(program_account) = invoke_context.transaction_context.accounts().try_borrow(program_account_index) {
+                            let mut hasher = Sha256::new();
+                            hasher.update(program_account.data());
+                            let program_hash = hasher.finalize();
+                            log::error!("  Program {} data hash: {:x}", program_id, program_hash);
+                        }
+                    }
+
+                    // Log all accounts in the instruction to help debug
+                    if let Ok(instruction_context) = invoke_context.transaction_context.get_current_instruction_context() {
+                        let num_accounts = instruction_context.get_number_of_instruction_accounts();
+                        log::error!("  Instruction has {} accounts:", num_accounts);
+                        for i in 0..num_accounts {
+                            if let Ok(key) = instruction_context.get_key_of_instruction_account(i) {
+                                if let Ok(account) = instruction_context.try_borrow_instruction_account(i) {
+                                    let mut hasher = Sha256::new();
+                                    hasher.update(account.get_data());
+                                    let data_hash = hasher.finalize();
+                                    log::error!("  Account[{}]: key={}, owner={}, data_len={}, data_hash={:x}, is_signer={}, is_writable={}",
+                                        i, key, account.get_owner(), account.get_data().len(), data_hash, account.is_signer(), account.is_writable());
+                                }
+                            }
+                        }
+                    }
                 }
                 Err(Box::new(error) as Box<dyn std::error::Error>)
             }
@@ -1630,6 +1659,33 @@ fn execute<'a, 'b: 'a>(
                 if let Some(instruction_err) = final_error.downcast_ref::<InstructionError>() {
                     if matches!(instruction_err, InstructionError::InvalidAccountOwner) {
                         log::error!("BPF program {} returned InvalidAccountOwner via Err path", program_id);
+
+                        // Hash the program account data
+                        if let Some(program_account_index) = invoke_context.transaction_context.find_index_of_account(&program_id) {
+                            if let Ok(program_account) = invoke_context.transaction_context.accounts().try_borrow(program_account_index) {
+                                let mut hasher = Sha256::new();
+                                hasher.update(program_account.data());
+                                let program_hash = hasher.finalize();
+                                log::error!("  Program {} data hash: {:x}", program_id, program_hash);
+                            }
+                        }
+
+                        // Log all accounts in the instruction to help debug
+                        if let Ok(instruction_context) = invoke_context.transaction_context.get_current_instruction_context() {
+                            let num_accounts = instruction_context.get_number_of_instruction_accounts();
+                            log::error!("  Instruction has {} accounts:", num_accounts);
+                            for i in 0..num_accounts {
+                                if let Ok(key) = instruction_context.get_key_of_instruction_account(i) {
+                                    if let Ok(account) = instruction_context.try_borrow_instruction_account(i) {
+                                        let mut hasher = Sha256::new();
+                                        hasher.update(account.get_data());
+                                        let data_hash = hasher.finalize();
+                                        log::error!("  Account[{}]: key={}, owner={}, data_len={}, data_hash={:x}, is_signer={}, is_writable={}",
+                                            i, key, account.get_owner(), account.get_data().len(), data_hash, account.is_signer(), account.is_writable());
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
