@@ -1,5 +1,6 @@
 #[cfg(feature = "dev-context-only-utils")]
 use qualifier_attr::{field_qualifiers, qualifiers};
+use solana_sdk_ids::bpf_loader;
 use {
     crate::{
         account_overrides::AccountOverrides,
@@ -258,6 +259,7 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
     // indicating whether an accounts-db lookup was performed, which allows wrappers with
     // &mut self to insert the account. Wrappers with &self ignore it.
     fn do_load(&self, account_key: &Pubkey) -> (Option<AccountSharedData>, bool) {
+        let is_loader = bpf_loader::check_id(account_key);
         if let Some(account) = self.loaded_accounts.get(account_key) {
             // If lamports is 0, a previous transaction deallocated this account.
             // We return None instead of the account we found so it can be created fresh.
@@ -268,10 +270,22 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
                 Some(account.clone())
             };
 
+            if is_loader {
+                log::error!("BPF loader account {}", account.lamports());
+            }
+
             (option_account, false)
         } else if let Some((account, _slot)) = self.callbacks.get_account_shared_data(account_key) {
+            if is_loader {
+                log::error!("BPF loader account callback {}", account.lamports());
+            }
+
             (Some(account), true)
         } else {
+            if is_loader {
+                log::error!("BPF loader account not found");
+            }
+
             (None, true)
         }
     }
