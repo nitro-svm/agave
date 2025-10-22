@@ -236,18 +236,35 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
     // Load an account as above, with no inspection and no LoadedTransactionAccount wrapper.
     // This is a general purpose function suitable for usage outside initial transaction loading.
     pub(crate) fn load_account(&mut self, account_key: &Pubkey) -> Option<AccountSharedData> {
+        let is_loader = bpf_loader::check_id(account_key);
         match self.do_load(account_key) {
             // Exists, from AccountLoader.
-            (Some(account), false) => Some(account),
+            (Some(account), false) => {
+                if is_loader {
+                    log::error!("BPF loader account found in AccountLoader");
+                }
+                Some(account)
+            }
             // Not allocated, but has an AccountLoader placeholder already.
-            (None, false) => None,
+            (None, false) => {
+                if is_loader {
+                    log::error!("BPF loader account not found but returned from AccountLoader");
+                }
+                None
+            }
             // Exists in accounts-db. Store it in AccountLoader for future loads.
             (Some(account), true) => {
+                if is_loader {
+                    log::error!("BPF loader account found in callback");
+                }
                 self.loaded_accounts.insert(*account_key, account.clone());
                 Some(account)
             }
             // Does not exist and has never been seen.
             (None, true) => {
+                if is_loader {
+                    log::error!("BPF loader account not found in callback");
+                }
                 self.loaded_accounts
                     .insert(*account_key, AccountSharedData::default());
                 None
@@ -259,7 +276,6 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
     // indicating whether an accounts-db lookup was performed, which allows wrappers with
     // &mut self to insert the account. Wrappers with &self ignore it.
     fn do_load(&self, account_key: &Pubkey) -> (Option<AccountSharedData>, bool) {
-        let is_loader = bpf_loader::check_id(account_key);
         if let Some(account) = self.loaded_accounts.get(account_key) {
             // If lamports is 0, a previous transaction deallocated this account.
             // We return None instead of the account we found so it can be created fresh.
@@ -270,22 +286,10 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
                 Some(account.clone())
             };
 
-            if is_loader {
-                log::error!("BPF loader account {}", account.lamports());
-            }
-
             (option_account, false)
         } else if let Some((account, _slot)) = self.callbacks.get_account_shared_data(account_key) {
-            if is_loader {
-                log::error!("BPF loader account callback {}", account.lamports());
-            }
-
             (Some(account), true)
         } else {
-            if is_loader {
-                log::error!("BPF loader account not found");
-            }
-
             (None, true)
         }
     }
@@ -723,6 +727,7 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
                     )?;
                     validated_loaders.insert(*owner_id);
                 } else {
+                    log::error!("Program loader account not found: {owner_id}");
                     error_metrics.account_not_found += 1;
                     return Err(TransactionError::ProgramAccountNotFound);
                 }
