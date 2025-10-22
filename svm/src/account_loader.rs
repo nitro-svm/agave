@@ -239,32 +239,25 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
         let is_loader = bpf_loader::check_id(account_key);
         match self.do_load(account_key) {
             // Exists, from AccountLoader.
-            (Some(account), false) => {
-                if is_loader {
-                    log::error!("BPF loader account found in AccountLoader");
-                }
-                Some(account)
-            }
+            (Some(account), false) => Some(account),
             // Not allocated, but has an AccountLoader placeholder already.
-            (None, false) => {
-                if is_loader {
-                    log::error!("BPF loader account not found but returned from AccountLoader");
-                }
-                None
-            }
+            (None, false) => None,
             // Exists in accounts-db. Store it in AccountLoader for future loads.
             (Some(account), true) => {
                 if is_loader {
-                    log::error!("BPF loader account found in callback");
+                    log::error!(
+                        "BPF loader account found in callback: {}, {}, {:?}, {}",
+                        account.lamports(),
+                        account.owner(),
+                        String::from_utf8(account.data().to_vec()),
+                        account.rent_epoch(),
+                    );
                 }
                 self.loaded_accounts.insert(*account_key, account.clone());
                 Some(account)
             }
             // Does not exist and has never been seen.
             (None, true) => {
-                if is_loader {
-                    log::error!("BPF loader account not found in callback");
-                }
                 self.loaded_accounts
                     .insert(*account_key, AccountSharedData::default());
                 None
@@ -727,7 +720,7 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
                     )?;
                     validated_loaders.insert(*owner_id);
                 } else {
-                    log::error!("Program loader account not found: {owner_id}");
+                    log::error!("Program account: {program_id} owner not found: {owner_id}");
                     error_metrics.account_not_found += 1;
                     return Err(TransactionError::ProgramAccountNotFound);
                 }
