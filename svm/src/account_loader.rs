@@ -616,7 +616,7 @@ fn load_transaction_accounts_simd186<CB: TransactionProcessingCallback>(
     for (program_id, instruction) in message.program_instructions_iter() {
         let Some(program_account) = account_loader.load_account(program_id) else {
             error_metrics.account_not_found += 1;
-            println!("Program account not found: {program_id}");
+            log::error!("Program account not found: {program_id}");
             return Err(TransactionError::ProgramAccountNotFound);
         };
 
@@ -688,7 +688,7 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
 
             let Some(program_account) = account_loader.load_account(program_id) else {
                 error_metrics.account_not_found += 1;
-                println!("Program account not found old: {program_id}");
+                log::error!("Program account not found old: {program_id}");
                 return Err(TransactionError::ProgramAccountNotFound);
             };
 
@@ -712,7 +712,7 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
                     validated_loaders.insert(*owner_id);
                 } else {
                     error_metrics.account_not_found += 1;
-                    println!("Program account owner not found: {owner_id}");
+                    log::error!("Program account owner not found: {owner_id}");
                     return Err(TransactionError::ProgramAccountNotFound);
                 }
             }
