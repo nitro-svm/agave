@@ -241,7 +241,12 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
             // Exists, from AccountLoader.
             (Some(account), false) => Some(account),
             // Not allocated, but has an AccountLoader placeholder already.
-            (None, false) => None,
+            (None, false) => {
+                if is_loader {
+                    log::error!("BPF loader account placeholder found in AccountLoader");
+                }
+                None
+            }
             // Exists in accounts-db. Store it in AccountLoader for future loads.
             (Some(account), true) => {
                 if is_loader {
@@ -258,6 +263,9 @@ impl<'a, CB: TransactionProcessingCallback> AccountLoader<'a, CB> {
             }
             // Does not exist and has never been seen.
             (None, true) => {
+                if is_loader {
+                    log::error!("BPF loader account not found in callback");
+                }
                 self.loaded_accounts
                     .insert(*account_key, AccountSharedData::default());
                 None
@@ -719,6 +727,9 @@ fn load_transaction_accounts_old<CB: TransactionProcessingCallback>(
                         error_metrics,
                     )?;
                     validated_loaders.insert(*owner_id);
+                    if bpf_loader::check_id(owner_id) {
+                        log::error!("Validated BPF program loader: {owner_id}");
+                    }
                 } else {
                     log::error!("Program account: {program_id} owner not found: {owner_id}");
                     error_metrics.account_not_found += 1;
