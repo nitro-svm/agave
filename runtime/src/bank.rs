@@ -443,6 +443,13 @@ pub struct BankFieldsToDeserialize {
     pub(crate) bank_hash_stats: BankHashStats,
 }
 
+impl BankFieldsToDeserialize {
+    /// Get accounts lt hash and bank hash for simulator use
+    pub fn simulator_fields(&self) -> (&AccountsLtHash, &Hash) {
+        (&self.accounts_lt_hash, &self.hash)
+    }
+}
+
 /// Bank's common fields shared by all supported snapshot versions for serialization.
 /// This was separated from BankFieldsToDeserialize to avoid cloning by using refs.
 /// So, sync fields with BankFieldsToDeserialize!
