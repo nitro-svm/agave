@@ -184,18 +184,34 @@ impl SvmTokenInfo {
             mint,
             owner,
             amount,
-        } = generic_token::Account::unpack(account.data(), &program_id)?;
+        } = generic_token::Account::unpack(account.data(), &program_id).or_else(|| {
+            log::warn!("Failed to unpack token account at index {program_id}");
+            None
+        })?;
 
-        let mint_account = account_loader.load_account(&mint)?;
+        let mint_account = account_loader.load_account(&mint).or_else(|| {
+            log::warn!("Failed to load mint account {mint}");
+            None
+        })?;
         if *mint_account.owner() != program_id {
+            log::warn!(
+                "Mint account owner mismatch for mint {mint}, expected {program_id}, found {}",
+                mint_account.owner()
+            );
             return None;
         }
 
         let generic_token::Mint { decimals, .. } =
-            generic_token::Mint::unpack(mint_account.data(), &program_id)?;
+            generic_token::Mint::unpack(mint_account.data(), &program_id).or_else(|| {
+                log::warn!("Failed to unpack mint account {mint}");
+                None
+            })?;
 
         Some(Self {
-            account_index: index.try_into().ok()?,
+            account_index: index.try_into().ok().or_else(|| {
+                log::warn!("Account index {index} exceeds u8 range");
+                None
+            })?,
             mint,
             amount,
             owner,
