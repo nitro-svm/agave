@@ -99,7 +99,12 @@ impl BalanceCollector {
                 && is_known_spl_token_id(account.owner())
             {
                 if let Some(token_info) =
-                    SvmTokenInfo::unpack_token_account(account_loader, &account, index)
+                    SvmTokenInfo::unpack_token_account(account_loader, &account, index).or_else(
+                        || {
+                            log::warn!("Failed to unpack token account with key {key}");
+                            None
+                        },
+                    )
                 {
                     token_balances.push(token_info);
                 }
@@ -185,7 +190,7 @@ impl SvmTokenInfo {
             owner,
             amount,
         } = generic_token::Account::unpack(account.data(), &program_id).or_else(|| {
-            log::warn!("Failed to unpack token account at index {program_id}");
+            log::warn!("Failed to unpack token account {}", account.owner());
             None
         })?;
 
