@@ -190,7 +190,7 @@ impl SvmTokenInfo {
             owner,
             amount,
         } = generic_token::Account::unpack(account.data(), &program_id).or_else(|| {
-            log::warn!("Failed to unpack token account {}", account.owner());
+            log::warn!("Failed to unpack token account");
             None
         })?;
 
@@ -208,7 +208,10 @@ impl SvmTokenInfo {
 
         let generic_token::Mint { decimals, .. } =
             generic_token::Mint::unpack(mint_account.data(), &program_id).or_else(|| {
-                log::warn!("Failed to unpack mint account {mint}");
+                log::warn!(
+                    "Failed to unpack mint account {mint}: {:?}",
+                    mint_account.data()
+                );
                 None
             })?;
 
