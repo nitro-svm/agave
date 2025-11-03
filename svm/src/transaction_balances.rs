@@ -190,7 +190,7 @@ impl SvmTokenInfo {
             owner,
             amount,
         } = generic_token::Account::unpack(account.data(), &program_id).or_else(|| {
-            log::warn!("Failed to unpack token account");
+            log::warn!("Failed to unpack token account: {:?}", account.data());
             None
         })?;
 
