@@ -1,5 +1,9 @@
 #[cfg(feature = "dev-context-only-utils")]
 use qualifier_attr::field_qualifiers;
+use spl_generic_token::{
+    token::{self, GenericTokenAccount, GenericTokenMint},
+    token_2022,
+};
 use {
     crate::{
         account_loader::AccountLoader,
@@ -191,7 +195,18 @@ impl SvmTokenInfo {
             amount,
         } = generic_token::Account::unpack(account.data(), &program_id).or_else(|| {
             if is_known_spl_token_id(&program_id) {
-                log::warn!("Failed to unpack token account: {:?}", account.data());
+                let is_valid = if program_id == token::id() {
+                    token::Account::valid_account_data(account.data())
+                } else if program_id == token_2022::id() {
+                    token_2022::Account::valid_account_data(account.data())
+                } else {
+                    false
+                };
+                log::warn!(
+                    "Failed to unpack token account: {:?}, data is {}",
+                    account.data(),
+                    if is_valid { "valid" } else { "invalid" }
+                );
             }
             None
         })?;
@@ -210,9 +225,17 @@ impl SvmTokenInfo {
 
         let generic_token::Mint { decimals, .. } =
             generic_token::Mint::unpack(mint_account.data(), &program_id).or_else(|| {
+                let is_valid = if program_id == token::id() {
+                    token::Mint::valid_account_data(mint_account.data())
+                } else if program_id == token_2022::id() {
+                    token_2022::Mint::valid_account_data(mint_account.data())
+                } else {
+                    false
+                };
                 log::warn!(
-                    "Failed to unpack mint account {mint}: {:?}",
-                    mint_account.data()
+                    "Failed to unpack mint account {mint}: {:?}, data is {}",
+                    mint_account.data(),
+                    if is_valid { "valid" } else { "invalid" }
                 );
                 None
             })?;
